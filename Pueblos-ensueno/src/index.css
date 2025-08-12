@@ -1,0 +1,235 @@
+@import "tailwindcss";
+@import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+
+/* colores principales */
+:root {
+  /* Tonos pastel para secciones destacadas */
+  --color-primary:   #f2ca5d;  /* amarillo-anaranjado pastel */
+  --color-secondary: #8ea0e2;  /* azul pizarra claro */
+  --color-tertiary:  #E1BEE7;  /* lila pastel */
+  --color-cuatro:    #8cb3ec;  /* azul aciano claro */
+  --color-verde:     #168566;  /* azul aciano claro */
+  --color-marron:    #807354;  /* azul aciano claro */
+
+  /* Neutrales para bloques de texto */
+  --color-bg:        #FFFFFF;  /* blanco puro */
+  --color-text:      #333333;  /* gris oscuro para buena lectura */
+}
+
+   /* Iluminar cada estado al pasar el mouse */
+svg path:hover {
+  fill: #07ddec; /* amarillo brillante */
+  transition: fill 0.3s ease;
+  cursor: pointer;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+.scrollbar-thumb-pink-400::-webkit-scrollbar {
+  height: 8px;
+}
+.scrollbar-thumb-pink-400::-webkit-scrollbar-thumb {
+  background-color: #ec4899;
+  border-radius: 8px;
+}
+
+.bg-artesanal {
+  background-image: repeating-linear-gradient(
+    45deg,
+    #fcd34d 0px,
+    #fcd34d 10px,
+    #f472b6 10px,
+    #f472b6 20px,
+    #34d399 20px,
+    #34d399 30px,
+    #fb923c 30px,
+    #fb923c 40px
+  );
+}
+@keyframes coloresTabasco {
+  0% {
+    fill: #facc15;
+    filter: drop-shadow(0 0 5px #facc15);
+  }
+  25% {
+    fill: #fb7185;
+    filter: drop-shadow(0 0 8px #fb7185);
+  }
+  50% {
+    fill: #34d399;
+    filter: drop-shadow(0 0 12px #34d399);
+  }
+  75% {
+    fill: #60a5fa;
+    filter: drop-shadow(0 0 8px #60a5fa);
+  }
+  100% {
+    fill: #facc15;
+    filter: drop-shadow(0 0 5px #facc15);
+  }
+}
+
+.animar-tabasco {
+  animation: coloresTabasco 4s ease-in-out infinite;
+  transition: fill 0.3s ease-in-out, filter 0.3s ease-in-out;
+}
+.evento-tabasco {
+  position: absolute;
+  top: 75%;
+  left: 80.5%;
+  transform: translate(-50%, -100%);
+  background-color: #fff0f5;
+  border: 2px solid #fb7185;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #c026d3;
+  animation: flotar 2s ease-in-out infinite;
+  z-index: 50;
+  box-shadow: 0 0 12px rgba(255, 105, 180, 0.4);
+}
+
+.evento-tabasco::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 12px solid #fb7185;
+}
+
+
+@keyframes flotar {
+  0% { transform: translate(-50%, -100%) translateY(0); }
+  50% { transform: translate(-50%, -100%) translateY(-5px); }
+  100% { transform: translate(-50%, -100%) translateY(0); }
+}
+
+.map-filter {filter: hue-rotate(30deg) saturate(1.5) brightness(0.9);}
+
+.map-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.map-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0,104,71,0.25) 0%,
+    rgba(255,255,255,0.15) 50%,
+    rgba(206,17,38,0.25) 100%
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none; /* deja pasar clics al mapa */
+  z-index: 10;
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+/* Forzar color hover en SVGs con fill inline */
+svg path.hoverable-state:hover {
+  fill: #07ddec !important;
+  transition: fill 0.3s ease;
+  cursor: pointer;
+}
+/* Iluminar Michoacán si se activa desde la mariposa */
+svg path.hover-indirecto:not(#mariposa-monarca *) {
+  fill: #07ddec !important;
+  transition: fill 0.3s ease;
+}
+/* Foco visible global para accesibilidad */
+:focus-visible {
+  outline: 2px solid rgba(0,0,0,0.5);
+  outline-offset: 2px;
+}
+
+/* (Opcional) Texto base un poco más oscuro para mejor contraste general */
+:root {
+  --color-text-strong: #1a1a1a;
+}
+
+/* Utilidad opcional para títulos o párrafos clave */
+.text-strong {
+  color: var(--color-text-strong);
+}
+
+/* Respeta 'prefers-reduced-motion' para usuarios sensibles a animación */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* --- Foco en estados del mapa (SVG) --- */
+/* 1) Evitar rectángulo negro cuando se hace click con el mouse */
+svg path.hoverable-state:focus {
+  outline: none;              /* quita el foco rectangular por click */
+}
+
+/* 2) Mantener foco ACCESIBLE para teclado, pero con glow acorde a la forma */
+svg path.hoverable-state:focus-visible {
+  outline: none;              /* anula el global para SVG */
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 2px rgba(0,0,0,0.6));
+  stroke: #1f2937;            /* gris oscuro (mejor contraste) */
+  stroke-width: 1.75;         /* no exagerado */
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke; /* mantiene el grosor al escalar */
+}
+
+/* 3) Opcional: al hacer hover, igualar el realce al del foco para consistencia */
+svg path.hoverable-state:hover {
+  outline: none;
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
+}
+/* --- Foco para el SVG de Tabasco --- */
+#contenido-tabasco svg path:focus { outline: none; }
+
+#contenido-tabasco svg path:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 8px rgba(0,0,0,0.4)) drop-shadow(0 0 2px rgba(0,0,0,0.6));
+  stroke: #1f2937;
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+#contenido-tabasco svg path:hover {
+  outline: none;
+  filter: drop-shadow(0 0 6px rgba(0,0,0,0.35));
+}
+
+
+
