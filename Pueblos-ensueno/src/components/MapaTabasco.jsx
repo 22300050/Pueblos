@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import tabascoSvg from '../assets/Tabasco_only.svg?raw';
 import { Link, useNavigate } from 'react-router-dom';
-import paisajeTabasco from '../assets/paisaje_tabasco.png';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import Confetti from 'react-confetti';
 import gifVillahermosa from '../assets/Villahermosa.gif';
 import logo from '../assets/Logo.png';
 import { Menu } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { getSelecciones } from '../utils/itinerarioStore';
+import popurriTabasco from '../assets/Popurri Tabasco.mp3';
+
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 function MapaTabasco({ onRegresar, estado, eventos }) {
   const containerRef = useRef(null);
@@ -783,13 +783,15 @@ const ItinerarioForm = () => (
       </button>
     </div>
 
-    <Link
-      to="/productos-tabasco"
-      state={{ municipio: formData.lugarInicio || formData.ultimoLugar || '' }}
-      className="mt-4 inline-block text-center bg-pink-200 text-gray-900 px-4 py-2 rounded-lg shadow hover:bg-pink-300 transition"
-    >
-      {`Productos Artesanales de ${formData.lugarInicio || formData.ultimoLugar || 'Tabasco'}`}
-    </Link>
+{/* Reproductor de audio Popurri Tabasco */}
+<div className="mt-4 flex flex-col items-center bg-amber-100 p-4 rounded-lg shadow-lg">
+  <audio controls className="w-full max-w-xs border-2 border-amber-300 rounded-md">
+    <source src={popurriTabasco} type="audio/mpeg" />
+    Tu navegador no soporta la reproducción de audio.
+  </audio>
+  <p className="text-sm text-amber-800 mt-2 font-semibold">🎶 Popurrí de Tabasco</p>
+</div>
+
 
     <div className="flex justify-center gap-4 mt-4 text-xl text-gray-600">
       <i className="fab fa-facebook-square" />

@@ -15,6 +15,7 @@ import MapaTabasco from './components/MapaTabasco';
 import { useEffect } from "react";
 import './locales/i18n';
 import Directorios from "./components/Directorios";
+import Nosotros from './components/Nosotros';
 
 function App() {
 
@@ -45,6 +46,7 @@ function App() {
           <Route path="/municipio/:nombre" element={<MunicipioDetalle />} />
           <Route path="/mapa-tabasco" element={<MapaTabasco />} />
           <Route path="/directorios" element={<Directorios />} />
+          <Route path="/nosotros" element={<Nosotros />} />
         </Routes>
       </div>
     </Router>

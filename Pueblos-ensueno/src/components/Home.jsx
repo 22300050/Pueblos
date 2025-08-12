@@ -92,14 +92,15 @@ const scrollToId = (id) => {
       {t('hero.text')}
     </p>
     <div className="flex gap-3 justify-center lg:justify-start">
-      <Link to="/registro">
-        <button
-          className="px-6 py-3 rounded-full font-semibold bg-[var(--color-secondary)] text-white hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 transition"
-          aria-label={t('cta.button')}
-        >
-          {t('cta.button')}
-        </button>
-      </Link>
+<Link to="/nosotros">
+  <button
+    className="px-6 py-3 rounded-full font-semibold bg-[var(--color-secondary)] text-white hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 transition"
+    aria-label="Nuestro equipo"
+  >
+    Nuestro equipo
+  </button>
+</Link>
+
       <button
         onClick={() => scrollToId('como-funciona')}
         className="px-6 py-3 rounded-full font-semibold border border-black/20 hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 transition"
