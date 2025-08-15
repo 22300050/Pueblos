@@ -97,7 +97,7 @@ const positions = (() => {
 
 
   return (
-    <div className="fixed bottom-6 right-6 z-[60]">
+    <div className="fixed bottom-6 right-10 z-[60]">
       <div className="relative w-0 h-0">
 {items.map((item, i) => {
   const common = {

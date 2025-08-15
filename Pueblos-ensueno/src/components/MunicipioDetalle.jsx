@@ -404,44 +404,61 @@ const toggleSeleccion = (payload) => {
       <div className="text-[var(--color-text)]">
     {/* ===== Header de Home ===== */}
     <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
-      <div className="flex items-center gap-4">
-        <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto" />
-        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-          Pueblos de Ensueño
-        </h1>
-      </div>
-      <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
-        {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-          <Link key={i} to={path}>
-            <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
-              {['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i]}
-            </button>
-          </Link>
-        ))}
-      </nav>
+<Link to="/" className="flex items-center gap-4">
+  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
+  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+    Pueblos de Ensueño
+  </h1>
+</Link>
+
+<nav className="hidden md:flex gap-3 lg:gap-5 items-center">
+  <Link to="/mapa-tabasco">
+    <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] rounded-full font-semibold shadow-sm transition">
+      ← Regresar al mapa
+    </button>
+  </Link>
+  <Link to="/productos-tabasco" state={{ municipio: nombre }}>
+    <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] rounded-full font-semibold shadow-sm transition">
+      {`Productos Artesanales de ${nombre || 'Centro'}`}
+    </button>
+  </Link>
+  <button
+    onClick={manejarInteres}
+    className={`px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] rounded-full font-semibold shadow-sm transition`}
+  >
+    {interesado ? '¡Te interesa!' : 'Me interesa'}
+  </button>
+</nav>
+
+
       <button className="block md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
         <Menu size={24} />
       </button>
     </header>
 {/* NAV MOBILE */}
 {mobileMenuOpen && (
-  <nav id="menu-movil" aria-label="Menú móvil" className="md:hidden bg-white shadow-md px-6 py-4 space-y-2 border-t border-black/10">
-    {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-      <Link key={i} to={path}>
-        <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:brightness-110 transition
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
-          {['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i]}
-        </button>
-      </Link>
-    ))}
-    <Link to="/">
-      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:brightness-110 transition
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
-        Ir al Home
+  <nav id="menu-movil" className="md:hidden bg-white shadow-md px-6 py-4 space-y-2 border-t border-black/10">
+    <Link to="/mapa-tabasco">
+      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] hover:brightness-110 transition">
+        ← Regresar al mapa
       </button>
     </Link>
+    <Link to="/productos-tabasco" state={{ municipio: nombre }}>
+      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-secondary)] hover:brightness-110 transition">
+        {`Productos Artesanales de ${nombre || 'Centro'}`}
+      </button>
+    </Link>
+    <button
+      onClick={manejarInteres}
+      className={`w-full px-4 py-2 rounded-lg font-semibold text-white transition ${
+        interesado ? 'bg-green-600' : 'bg-emerald-600 hover:bg-emerald-700'
+      }`}
+    >
+      {interesado ? '¡Te interesa!' : 'Me interesa'}
+    </button>
   </nav>
 )}
+
 
 {/* Contenido del municipio */}
 <div className={`p-8 max-w-4xl mx-auto ${theme.bg}`}>

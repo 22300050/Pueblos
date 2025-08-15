@@ -9,12 +9,13 @@ export default function HomeLogin() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-200 via-amber-200 to-lime-200 text-gray-800">
       <header className="w-full py-4 px-6 flex justify-between items-center bg-white/40 backdrop-blur-md shadow-md">
-        <div className="flex items-center gap-4">
-          <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto" />
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-            Pueblos de Ensueño
-          </h1>
-        </div>
+<Link to="/" className="flex items-center gap-4">
+  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
+  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+    Pueblos de Ensueño
+  </h1>
+</Link>
+
 
         {/* Desktop nav */}
         <nav className="hidden md:flex gap-3 lg:gap-5 items-center">

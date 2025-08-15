@@ -18,7 +18,7 @@ import TeamImg from '../assets/Team.jpg';
 // Datos del equipo (pon aquí tus rutas reales de fotos o déjalas en null para usar iniciales)
 const TEAM = [
   { name: "Arcely Aquino Ruíz", role: "Asesora del Proyecto", img: ArcelyImg },
-  { name: "Dulce María León De La O", role: "Asesora del Proyecto", img: DulceImg },
+  { name: "Dulce María León De La O", role: "Co-Asesora del Proyecto", img: DulceImg },
   { name: "Fernando Estrella Martínez", role: "Estudiante", img: FernandoImg },
   { name: "Darwin Sánchez Cano", role: "Estudiante", img: DarwinImg },
   { name: "Kevin Priego Ulloa", role: "Estudiante", img: KevinImg },
@@ -68,12 +68,13 @@ export default function Nosotros() {
           Saltar al contenido principal
         </a>
 
-        <div className="flex items-center gap-4">
-          <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-            Pueblos de Ensueño
-          </h1>
-        </div>
+<Link to="/" className="flex items-center gap-4">
+  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
+  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+    Pueblos de Ensueño
+  </h1>
+</Link>
+
 
         <nav aria-label="Navegación principal" className="hidden md:flex gap-3 lg:gap-5 items-center">
           {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (

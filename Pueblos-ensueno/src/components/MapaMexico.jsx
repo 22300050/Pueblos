@@ -147,31 +147,20 @@ path.addEventListener('blur', onBlur);
     Saltar al contenido principal
   </a>
 
-  <div className="flex items-center gap-4">
-    <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
-    <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-      Pueblos de Ensueño
-    </h1>
-  </div>
+<Link to="/" className="flex items-center gap-4">
+  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
+  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+    Pueblos de Ensueño
+  </h1>
+</Link>
+
   
   <nav aria-label="Navegación principal" className="hidden md:flex gap-3 lg:gap-5 items-center">
-{['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => {
-  const label = ['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i];
-  const Btn = path === '/mapa' ? NavLink : Link;
-  return (
-    <Btn key={i} to={path} aria-current={path === '/mapa' ? 'page' : undefined}>
-      <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
-        {label}
-      </button>
-    </Btn>
-  );
-})}
-
-    <Link to="/">
-      <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
-        Ir al Home
-      </button>
-    </Link>
+<Link to="/">
+  <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
+    Ir al Home
+  </button>
+</Link>
   </nav>
 
   <button

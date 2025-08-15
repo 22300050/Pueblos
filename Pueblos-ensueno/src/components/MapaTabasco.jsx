@@ -807,25 +807,20 @@ return (
   <>
     {/* HEADER */}
     <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
-      <div className="flex items-center gap-4">
-        <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto" />
-        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-          Pueblos de Ensueño
-        </h1>
-      </div>
+<Link to="/" className="flex items-center gap-4">
+  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
+  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+    Pueblos de Ensueño
+  </h1>
+</Link>
+
 <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
-  {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-    <Link key={i} to={path}>
-      <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
-        {['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i]}
-      </button>
-    </Link>
-  ))}
-  <Link to="/">
-    <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
-      Ir al Home
-    </button>
-  </Link>
+<Link to="/">
+  <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
+    Ir al Home
+  </button>
+</Link>
+
 </nav>
 
 
@@ -836,18 +831,12 @@ return (
     {/* NAV MOBILE */}
     {mobileMenuOpen && (
       <nav className="md:hidden bg-[var(--color-tertiary)] shadow-md px-6 py-4 space-y-2">
-        {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-          <Link key={i} to={path}>
-            <button className="w-full px-4 py-2 bg-[var(--color-tertiary)] hover:bg-[var(--color-secondary)] rounded-lg font-semibold transition">
-              {['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i]}
-            </button>
-          </Link>
-        ))}
-        <Link to="/">
-          <button className="w-full px-4 py-2 bg-[var(--color-tertiary)] hover:bg-[var(--color-secondary)] rounded-lg font-semibold transition">
-            Ir al Home
-          </button>
-        </Link>
+<Link to="/">
+  <button className="w-full px-4 py-2 bg-[var(--color-tertiary)] hover:bg-[var(--color-secondary)] rounded-lg font-semibold transition">
+    Ir al Home
+  </button>
+</Link>
+
       </nav>
     )}
     {/* Toggle móvil: Mapa / Itinerario */}

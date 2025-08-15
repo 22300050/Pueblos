@@ -5,6 +5,8 @@ import logo from '../assets/Logo.png';
 import "mapbox-gl/dist/mapbox-gl.css";
 import mapboxgl from "mapbox-gl";
 import { getSelecciones, removeSeleccion } from '../utils/itinerarioStore';
+import { Link } from "react-router-dom";
+
 
 
  const iconoPorTipo = (tipo) => {
@@ -382,12 +384,13 @@ const coincideMesAct = (a) => {
 <header className="bg-[var(--color-primary)] shadow-md sticky top-0 z-50 w-full">
   <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
     {/* Logo y título */}
-    <div className="flex items-center gap-3 sm:gap-4">
-      <img src={logo} alt="Logo" className="h-9 sm:h-12 w-auto" />
-      <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-        Pueblos de Ensueño
-      </h1>
-    </div>
+<Link to="/" className="flex items-center gap-3 sm:gap-4">
+  <img src={logo} alt="Logo" className="h-9 sm:h-12 w-auto" />
+  <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+    Pueblos de Ensueño
+  </h1>
+</Link>
+
 
     {/* Botón menú hamburguesa en móvil */}
     <div className="sm:hidden">
@@ -509,12 +512,6 @@ className={`relative ${mapColapsado ? 'w-full' : 'w-full md:w-[45%]'}
               h-auto md:h-screen md:sticky md:top-0 overflow-y-auto 
               px-4 sm:px-6 py-6 bg-white/90`}
 >
-    {/* Encabezado/“breadcrumbs” simples */}
-    <div className="flex flex-wrap items-center gap-2 text-sm mb-3">
-      <span className="px-2 py-1 rounded-full bg-gray-100 border text-gray-600">Península de Yucatán</span>
-      <span className="px-2 py-1 rounded-full bg-gray-100 border text-gray-600">Tabasco</span>
-      <span className="px-2 py-1 rounded-full bg-gray-100 border text-gray-600">Municipio de {datos?.origen || datos?.lugarInicio || "Centro"}</span>
-    </div>
     {/* Botón tipo “chevron” en el borde derecho del panel  */}
 <div className="block md:block">
   <button

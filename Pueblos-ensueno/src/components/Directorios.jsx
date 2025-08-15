@@ -21,12 +21,13 @@ export default function Directorios() {
     <div className="text-[var(--color-text)]">
       {/* === Header (idéntico al de Home) === */}
       <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
-        <div className="flex items-center gap-4">
-          <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto" />
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-            {t("header.title")}
-          </h1>
-        </div>
+<Link to="/" className="flex items-center gap-4">
+  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
+  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+    Pueblos de Ensueño
+  </h1>
+</Link>
+
 
         <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
           {["/puntos-cercanos", "/mapa", "/InterestsSelector", "/login"].map(
