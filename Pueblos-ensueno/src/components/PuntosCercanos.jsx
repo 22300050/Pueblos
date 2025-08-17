@@ -86,18 +86,20 @@ export default function PuntosCercanos() {
   const userMarker = useRef(null);
   const map = useRef(null);
   const [imagenPanel, setImagenPanel] = useState(null);
-  const [tituloPanel, setTituloPanel] = useState("Actores y eventos");
-  const [nombreActor, setNombreActor] = useState("Doña Carmelita");
-  const [descripcionActor, setDescripcionActor] = useState("Cocinera tradicional — Tamal de chipilín");
+  const [tituloPanel, setTituloPanel] = useState("Zonas culturales");
+  const [nombreActor, setNombreActor] = useState("Parque Museo La Venta");
+  const [descripcionActor, setDescripcionActor] = useState("Museo al aire libre con cabezas de piedra y altares antiguos. Abierto 8:00–16:00 h.");
   const [tituloCiudad, setTituloCiudad] = useState("Villahermosa");
   const [descCiudad, setDescCiudad] = useState("Villahermosa es la capital del estado mexicano de Tabasco, destacada por su gran cantidad de atracciones: museos, parques ecológicos, ríos, cultura y gastronomía.");
   const [linkActor, setLinkActor] = useState(null);
   const [notifTestReady, setNotifTestReady] = useState(false);
   const userCoordsRef = useRef(null);
   const liveChannelRef = useRef(null);
-const liveSessionIdRef = useRef(null);
-const liveExpiryRef = useRef(null);
-const liveTimeoutRef = useRef(null);
+  const liveSessionIdRef = useRef(null);
+  const liveExpiryRef = useRef(null);
+  const liveTimeoutRef = useRef(null);
+  const [artesanos, setArtesanos] = useState([]);
+  const markerLaVentaRef = useRef(null);
 
 
 useEffect(() => {
@@ -109,7 +111,14 @@ const probarNotificacion = async () => {
   await notificar("Prueba de notificación", "¡Funciona! 🎉");
 };
 
-
+ const focusLaVenta = () => {
+   if (!map.current || !markerLaVentaRef.current) return;
+   // Centrar y hacer zoom al marcador
+   const ll = markerLaVentaRef.current.getLngLat();
+   map.current.flyTo({ center: ll, zoom: 16 });
+   // Disparar el mismo comportamiento del click en el marcador
+   markerLaVentaRef.current.getElement().dispatchEvent(new Event("click"));
+ };
   // Refs para notificaciones y control anti-spam
 const notifPermPromiseRef = useRef(null);
 const proximidadesDisparadasRef = useRef(new Set());
@@ -321,6 +330,8 @@ useEffect(() => {
 
 
 useEffect(() => {
+  // lee query params al inicio del efecto
+  const params = new URLSearchParams(window.location.search);
   map.current = new mapboxgl.Map({
     container: mapContainer.current,
     style: "mapbox://styles/mapbox/streets-v11",
@@ -329,31 +340,59 @@ useEffect(() => {
     attributionControl: false,
   });
 notificar("Bienvenido", "Has entrado a Pueblos de Ensueño 🎉");
-
   // 1. MARCADOR FIJO
 const markerCoords = [-92.93410087912596, 18.001935869415224];
 const markerFijo = new mapboxgl.Marker({ color: "#1E88E5" })
   .setLngLat(markerCoords)
   .setPopup(new mapboxgl.Popup().setText("Parque Museo La Venta"))
   .addTo(map.current);
+  markerLaVentaRef.current = markerFijo;
+  // si llegan con ?goto=la-venta, enfoca ese marcador
+const goto = params.get("goto");
+if (goto === "la-venta") {
+  focusLaVenta();
+}
+
 
   const markerPrueba = new mapboxgl.Marker({ color: "#E91E63" })
   .setLngLat([-92.89925, 18.02468])
   .setPopup(new mapboxgl.Popup().setText("Sitio de prueba"))
   .addTo(map.current);
 
+  markerPrueba.getElement().addEventListener("click", () => {
+  setTituloPanel("Actores y eventos");
+  setNombreActor("Sitio de prueba");
+  setDescripcionActor("Explora este punto de interés.");
+  setTituloCiudad("Villahermosa");
+  setDescCiudad("...");
+  setImagenPanel(null);
+  setLinkActor(null);
+
+  // ❇️ Oculta “Artesanos”
+  setArtesanos([]);
+});
+
+
 // Cuando se haga click en el marcador, actualiza el estado
 markerFijo.getElement().addEventListener("click", () => {
   setImagenPanel(parqueImg);
-  setTituloPanel("Monumentos");
-  setNombreActor("Monumento A");
+  setTituloPanel("Zonas culturales");
   setDescripcionActor("Escultura olmeca");
   setTituloCiudad("Museo La Venta");
   setDescCiudad("Museo al aire libre con cabezas de piedra y altares antiguos, así como un zoológico con jaguares y más.\n El parque esta abierto de 8:00 a 16:00 hrs.\nEl costo es el siguiente:\nEntrada general: $40.00 \nNacionales: $35.00 \nEstudiantes $10.00 \nNiños hasta 5 años: Sin costo \nNiños de 6 a 10 años: $10.00");
-  setLinkActor("https://8th.io/db2k6");
+  setLinkActor("/monumento/cabeza-olmeca");
+  setNombreActor("Monumento a la Cabeza Olmeca");
+  setDescripcionActor("Escultura olmeca — información y detalles");
+ setArtesanos([
+   {
+     nombre: "César Augusto Reynosa Reyes",
+     descripcion: "Bisutería de madera artesanal — 10:00 a 18:00 · $70–$300 MXN",
+     link: "/productos-tabasco",
+     municipio: "Centro"       // ← lo usaremos para pasar el estado al Link
+   }
+ ]);
 });
-  // 2. GEOLOCALIZACIÓN USUARIO (como antes)
-const params = new URLSearchParams(window.location.search);
+// 2. GEOLOCALIZACIÓN USUARIO (como antes)
 const sid = params.get("sid");
 const expParam = params.get("exp");
 const isViewer = !!sid;
@@ -386,7 +425,12 @@ if (liveChannelRef.current && liveSessionIdRef.current) {
         userMarker.current.setLngLat(userCoords);
       }
 
-      map.current.flyTo({ center: userCoords, zoom: 14 });
+            // NUEVO: si NO venimos desde "mostrar en el mapa", entonces sí centramos al usuario
+      const params = new URLSearchParams(window.location.search);
+      const fromGoto = params.get("goto");
+      if (fromGoto !== "la-venta") {
+        map.current.flyTo({ center: userCoords, zoom: 14 });
+      }
 
       // 🔔 Disparar alertas en tiempo real
       checarPOIsCercanos(userCoords);
@@ -476,6 +520,7 @@ if (viewerWatchId) navigator.geolocation.clearWatch(viewerWatchId);
 };
 
 
+
 }, []);
   return (
     <div className="text-[var(--color-text)]">
@@ -488,53 +533,69 @@ if (viewerWatchId) navigator.geolocation.clearWatch(viewerWatchId);
   </h1>
 </Link>
 
-        <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
-          {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-            <Link key={i} to={path}>
-              <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
+<nav className="hidden md:flex gap-3 lg:gap-5 items-center">
+  <Link to="/mapa">
+    <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
+      Mapa Interactivo
+    </button>
+  </Link>
 
-                {['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i]}
-              </button>
-            </Link>
-          ))}
-        </nav>
+  <button
+    onClick={startLiveShare10m}
+    className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition"
+  >
+    Compartir ubicación en tiempo real
+  </button>
+</nav>
+
         <button className="block md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           <Menu size={24} />
         </button>
       </header>
 
       {/* Mobile Nav */}
-      {mobileMenuOpen && (
-        <nav className="md:hidden bg-[var(--orange-250)] shadow-md px-6 py-4 space-y-2">
-          {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-            <Link key={i} to={path}>
-              <button className="w-full px-4 py-2 bg-[var(--orange-250)] rounded-lg font-semibold transition">
-                {['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i]}
-              </button>
-            </Link>
-          ))}
-        </nav>
-      )}
+{/* Mobile Nav */}
+{mobileMenuOpen && (
+  <nav className="md:hidden bg-[var(--orange-250)] shadow-md px-6 py-4 space-y-2">
+    <Link to="/mapa" onClick={() => setMobileMenuOpen(false)}>
+      <button className="w-full px-4 py-2 bg-[var(--orange-250)] rounded-lg font-semibold transition">
+        Mapa Interactivo
+      </button>
+    </Link>
+
+    <button
+      onClick={() => {
+        setMobileMenuOpen(false);
+        startLiveShare10m();
+      }}
+      className="w-full px-4 py-2 bg-[var(--orange-250)] rounded-lg font-semibold transition"
+    >
+      Compartir ubicación en tiempo real
+    </button>
+  </nav>
+)}
+
+
 
       {/* Mapa + Panel lateral */}
-      <div className="flex flex-col md:flex-row w-full h-screen bg-white">
-        {/* Mapa */}
-        <div className="flex-1">
-          <div ref={mapContainer} className="w-full h-full" />
-        </div>
+      <div className="flex flex-col md:flex-row w-full min-h-[100dvh] bg-white">
+  {/* Mapa */}
+ <div className="flex-1 md:h-auto">
+   <div ref={mapContainer} className="w-full h-[45vh] md:h-full" />
+ </div>
         
 
         {/* Panel lateral */}
-        <div className="w-full md:w-[420px] p-6 overflow-y-auto border-l border-gray-300 bg-gray-50 shadow-inner">
+        <div className="w-full md:w-[420px] p-4 md:p-6 overflow-y-auto border-l border-gray-300 bg-gray-50 shadow-inner max-h-[55vh] md:max-h-none">
           <h1 className="text-2xl font-bold mb-2 text-gray-800">{tituloCiudad}</h1>
 
-          {/* Filtros */}
+          {/* Filtros 
           <div className="flex flex-wrap gap-2 mb-4">
             <button className="bg-gray-300 text-black px-4 py-1 rounded shadow text-sm hover:bg-gray-400">Mostrar todos</button>
-            <button className="bg-purple-600 text-white px-4 py-1 rounded shadow text-sm hover:bg-purple-700">Cocineras</button>
-            <button className="bg-indigo-600 text-white px-4 py-1 rounded shadow text-sm hover:bg-indigo-700">Guías</button>
-          </div>
-
+            <button className="bg-purple-600 text-white px-4 py-1 rounded shadow text-sm hover:bg-purple-700">Artesanos</button>
+            <button className="bg-indigo-600 text-white px-4 py-1 rounded shadow text-sm hover:bg-indigo-700">Monumentos</button>
+          </div> 
+*/}
           {/* Descripción */}
 <p className="text-sm text-gray-600 mb-4">
   {descCiudad.split('\n').map((linea, i) => (
@@ -558,30 +619,59 @@ if (viewerWatchId) navigator.geolocation.clearWatch(viewerWatchId);
           {/* Lista ejemplo */}
           <div className="mt-6 text-sm bg-blue-50 text-blue-900 p-3 rounded space-y-4">
             <h2 className="text-lg font-bold text-center">📍 {tituloPanel}</h2>
-
             <ul className="space-y-2">
 <li className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-green-100">
   {linkActor ? (
-    <a
-      href={linkActor}
-      target="_blank"
-      rel="noopener noreferrer"
+    // Cuando haya linkActor (ej. al hacer click en el marcador del museo),
+    // el nombre mostrará un Link a esa ruta (monumento a la cabeza olmeca)
+    <Link to={linkActor} className="text-blue-800 font-bold underline">
+      {nombreActor}
+    </Link>
+  ) : (
+    // Cuando NO haya linkActor (estado inicial “Parque Museo La Venta”),
+    // el nombre funciona como botón para centrar / abrir el marcador
+    <button
+      onClick={focusLaVenta}
       className="text-blue-800 font-bold underline"
+      aria-label="Centrar mapa en Parque Museo La Venta"
     >
       {nombreActor}
-    </a>
-  ) : (
-    <strong>{nombreActor}</strong>
+    </button>
   )}
   <br />
   <span className="text-gray-700">{descripcionActor}</span>
 </li>
 
+{artesanos.length > 0 && (
+  <>
+    <li className="border-t border-blue-300 pt-3 mt-3">
+      <h3 className="text-center text-blue-900 text-sm font-semibold">🧵 Artesanos</h3>
+    </li>
+    {artesanos.map((a, idx) => (
+      <li
+        key={idx}
+        className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-purple-100"
+      >
+        {a.link ? (
+           <Link
+   to={a.link}
+   state={a.municipio ? { municipio: a.municipio } : undefined}
+   className="text-blue-800 font-bold underline"
+ >
+            {a.nombre}
+          </Link>
+        ) : (
+          <strong>{a.nombre}</strong>
+        )}
+        <br />
+        <span className="text-gray-700">{a.descripcion}</span>
+      </li>
+    ))}
+  </>
+)}
 
-              <li className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-green-100">
-                <strong>Don Eulogio</strong><br />
-                <span className="text-gray-700">Guía cultural — Ruta cacao-chocolate</span>
-              </li>
+
+
               <li className="border-t border-blue-300 pt-3 mt-3">
                 <h3 className="text-center text-blue-900 text-sm font-semibold">🎉 Eventos culturales</h3>
               </li>
@@ -599,76 +689,6 @@ if (viewerWatchId) navigator.geolocation.clearWatch(viewerWatchId);
         </div>
 {notifTestReady && (
   <>
-    <button
-      onClick={probarNotificacion}
-      style={{
-        position: "fixed",
-        bottom: 16,
-        right: 16,
-        zIndex: 9999,
-        padding: "10px 14px",
-        borderRadius: 12,
-        border: "none",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-        background: "#4CAF50",
-        color: "white",
-        fontWeight: 600
-      }}
-    >
-      Probar notificación
-    </button>
-
-    <button
-      onClick={async () => {
-        const permission = Notification?.permission;
-        const hasSW = "serviceWorker" in navigator;
-        let swState = "sin SW";
-        try {
-          const reg = hasSW ? await navigator.serviceWorker.getRegistration() : null;
-          swState = reg
-            ? (reg.active ? "activo" : (reg.installing ? "instalando" : "registrado sin activo"))
-            : "no registrado";
-        } catch {}
-        alert(`Permiso: ${permission}\nSW: ${swState}`);
-      }}
-      style={{
-        position: "fixed",
-        bottom: 70,
-        right: 16,
-        zIndex: 9999,
-        padding: "10px 14px",
-        borderRadius: 12,
-        border: "none",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-        background: "#1976D2",
-        color: "white",
-        fontWeight: 600
-      }}
-    >
-      Diagnóstico notificaciones
-    </button>
-<button
-  onClick={startLiveShare10m}
-  style={{
-    position: "fixed",
-    bottom: 124,
-    right: 16,
-    zIndex: 9999,
-    padding: "10px 14px",
-    borderRadius: 12,
-    border: "none",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-    background: "#2E7D32",
-    color: "white",
-    fontWeight: 700
-  }}
-  title="Comparte tu ubicación en vivo por 10 minutos"
-  aria-label="Compartir ubicación en vivo por 10 minutos"
->
-  Compartir ubicación en tiempo real
-</button>
-
-
   </>
 )}
       </div>

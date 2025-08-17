@@ -32,22 +32,48 @@ const scrollToId = (id) => {
 
 <Link to="/" className="flex items-center gap-4">
   <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
-  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-    Pueblos de Ensueño
-  </h1>
+<h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+  {t('header.title')}
+</h1>
 </Link>
 
 
 <nav aria-label="Navegación principal" className="hidden md:flex gap-3 lg:gap-5 items-center">
-  {['/mapa', '/login'].map((path, i) => (
-    <Link key={i} to={path}>
-      <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
-        {['Mapa Interactivo', 'Iniciar sesión'][i]}
-      </button>
-    </Link>
-  ))}
+{['/mapa', '/login'].map((path, i) => (
+  <Link key={i} to={path}>
+    <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
+      {[t('menu.map'), t('menu.login')][i]}
+    </button>
+  </Link>
+))}
+
+
+  {/* Aquí insertas el switch de idioma */}
+  <div className="relative inline-flex items-center px-1 py-1 bg-[var(--orange-250)] rounded-full shadow-sm">
+    <button
+      onClick={() => i18n.changeLanguage("es")}
+      className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+        i18n.language === "es"
+          ? "bg-[var(--color-secondary)] text-white"
+          : "text-black"
+      }`}
+    >
+      ES
+    </button>
+    <button
+      onClick={() => i18n.changeLanguage("en")}
+      className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+        i18n.language === "en"
+          ? "bg-[var(--color-secondary)] text-white"
+          : "text-black"
+      }`}
+    >
+      EN
+    </button>
+  </div>
 </nav>
+
 
 
   <button

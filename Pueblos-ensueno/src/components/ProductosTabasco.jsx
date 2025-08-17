@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import jicaraImg from '../assets/jícara.gif';
 import canastaImg from '../assets/canasta.mimbre.jpg';
 import guayaberaImg from '../assets/guayabera.jpg';
@@ -16,6 +16,7 @@ import bisuteriaMaderaImg from "../assets/BisuteríaMadera.jpg";
 
 export default function ProductosTabasco() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 // 1) Catálogo completo (deja tus mismos productos)
 const productosAll = [
   { id: 1, nombre: "Jícara decorada a mano", artesano: "Doña Lupita", horario: "10:00 a 18:00", precio: "$150 MXN", imagen: jicaraImg },
@@ -298,32 +299,35 @@ const productos = idsSeleccionados
   </h1>
 </Link>
 
-    <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
-      {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-        <Link key={i} to={path}>
-          <button className="px-5 py-3 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
-            {['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i]}
-          </button>
-        </Link>
-      ))}
-    </nav>
+<nav className="hidden md:flex gap-3 lg:gap-5 items-center">
+  {['/puntos-cercanos','/mapa'].map((path, i) => (
+    <Link key={path} to={path}>
+      <button className="px-5 py-3 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
+        {['Puntos cercanos','Mapa Interactivo'][i]}
+      </button>
+    </Link>
+  ))}
+</nav>
+
     <button className="block md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
       <Menu size={24} />
     </button>
   </header>
 
   {/* Mobile Nav */}
-  {mobileMenuOpen && (
-    <nav className="md:hidden bg-[var(--orange-250)] shadow-md px-6 py-4 space-y-2">
-      {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-        <Link key={i} to={path}>
-          <button className="w-full px-5 py-3 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-lg font-semibold transition">
-            {['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i]}
-          </button>
-        </Link>
-      ))}
-    </nav>
-  )}
+{/* Mobile Nav */}
+{mobileMenuOpen && (
+  <nav className="md:hidden bg-[var(--orange-250)] shadow-md px-6 py-4 space-y-2">
+    {['/puntos-cercanos','/mapa'].map((path, i) => (
+      <Link key={path} to={path} onClick={() => setMobileMenuOpen(false)}>
+        <button className="w-full px-5 py-3 bg-[var(--orange-250)] rounded-lg font-semibold transition">
+          {['Puntos cercanos','Mapa Interactivo'][i]}
+        </button>
+      </Link>
+    ))}
+  </nav>
+)}
+
   {/* CONTENIDO principal */}
 <main className="min-h-screen p-4 bg-gradient-to-br from-rose-100 via-amber-100 to-lime-100">
   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -373,10 +377,23 @@ const productos = idsSeleccionados
             <span className="material-icons">star</span>
             Me interesa
           </button>
-          <button className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2">
-            <span className="material-icons">location_on</span>
-            Mostrar en el mapa
-          </button>
+ {producto.id === 11 ? (
+   <button
+     onClick={() => navigate('/puntos-cercanos?goto=la-venta')}
+     className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
+   >
+     <span className="material-icons">location_on</span>
+     Mostrar en el mapa
+   </button>
+ ) : (
+   <button
+     className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg flex items-center justify-center gap-2 opacity-80"
+     title="Disponible solo en algunos productos"
+   >
+     <span className="material-icons">location_on</span>
+     Mostrar en el mapa
+   </button>
+ )}
 <button
   className="w-full bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 transition flex items-center justify-center gap-2 rounded-md py-2"
   onClick={() => setTradeProduct(producto)}

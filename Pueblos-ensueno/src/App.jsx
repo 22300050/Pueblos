@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import './locales/i18n';
 import Directorios from "./components/Directorios";
 import Nosotros from './components/Nosotros';
+import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
 
 function App() {
 
@@ -47,6 +48,7 @@ function App() {
           <Route path="/mapa-tabasco" element={<MapaTabasco />} />
           <Route path="/directorios" element={<Directorios />} />
           <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/monumento/cabeza-olmeca" element={<MonumentoCabezaOlmeca />} />
         </Routes>
       </div>
     </Router>

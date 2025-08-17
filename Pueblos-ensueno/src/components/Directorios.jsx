@@ -21,55 +21,45 @@ export default function Directorios() {
     <div className="text-[var(--color-text)]">
       {/* === Header (idéntico al de Home) === */}
       <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
-<Link to="/" className="flex items-center gap-4">
-  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
-  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-    Pueblos de Ensueño
-  </h1>
-</Link>
+        <div className="flex items-center gap-4">
+          <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto" />
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+            {t("header.title")}
+          </h1>
+        </div>
+<nav className="hidden md:flex gap-3 lg:gap-5 items-center">
+  {/* Switch de idioma */}
+  <div className="relative inline-flex items-center px-1 py-1 bg-[var(--orange-250)] rounded-full shadow-sm">
+    <button
+      onClick={() => i18n.changeLanguage("es")}
+      className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+        i18n.language === "es"
+          ? "bg-[var(--color-secondary)] text-white"
+          : "text-black"
+      }`}
+    >
+      ES
+    </button>
+    <button
+      onClick={() => i18n.changeLanguage("en")}
+      className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+        i18n.language === "en"
+          ? "bg-[var(--color-secondary)] text-white"
+          : "text-black"
+      }`}
+    >
+      EN
+    </button>
+  </div>
 
+  {/* Botón Ir al Home */}
+  <Link to="/">
+    <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
+      Ir al Home
+    </button>
+  </Link>
+</nav>
 
-        <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
-          {["/puntos-cercanos", "/mapa", "/InterestsSelector", "/login"].map(
-            (path, i) => (
-              <Link key={i} to={path}>
-                <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
-                  {t(["menu.nearby", "menu.map", "menu.guest", "menu.login"][i])}
-                </button>
-              </Link>
-            )
-          )}
-
-          {/* Switch de idioma */}
-          <div className="relative inline-flex items-center px-1 py-1 bg-[var(--orange-250)] rounded-full shadow-sm">
-            <button
-              onClick={() => i18n.changeLanguage("es")}
-              className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
-                i18n.language === "es"
-                  ? "bg-[var(--color-secondary)] text-white"
-                  : "text-black"
-              }`}
-            >
-              ES
-            </button>
-            <button
-              onClick={() => i18n.changeLanguage("en")}
-              className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
-                i18n.language === "en"
-                  ? "bg-[var(--color-secondary)] text-white"
-                  : "text-black"
-              }`}
-            >
-              EN
-            </button>
-          </div>
-          <Link to="/">
-  <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
-    Ir al Home
-  </button>
-</Link>
-
-        </nav>
 
         <button
           className="block md:hidden text-gray-800"

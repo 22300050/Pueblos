@@ -783,16 +783,6 @@ const ItinerarioForm = () => (
       </button>
     </div>
 
-{/* Reproductor de audio Popurri Tabasco */}
-<div className="mt-4 flex flex-col items-center bg-amber-100 p-4 rounded-lg shadow-lg">
-  <audio controls className="w-full max-w-xs border-2 border-amber-300 rounded-md">
-    <source src={popurriTabasco} type="audio/mpeg" />
-    Tu navegador no soporta la reproducción de audio.
-  </audio>
-  <p className="text-sm text-amber-800 mt-2 font-semibold">🎶 Popurrí de Tabasco</p>
-</div>
-
-
     <div className="flex justify-center gap-4 mt-4 text-xl text-gray-600">
       <i className="fab fa-facebook-square" />
       <i className="fab fa-twitter" />
@@ -813,6 +803,11 @@ return (
     Pueblos de Ensueño
   </h1>
 </Link>
+<div className="md:hidden fixed bottom-3 left-3 right-3 z-40">
+  <audio id="popurri-player-mobile" controls preload="auto" className="w-full rounded-md border border-amber-300 bg-white/90" >
+    <source src={popurriTabasco} type="audio/mpeg" />
+  </audio>
+</div>
 
 <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
 <Link to="/">
@@ -821,12 +816,23 @@ return (
   </button>
 </Link>
 
+  {/* Reproductor en header: permanece montado */}
+  <audio
+    id="popurri-player"
+    controls
+    preload="auto"
+    className="h-10 w-48 sm:w-56 rounded-md border border-amber-300 bg-white/80"
+  >
+    <source src={popurriTabasco} type="audio/mpeg" />
+    Tu navegador no soporta la reproducción de audio.
+  </audio>
 </nav>
 
 
       <button className="block md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
         <Menu size={24} />
       </button>
+      
     </header>
     {/* NAV MOBILE */}
     {mobileMenuOpen && (
