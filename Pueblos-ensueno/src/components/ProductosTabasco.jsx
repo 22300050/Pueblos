@@ -13,6 +13,23 @@ import logo from '../assets/Logo.png';
 import { Menu } from 'lucide-react';
 import tirasBordadasImg from '../assets/TirasBordadas.jpeg';
 import bisuteriaMaderaImg from "../assets/BisuteríaMadera.jpg";
+import mariaLucianoCruzImg from '../assets/maria-luciano-cruz.jpg';
+import bolsoGuanoImg from '../assets/Bolsa-de-guano.jpg';
+import tortilleroImg from '../assets/tortillero.jpg';
+import abanicoImg from '../assets/abanico.jpg';
+import carmenHernandezImg from '../assets/Carmen Hernandez Lopez.jpg';
+import matildeSombreroImg from '../assets/Sombrero chontal.jpg';
+import matildeSombrerosImg from '../assets/Sombreros.jpg';
+import matildeBolsaJacintoImg from '../assets/Bolsa de canasta de jacinto.jpg';
+import matildeBolsaGuanoImg from '../assets/Bolsa de guano.jpg';
+import matildeBolsaPalmaImg from '../assets/Bolsa de mano de palma.jpg';
+import matildeCanastaBejucoImg from '../assets/Canasta de bejuco.jpg';
+import matildeCentroMesaImg from '../assets/Centro de mesa.jpg';
+import matildePortraitImg from '../assets/Matilde.jpg';
+
+
+
+
 
 export default function ProductosTabasco() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -29,11 +46,38 @@ const productosAll = [
   { id: 8, nombre: "Figura típica tabasqueña", artesano: "Talleres de Comalcalco", horario: "10:00 a 19:00", precio: "$320 MXN", imagen: tabasquenaImg },
   { id: 9, nombre: "Cestas de palma multicolor", artesano: "Mujeres de Nacajuca", horario: "09:00 a 16:00", precio: "$100 - $180 MXN", imagen: cestasImg },
   { id: 10, nombre: "Tiras bordadas típicas", artesano: "Colectivo Textil Tabasco", horario: "09:00 a 17:00", precio: "$280 MXN", imagen: tirasBordadasImg },
-{ id: 11, nombre: "Bisutería de madera artesanal", artesano: "César Augusto Reynosa Reyes", horario: "10:00 a 18:00", precio: "Variado entre $70 a $300 MXN", imagen: bisuteriaMaderaImg },];
+{ id: 11, nombre: "Bisutería de madera artesanal", artesano: "César Augusto Reynosa Reyes", horario: "10:00 a 18:00", precio: "Variado entre $70 a $300 MXN", imagen: bisuteriaMaderaImg },
+{ id: 12, nombre: "María Luciano Cruz", artesano: "María Luciano Cruz", horario: "Sin horario", precio: "$30 – $100 MXN", imagen: mariaLucianoCruzImg},
+{ id: 13,nombre: "Carmen Hernández López — Carpintero",artesano: "Carmen Hernández López",horario: "07:00 a 17;00",precio: "Cotización según pieza", imagen: carmenHernandezImg},
+{ id: 14,nombre: "Matilde de la Cruz Esteban — Sombreros y cestería",artesano: "Matilde de la Cruz Esteban",horario: "09:00–18:00",precio: "$120 – $900 MXN",imagen: matildePortraitImg},
+];
+
+// Catálogo por producto (artesano)
+const catalogByProductId = {
+  12: [
+    { nombre: "Bolsa de guano", precio: "$60 MXN", imagen: bolsoGuanoImg },
+    { nombre: "Tortillero de palma", precio: "$30 MXN", imagen: tortilleroImg },
+    { nombre: "Abanico tejido", precio: "$30 MXN", imagen: abanicoImg },
+  ],
+  14: [
+    { nombre: "Sombrero chontal",       precio: "$130 MXN", imagen: matildeSombreroImg },
+    { nombre: "Sombreros (varios)",     precio: "$130 – $150 MXN",  imagen: matildeSombrerosImg },
+    { nombre: "Bolsa jacinto (canasta)",precio: "$250 MXN", imagen: matildeBolsaJacintoImg },
+    { nombre: "Bolsa de guano de palma",precio: "$70 MXN", imagen: matildeBolsaGuanoImg },
+    { nombre: "Bolsa de mano (palma)",  precio: "$250MXN", imagen: matildeBolsaPalmaImg },
+    { nombre: "Canasta de bejuco",      precio: "$170 - 300 MXN", imagen: matildeCanastaBejucoImg },
+    { nombre: "Centro de mesa de palma",precio: "$80 MXN", imagen: matildeCentroMesaImg },
+  ],
+  
+  // añadir más artesanos aquí con su id
+};
 // 2) Lee el municipio de la navegación (state o ?municipio=)
 const location = useLocation();
 // Estado para vista Comerciar y traducción
 const [tradeProduct, setTradeProduct] = useState(null);
+
+const [catalogProduct, setCatalogProduct] = useState(null);
+
 // Bloquear scroll del body cuando el modal Comerciar está abierto
 useEffect(() => {
   if (tradeProduct) {
@@ -273,7 +317,7 @@ const productosPorMunicipio = {
   "Jalpa de Méndez":   [5, 2], // Blusa, Canasta
   "Jonuta":            [9, 1], // Cestas palma, Jícara
   "Macuspana":         [4, 7], // Molcajete, Muebles mimbre
-  "Nacajuca":          [9, 2], // Cestas palma, Canasta
+  "Nacajuca":          [9, 2, 12, 13, 14], // Cestas palma, Canasta
   "Paraíso":           [7, 2], // Acentuado
   "Paraiso":           [7, 2], // Alias sin acento por si llega así
   "Tacotalpa":         [3, 6], // Guayabera, Cerámica
@@ -358,49 +402,141 @@ const productos = idsSeleccionados
 
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
     {productos.map(producto => (
-      <div
-        key={producto.id}
-        className="bg-white rounded-2xl shadow-lg p-4 border border-pink-200 flex flex-col"
-      >
-        <img
-          src={producto.imagen}
-          alt={producto.nombre}
-          className="w-full h-52 sm:h-64 md:h-72 lg:h-80 object-cover rounded-lg mb-4"
-        />
+<div
+  key={producto.id}
+  className="bg-white rounded-2xl shadow-lg p-4 border border-pink-200 flex flex-col cursor-pointer"
+  onClick={() => setCatalogProduct(producto)}
+>
+
+<img
+  src={producto.imagen}
+  alt={producto.nombre}
+  className="w-full h-72 object-cover rounded-lg mb-4"
+  style={{ objectPosition: "50% 20%" }} 
+/>
+
         <h3 className="text-lg sm:text-xl font-bold text-pink-700 mb-2">{producto.nombre}</h3>
         <p className="text-sm text-gray-700 mb-1">👤 <strong>{producto.artesano}</strong></p>
         <p className="text-sm text-gray-600 mb-1">🕐 {producto.horario}</p>
         <p className="text-sm text-gray-600 mb-3">💰 {producto.precio}</p>
 
         <div className="mt-auto flex flex-col gap-2">
-          <button className="w-full text-yellow-500 hover:text-yellow-600 transition flex items-center justify-center gap-1">
+          <button className="w-full text-yellow-500 hover:text-yellow-600 transition flex items-center justify-center gap-1"
+          >
             <span className="material-icons">star</span>
             Me interesa
           </button>
- {producto.id === 11 ? (
-   <button
-     onClick={() => navigate('/puntos-cercanos?goto=la-venta')}
-     className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
-   >
-     <span className="material-icons">location_on</span>
-     Mostrar en el mapa
-   </button>
- ) : (
-   <button
-     className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg flex items-center justify-center gap-2 opacity-80"
-     title="Disponible solo en algunos productos"
-   >
-     <span className="material-icons">location_on</span>
-     Mostrar en el mapa
-   </button>
- )}
+{producto.id === 12 ? (
+  // María Luciano Cruz (Nacajuca)
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      navigate('/puntos-cercanos?lat=18.2026667&lng=-93.01&label=María%20Luciano%20Cruz');
+    }}
+    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
+  >
+    <span className="material-icons">location_on</span>
+    Mostrar en el mapa
+  </button>
+) : producto.id === 11 ? (
+  <button
+    onClick={(e) => { e.stopPropagation(); navigate('/puntos-cercanos?goto=la-venta'); }} // ya lo tenías
+    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
+  >
+    <span className="material-icons">location_on</span>
+    Mostrar en el mapa
+  </button>
+  ) : producto.id === 13 ? (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      // misma posición que María: 18.2026667, -93.01
+      navigate('/puntos-cercanos?lat=18.2026667&lng=-93.01&label=Carmen%20Hern%C3%A1ndez%20L%C3%B3pez%20%E2%80%94%20Carpintero%20(vecino%20de%20Mar%C3%ADa%20Luciano%20Cruz)');
+    }}
+    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
+  >
+    <span className="material-icons">location_on</span>
+    Mostrar en el mapa
+  </button>
+  ) : producto.id === 14 ? (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      // Coordenadas de Matilde: 18.211434390766073, -93.0121334948471
+      navigate('/puntos-cercanos?lat=18.211434390766073&lng=-93.0121334948471&label=Matilde%20de%20la%20Cruz%20Esteban%20%E2%80%94%20Sombreros%20y%20cester%C3%ADa');
+    }}
+    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
+  >
+    <span className="material-icons">location_on</span>
+    Mostrar en el mapa
+  </button>
+) : (
+  
+  <button
+    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg flex items-center justify-center gap-2 opacity-80"
+    title="Disponible solo en algunos productos"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <span className="material-icons">location_on</span>
+    Mostrar en el mapa
+  </button>
+)}
+
+
 <button
   className="w-full bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 transition flex items-center justify-center gap-2 rounded-md py-2"
-  onClick={() => setTradeProduct(producto)}
+  onClick={(e) => { e.stopPropagation(); setTradeProduct(producto); }} // ⬅️
 >
   <span className="material-icons">shopping_cart</span>
   Comerciar
 </button>
+{catalogProduct && (
+  <section className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center" onClick={() => setCatalogProduct(null)}>
+    <div
+      className="bg-white w-full h-dvh md:w-4/5 md:max-h-[90vh] md:h-auto md:rounded-2xl md:p-6 rounded-none p-3 overflow-y-auto shadow-xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <header className="flex items-center justify-between pb-3 md:pb-4 border-b">
+        <div>
+          <h2 className="text-xl md:text-2xl font-bold text-pink-700">
+            Catálogo — {catalogProduct?.artesano}
+          </h2>
+          <p className="text-sm text-gray-600">{catalogProduct?.nombre}</p>
+        </div>
+        <button
+          className="px-4 py-2 text-sm md:text-base rounded-md border hover:bg-gray-50 active:scale-[0.99]"
+          onClick={() => setCatalogProduct(null)}
+        >
+          Cerrar
+        </button>
+      </header>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 py-4">
+        {(catalogByProductId[catalogProduct?.id] || []).map((item, i) => (
+          <div key={i} className="border rounded-xl overflow-hidden bg-white">
+            <img src={item.imagen} alt={item.nombre} className="w-full h-56 object-cover" />
+            <div className="p-3">
+              <h3 className="font-semibold text-pink-700">{item.nombre}</h3>
+              <p className="text-sm text-gray-700">💰 {item.precio}</p>
+            </div>
+          </div>
+        ))}
+        {!catalogByProductId[catalogProduct?.id] && (
+          <p className="text-gray-600">Este artesano aún no tiene catálogo cargado.</p>
+        )}
+      </div>
+
+      <footer className="pt-2 border-t text-right">
+        <button
+          className="mt-3 px-4 py-2 rounded-md bg-pink-600 text-white hover:bg-pink-700"
+          onClick={() => { setTradeProduct(catalogProduct); setCatalogProduct(null); }}
+        >
+          Contactar / Comerciar
+        </button>
+      </footer>
+    </div>
+  </section>
+)}
 
         </div>
       </div>
@@ -436,7 +572,13 @@ const productos = idsSeleccionados
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 py-4 md:py-6">
         {/* Imagen / ficha */}
         <div>
-          <img src={tradeProduct?.imagen} alt={tradeProduct?.nombre} className="w-full h-72 md:h-64 object-cover rounded-lg" />
+          <img
+  src={tradeProduct?.imagen}
+  alt={tradeProduct?.nombre}
+  className="w-full h-72 md:h-64 object-cover rounded-lg"
+  style={{ objectPosition: "50% 20%" }}   // 👈 mismo ajuste que en las tarjetas
+/>
+
           <div className="mt-4 space-y-1 text-sm">
             <p className="font-semibold">{tradeProduct?.nombre}</p>
             <p>👤 {tradeProduct?.artesano}</p>
@@ -444,16 +586,8 @@ const productos = idsSeleccionados
             <p>💰 {tradeProduct?.precio}</p>
           </div>
         </div>
-
         {/* Zona de traducción estilo captura */}
         <div>
-          <div className="flex items-center gap-2 mb-2 text-sm">
-            <span className="px-2 py-1 rounded bg-gray-100">Texto</span>
-            <span className="px-2 py-1 rounded bg-gray-100">Imágenes</span>
-            <span className="px-2 py-1 rounded bg-gray-100">Documentos</span>
-            <span className="px-2 py-1 rounded bg-gray-100">Sitios web</span>
-          </div>
-
           <div className="flex flex-wrap items-center gap-2 text-sm md:text-base mb-2">
 <label className="text-gray-600 mr-1">Detectar idioma</label>
 <select className="border rounded px-2 py-2" value={fromLang} onChange={(e) => setFromLang(e.target.value)}>

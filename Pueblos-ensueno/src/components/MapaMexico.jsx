@@ -175,16 +175,25 @@ path.addEventListener('blur', onBlur);
 </header>
 
 {mobileMenuOpen && (
-  <nav id="menu-movil" aria-label="Menú móvil" className="md:hidden bg-white shadow-md px-6 py-4 space-y-2 border-t border-black/10">
-    {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-      <Link key={i} to={path}>
-        <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:brightness-110 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
-          {['Puntos cercanos','Mapa Interactivo','Invitado','Iniciar sesión'][i]}
-        </button>
-      </Link>
-    ))}
+  <nav
+    id="menu-movil"
+    aria-label="Menú móvil"
+    className="md:hidden bg-white shadow-md px-6 py-4 space-y-2 border-t border-black/10"
+  >
+    <Link to="/">
+      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:brightness-110 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
+        Ir al Home
+      </button>
+    </Link>
+
+    <Link to="/puntos-cercanos">
+      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:brightness-110 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50">
+        Puntos cercanos
+      </button>
+    </Link>
   </nav>
 )}
+
 <main id="contenido-mapa" role="main" aria-label="Mapa de México interactivo" className="flex-1 w-full flex flex-col items-center justify-center overflow-hidden px-4 py-6">
 
   {/* Instrucciones para usuarios de teclado/lector */}

@@ -87,10 +87,47 @@ const datosMunicipios = {
     descripcion: "Municipio natal de importantes figuras políticas, con selvas y ríos.",
     lugares: ["Grutas de Macuspana", "Balnearios naturales"]
   },
-  "Nacajuca": {
-    descripcion: "Zona chontal con rica cultura, tradiciones y artesanías.",
-    lugares: ["Poblados chontales", "Artesanías típicas"]
-  },
+"Nacajuca": {
+  descripcion: "Zona chontal con rica cultura, tradiciones y artesanías.",
+  lugares: ["Poblados chontales", "Artesanías típicas"],
+
+  sitiosTop: [
+    "Poblado Mazateupa – conocido por sus artesanías en palma y bordados.",
+    "Iglesia de San Antonio de Padua – arquitectura colonial en la cabecera municipal.",
+    "Laguna de Nacajuca – paseo en cayuco y avistamiento de aves."
+  ],
+
+  sitiosOcultos: [
+    "Comunidad Tapotzingo – talleres de alfarería tradicional.",
+    "La Playita en Guatacalca – recreación local poco conocida.",
+    "Senderos ecoturísticos en Oxiacaque."
+  ],
+
+  eventos: [
+    { nombre: "Fiesta Patronal de San Antonio de Padua", fecha: "Junio" },
+    { nombre: "Festival de la Palma y la Cestería", fecha: "Octubre" }
+  ],
+
+  artesanias: [
+    { nombre: "Cestería de palma", precio: "desde $80" },
+    { nombre: "Bordados chontales", precio: "desde $150" },
+    { nombre: "Máscaras y figuras de madera", precio: "desde $200" }
+  ],
+
+  talleres: [
+    "Taller de cestería en Mazateupa",
+    "Taller de alfarería en Tapotzingo",
+    "Visitas guiadas a comunidades chontales"
+  ],
+
+  gastronomia: [
+    "Chirmol de pato",
+    "Tamales de chipilín",
+    "Pescado en hoja de momo",
+    "Pozol con cacao"
+  ]
+},
+
   "Paraíso": {
     descripcion: "Puerto y municipio costero, con playas y desarrollo petrolero.",
     lugares: ["Puerto Dos Bocas", "Playa Paraíso"]

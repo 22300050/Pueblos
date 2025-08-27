@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "pueblos-de-ensueno"
-  }
+    "default": "pueblos-de-ensueno",
+    "pueblosdeensueno ": "pueblosdeensueno-1afdd"
+  },
+  "targets": {},
+  "etags": {}
 }

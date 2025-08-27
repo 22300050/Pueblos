@@ -89,7 +89,7 @@ export default function Chatbot({ open, onClose }) {
   useEffect(() => {
     if (open && messages.length === 0) {
       const timer = setTimeout(() => {
-        pushBot("¡Hola! Soy tu Guía Ensueño. ¿Te ayudo a navegar el Home? Prueba con: “Mapa Interactivo”, “Puntos cercanos”, “Itinerario”, “Municipios”, “Productos” o escribe “ayuda home”.");
+        pushBot("¡Hola! Soy Tavo explorador. ¿Te ayudo a navegar el Home? Prueba con: “Mapa Interactivo”, “Puntos cercanos”, “Itinerario”, “Municipios”, “Productos” o escribe “ayuda home”.");
       }, 600);
       return () => clearTimeout(timer);
     }
@@ -159,7 +159,7 @@ const handleSend = (text) => {
 >
   <div className="flex items-center gap-2">
     <img src={IconoChat} alt="Avatar Chatbot" className="w-8 h-8 rounded-full" />
-    <h3 className="font-semibold">Guía Ensueño</h3>
+    <h3 className="font-semibold">Tavo Explorador</h3>
   </div>
   <button
     onClick={onClose}

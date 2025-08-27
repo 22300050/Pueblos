@@ -100,6 +100,11 @@ export default function PuntosCercanos() {
   const liveTimeoutRef = useRef(null);
   const [artesanos, setArtesanos] = useState([]);
   const markerLaVentaRef = useRef(null);
+  // cerca de otros refs:
+const liveWatchIdRef = useRef(null);
+const markerMariaRef = useRef(null);
+
+
 
 
 useEffect(() => {
@@ -119,6 +124,22 @@ const probarNotificacion = async () => {
    // Disparar el mismo comportamiento del click en el marcador
    markerLaVentaRef.current.getElement().dispatchEvent(new Event("click"));
  };
+ const focusMaria = () => {
+  if (!map.current || !markerMariaRef.current) return;
+  const ll = markerMariaRef.current.getLngLat();
+  map.current.flyTo({ center: ll, zoom: 16 });
+  markerMariaRef.current.getElement().dispatchEvent(new Event("click"));
+};
+const markerMatildeRef = useRef(null);
+
+const focusMatilde = () => {
+  if (!map.current || !markerMatildeRef.current) return;
+  const ll = markerMatildeRef.current.getLngLat();
+  map.current.flyTo({ center: ll, zoom: 16 });
+  markerMatildeRef.current.getElement().dispatchEvent(new Event("click"));
+};
+
+
   // Refs para notificaciones y control anti-spam
 const notifPermPromiseRef = useRef(null);
 const proximidadesDisparadasRef = useRef(new Set());
@@ -352,6 +373,62 @@ const goto = params.get("goto");
 if (goto === "la-venta") {
   focusLaVenta();
 }
+// --- MARÍA LUCIANO CRUZ (Artesana en Nacajuca) ---
+const mariaLL = [-93.01, 18.2026667]; // [lng, lat]
+const markerMaria = new mapboxgl.Marker({ color: "#2E7D32" })
+  .setLngLat(mariaLL)
+  .setPopup(new mapboxgl.Popup().setText("María Luciano Cruz — Cestería de palma"))
+  .addTo(map.current);
+
+// guarda referencia para focusMaria()
+markerMariaRef.current = markerMaria;
+
+// Al hacer click en su pin, actualiza el panel derecho
+markerMaria.getElement().addEventListener("click", () => {
+  setTituloPanel("Artesanos");
+  setNombreActor("María Luciano Cruz");
+  setDescripcionActor("Cestería de palma · 09:00–17:00 · $120–$400 MXN");
+  setTituloCiudad("Nacajuca");
+  setDescCiudad("Zona chontal con rica cultura, tradiciones y artesanías.");
+  setImagenPanel(null);
+  setLinkActor(null);
+});
+// --- MATILDE DE LA CRUZ ESTEBAN ---
+const matildeLL = [-93.0121334948471, 18.211434390766073]; // [lng, lat]
+const markerMatilde = new mapboxgl.Marker({ color: "#2E7D32" })
+  .setLngLat(matildeLL)
+  .setPopup(new mapboxgl.Popup().setText("Matilde de la Cruz Esteban — Sombreros y cestería"))
+  .addTo(map.current);
+markerMatildeRef.current = markerMatilde;
+
+markerMatilde.getElement().addEventListener("click", () => {
+  setTituloPanel("Artesanos");
+  setNombreActor("Matilde de la Cruz Esteban");
+  setDescripcionActor("Sombreros y cestería · 09:00–18:00 · $120–$900 MXN");
+  setTituloCiudad("Nacajuca");
+  setDescCiudad("Zona chontal con rica cultura, tradiciones y artesanías.");
+  setImagenPanel(null);
+  setLinkActor(null);
+});
+
+
+// --- Coordenadas por query (?lat=...&lng=...&label=...) ---
+const latParam = parseFloat(params.get("lat"));
+const lngParam = parseFloat(params.get("lng"));
+const labelParam = params.get("label") || "Ubicación";
+const hasQueryTarget = !Number.isNaN(latParam) && !Number.isNaN(lngParam);
+
+
+if (!Number.isNaN(latParam) && !Number.isNaN(lngParam)) {
+  const ll = [lngParam, latParam];
+  const markerArtesano = new mapboxgl.Marker({ color: "#2E7D32" })
+    .setLngLat(ll)
+    .setPopup(new mapboxgl.Popup().setText(labelParam))
+    .addTo(map.current);
+
+  map.current.flyTo({ center: ll, zoom: 16 });
+}
+
 
 
   const markerPrueba = new mapboxgl.Marker({ color: "#E91E63" })
@@ -397,25 +474,14 @@ const sid = params.get("sid");
 const expParam = params.get("exp");
 const isViewer = !!sid;
 
-let watchId;
-let viewerWatchId; 
-if (!isViewer && navigator.geolocation) {   // ← añadimos !isViewer
-  watchId = navigator.geolocation.watchPosition(
+let viewerWatchId;
+if (!isViewer && navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
     (position) => {
       const userCoords = [position.coords.longitude, position.coords.latitude];
-userCoordsRef.current = userCoords;
-if (liveChannelRef.current && liveSessionIdRef.current) {
-      liveChannelRef.current.send({
-        type: "broadcast",
-        event: "loc",
-        payload: {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          ts: Date.now(),
-          exp: liveExpiryRef.current,
-        },
-      });
-    }
+      userCoordsRef.current = userCoords;
+
+      // crea el marcador si no existe
       if (!userMarker.current) {
         userMarker.current = new mapboxgl.Marker({ color: "#FF5733" })
           .setLngLat(userCoords)
@@ -425,24 +491,23 @@ if (liveChannelRef.current && liveSessionIdRef.current) {
         userMarker.current.setLngLat(userCoords);
       }
 
-            // NUEVO: si NO venimos desde "mostrar en el mapa", entonces sí centramos al usuario
-      const params = new URLSearchParams(window.location.search);
-      const fromGoto = params.get("goto");
-      if (fromGoto !== "la-venta") {
+      // centra SOLO si NO venías con destino (?lat/lng) ni con ?goto=la-venta
+      const fromGoto = new URLSearchParams(window.location.search).get("goto");
+      if (fromGoto !== "la-venta" && !hasQueryTarget) {
         map.current.flyTo({ center: userCoords, zoom: 14 });
       }
 
-      // 🔔 Disparar alertas en tiempo real
+      // si quieres checar POIs/eventos solo una vez (no en tiempo real):
       checarPOIsCercanos(userCoords);
       checarEventosProximos(userCoords);
     },
     (error) => {
       console.error("No se pudo obtener la ubicación:", error);
     },
-    { enableHighAccuracy: true }
-    
+    { enableHighAccuracy: true, maximumAge: 60000, timeout: 10000 }
   );
 }
+
 
 // --- MODO VIEWER: si hay sid en la URL, suscríbete al canal y muestra el pin remoto
 (async () => {
@@ -464,21 +529,21 @@ if (navigator.geolocation) {
     (pos) => {
       const myLL = [pos.coords.longitude, pos.coords.latitude];
       if (!viewerSelfMarkerRef.current) {
-        viewerSelfMarkerRef.current = new mapboxgl.Marker({ color: "#9C27B0" }) // morado para el receptor
+        viewerSelfMarkerRef.current = new mapboxgl.Marker({ color: "#9C27B0" }) // morado
           .setLngLat(myLL)
           .setPopup(new mapboxgl.Popup({ offset: 25 }).setText("Mi ubicación"))
           .addTo(map.current);
       } else {
         viewerSelfMarkerRef.current.setLngLat(myLL);
       }
-      // Nota: no publicamos coords del viewer; solo se muestran en su mapa.
     },
-    (err) => {
-      console.warn("No se pudo obtener ubicación del viewer:", err);
-    },
+    (err) => console.warn("No se pudo obtener ubicación del viewer:", err),
     { enableHighAccuracy: true }
   );
 }
+
+
+
 
 
 const followerMarker = new mapboxgl.Marker({ color: "#2962FF" });
@@ -507,8 +572,12 @@ if (expMs) {
 
 
 return () => {
-  if (watchId) navigator.geolocation.clearWatch(watchId);
-if (viewerWatchId) navigator.geolocation.clearWatch(viewerWatchId);
+  if (viewerWatchId) navigator.geolocation.clearWatch(viewerWatchId);
+
+  if (liveWatchIdRef.current) {
+    navigator.geolocation.clearWatch(liveWatchIdRef.current);
+    liveWatchIdRef.current = null;
+  }
 
   if (viewerChannelRef.current) {
     viewerChannelRef.current.unsubscribe();
@@ -518,6 +587,7 @@ if (viewerWatchId) navigator.geolocation.clearWatch(viewerWatchId);
   stopLiveShare(true);
   map.current.remove();
 };
+
 
 
 
@@ -670,6 +740,38 @@ if (viewerWatchId) navigator.geolocation.clearWatch(viewerWatchId);
   </>
 )}
 
+
+<li className="border-t border-blue-300 pt-3 mt-3">
+  <h3 className="text-center text-blue-900 text-sm font-semibold">🧵 Artesanos</h3>
+</li>
+
+<li className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-purple-100">
+  <button
+    onClick={focusMaria}
+    className="text-blue-800 font-bold underline"
+    aria-label="Centrar mapa en María Luciano Cruz"
+  >
+    María Luciano Cruz
+  </button>
+  <br />
+  <span className="text-gray-700">
+    Cestería de palma · Nacajuca · 09:00–17:00
+  </span>
+</li>
+
+<li className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-purple-100">
+  <button
+    onClick={focusMatilde}
+    className="text-blue-800 font-bold underline"
+    aria-label="Centrar mapa en Matilde de la Cruz Esteban"
+  >
+    Matilde de la Cruz Esteban
+  </button>
+  <br />
+  <span className="text-gray-700">
+    Sombreros y cestería · Nacajuca · 09:00–18:00
+  </span>
+</li>
 
 
               <li className="border-t border-blue-300 pt-3 mt-3">

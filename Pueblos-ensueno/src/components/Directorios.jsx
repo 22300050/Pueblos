@@ -21,12 +21,13 @@ export default function Directorios() {
     <div className="text-[var(--color-text)]">
       {/* === Header (idéntico al de Home) === */}
       <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
-        <div className="flex items-center gap-4">
-          <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto" />
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-            {t("header.title")}
-          </h1>
-        </div>
+<Link to="/" className="flex items-center gap-4">
+  <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto" />
+  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
+    {t("header.title")}
+  </h1>
+</Link>
+
 <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
   {/* Switch de idioma */}
   <div className="relative inline-flex items-center px-1 py-1 bg-[var(--orange-250)] rounded-full shadow-sm">
@@ -70,26 +71,21 @@ export default function Directorios() {
       </header>
 
       {/* Mobile Nav */}
-      {mobileMenuOpen && (
-        <nav className="md:hidden bg-[var(--orange-250)] shadow-md px-6 py-4 space-y-2">
-          {["/puntos-cercanos", "/mapa", "/InterestsSelector", "/login"].map(
-            (path, i) => (
-              <Link key={i} to={path}>
-                <button className="w-full px-4 py-2 bg-[var(--orange-250)] rounded-lg font-semibold transition">
-                  {t(["menu.nearby", "menu.map", "menu.guest", "menu.login"][i])}
-                </button>
-              </Link>
-            )
-            
-          )}
-          <Link to="/">
-  <button className="w-full px-4 py-2 bg-[var(--orange-250)] rounded-lg font-semibold transition">
-    Ir al Home
-  </button>
-</Link>
+{mobileMenuOpen && (
+  <nav className="md:hidden bg-[var(--orange-250)] shadow-md px-6 py-4 space-y-2">
+    <Link to="/mapa">
+      <button className="w-full px-4 py-2 bg-[var(--orange-250)] rounded-lg font-semibold transition">
+        {t("menu.map")}
+      </button>
+    </Link>
+    <Link to="/login">
+      <button className="w-full px-4 py-2 bg-[var(--orange-250)] rounded-lg font-semibold transition">
+        {t("menu.login")}
+      </button>
+    </Link>
+  </nav>
+)}
 
-        </nav>
-      )}
 
       {/* === Hero local de esta página */}
       <section

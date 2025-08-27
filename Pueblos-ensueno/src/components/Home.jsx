@@ -87,18 +87,49 @@ const scrollToId = (id) => {
   </button>
 </header>
 
-{/* Mobile Nav */}
 {mobileMenuOpen && (
-  <nav id="menu-movil" aria-label="Menú móvil" className="md:hidden bg-white shadow-md px-6 py-4 space-y-2 border-t border-black/10">
-    {['/puntos-cercanos','/mapa','/InterestsSelector','/login'].map((path, i) => (
-      <Link key={i} to={path}>
-        <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 transition">
-          {t(['menu.nearby','menu.map','menu.guest','menu.login'][i])}
-        </button>
-      </Link>
-    ))}
+  <nav
+    id="menu-movil"
+    aria-label="Menú móvil"
+    className="md:hidden bg-white shadow-md px-6 py-4 space-y-4 border-t border-black/10"
+  >
+    <Link to="/mapa">
+      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 transition">
+        {t('menu.map')}
+      </button>
+    </Link>
+    <Link to="/login">
+      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 transition">
+        {t('menu.login')}
+      </button>
+    </Link>
+
+    {/* 🔄 Switch de idioma para móviles */}
+    <div className="flex justify-center gap-2 bg-[var(--orange-250)] rounded-full shadow-sm px-1 py-1">
+      <button
+        onClick={() => i18n.changeLanguage("es")}
+        className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+          i18n.language === "es"
+            ? "bg-[var(--color-secondary)] text-white"
+            : "text-black"
+        }`}
+      >
+        ES
+      </button>
+      <button
+        onClick={() => i18n.changeLanguage("en")}
+        className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+          i18n.language === "en"
+            ? "bg-[var(--color-secondary)] text-white"
+            : "text-black"
+        }`}
+      >
+        EN
+      </button>
+    </div>
   </nav>
 )}
+
 
 
 
