@@ -4,6 +4,7 @@ import svgUrl from '../assets/MexicoSvg.svg?url';
 import MapaTabasco from './MapaTabasco';
 import logo from '../assets/Logo.png';
 import { Menu } from 'lucide-react';
+import MapaChiapas from './MapaChiapas';
 
 
 function MapaMexico() {
@@ -40,6 +41,10 @@ function MapaMexico() {
         icono: "🎭",
       },
     ],
+    Chiapas: [
+    { nombre: "Festival de la Marimba", fechas: "Marzo", icono: "🎶" },
+    { nombre: "Feria de San Marcos Tuxtla", fechas: "Abril", icono: "🎡" },
+  ],
   };
 
 useEffect(() => {
@@ -138,6 +143,19 @@ path.addEventListener('blur', onBlur);
       />
     );
   }
+  if (estadoSeleccionado === 'Chiapas') {
+  return (
+    <MapaChiapas
+      estado="Chiapas"
+      eventos={eventosPorEstado['Chiapas']}
+      onRegresar={() => {
+        setEstadoSeleccionado(null);
+        setMostrarFormulario(false);
+      }}
+    />
+  );
+}
+
 
   return (
     <div className="h-screen w-full overflow-hidden bg-gradient-to-br from-[var(--color-cuatro)] via-[var(--color-secondary)] to-[var(--color-verde)] flex flex-col">

@@ -25,9 +25,7 @@ const [formData, setFormData] = useState({
   intereses: '',
   mes: itinerarioPersistido?.mes || '',
   email: '',
- modoDestino: (itinerarioPersistido?.modoDestino === 'automatico'
-                 ? 'auto'
-                 : (itinerarioPersistido?.modoDestino || ''))
+ modoDestino: (itinerarioPersistido?.modoDestino === 'automatico' ? 'auto': (itinerarioPersistido?.modoDestino || ''))
 });
 
 
@@ -86,6 +84,42 @@ useEffect(() => {
 const [mapboxFull, setMapboxFull] = useState(false);
   const [mapaFull, setMapaFull] = useState(false);
   const [clickCoords, setClickCoords] = useState(null);
+  // Estados del modo selección
+const [selecting, setSelecting] = useState(false);
+const [selectedMunicipios, setSelectedMunicipios] = useState(() => {
+  try {
+    return JSON.parse(localStorage.getItem("interesesMunicipios")) ?? [];
+  } catch { return []; }
+});
+
+
+
+
+const toggleMunicipio = (nombre) => {
+  setSelectedMunicipios(prev =>
+    prev.includes(nombre)
+      ? prev.filter(m => m !== nombre)
+      : [...prev, nombre]
+  );
+};
+
+const exitSelecting = () => {
+  setSelecting(false);
+};
+
+const saveIntereses = () => {
+  localStorage.setItem("interesesMunicipios", JSON.stringify(selectedMunicipios));
+  // Opcional: sincroniza con el borrador del itinerario
+  try {
+    const it = JSON.parse(localStorage.getItem("itinerario")) || {};
+    it.interesesSeleccionados = selectedMunicipios;
+    if (!it.modoDestino) it.modoDestino = "automatico";
+    if (!it.lugarInicio && selectedMunicipios[0]) it.lugarInicio = selectedMunicipios[0];
+    localStorage.setItem("itinerario", JSON.stringify(it));
+  } catch {}
+  setSelecting(false);
+};
+
   const mapContainer = useRef(null);
   const mapRef = useRef(null);
   // Ref y tamaño para limitar el confeti al carrusel de eventos
@@ -147,6 +181,14 @@ const municipiosTabasco = [
   { nombre: 'Teapa',         coords: [-92.9494, 17.5478] },
   { nombre: 'Tenosique',     coords: [-91.4225, 17.4694] }
 ];
+// ⬇️ Picker de Origen/Destino
+const [showODPicker, setShowODPicker] = useState(false);
+const [origenSel, setOrigenSel] = useState(formData.lugarInicio || "");
+const [destinoSel, setDestinoSel] = useState(formData.ultimoLugar || "");
+// utilitario rápido para lista ordenada alfabéticamente
+const listaMunicipios = [...municipiosTabasco]
+  .map(m => m.nombre)
+  .sort((a,b) => a.localeCompare(b, 'es'));
 // ----- Catálogo mínimo para recomendaciones (extiende cuando quieras) -----
 const CATALOGO = [
   {
@@ -429,6 +471,40 @@ el.addEventListener('click', () => {
    });
    return diasData;
  };
+ // ✅ NUEVO: arma diasData mezclando selecciones de VARIOS municipios
+const buildDiasDataDesdeMultiplesSelecciones = ({ municipios = [], dias, mes }) => {
+  if (!Array.isArray(municipios) || municipios.length === 0) return [];
+
+  // trae todas las selecciones de esos municipios
+  const todas = (getSelecciones() || []).filter(s => municipios.includes(s.municipio));
+
+  // prioriza eventos del mes activo
+  const esEventoDelMes = (s) =>
+    s.tipo === 'evento' &&
+    mes &&
+    String(s.meta?.mes || s.meta?.fecha || '').toLowerCase()
+      .includes(String(mes).toLowerCase());
+
+  const ordenadas = [...todas].sort((a, b) => (esEventoDelMes(b) ? 1 : 0) - (esEventoDelMes(a) ? 1 : 0));
+
+  // reparte en round-robin por día para balancear
+  const n = Math.max(1, parseInt(dias || '1', 10));
+  const diasData = Array.from({ length: n }, (_, i) => ({ dia: i + 1, actividades: [] }));
+
+  ordenadas.forEach((s, idx) => {
+    const d = idx % n;
+    diasData[d].actividades.push({
+      titulo: s.nombre,
+      icono: s.icono || '📍',
+      tipo: s.tipo,
+      meta: s.meta || {},
+      municipio: s.municipio,
+    });
+  });
+
+  return diasData;
+};
+
 
 // --- Subcomponente para reutilizar el formulario de itinerario ---
 const ItinerarioForm = () => (
@@ -440,6 +516,10 @@ const ItinerarioForm = () => (
       if (!formData.tipo) errores.push("💰 Elige un presupuesto estimado");
       if (!formData.mes) errores.push("📆 Elige un mes");
       if (!fechaInicio || !fechaFin) errores.push("🗓 Selecciona fechas de viaje");
+       if (formData.modoDestino === "manual") {
+   if (!formData.lugarInicio) errores.push("🏁 Elige el Origen (municipio)");
+   if (!formData.ultimoLugar) errores.push("🎯 Elige el Destino (municipio)");
+ }
       if (errores.length > 0) { setErrorEvento(errores); return; }
       setErrorEvento(false);
 
@@ -448,28 +528,54 @@ const ItinerarioForm = () => (
       const presupuestoMXN = tipoPresupuestoADinero(formData.tipo);
       const monedas = convertirMonedas(presupuestoMXN);
 
-      let actividadesSugeridas = [];
-      let eventosMes = [];
-      let diasData = [];
+let actividadesSugeridas = [];
+let eventosMes = [];
+let diasData = [];
 
-      if ((formData.modoDestino === "auto") && lugarInicio) {
-        diasData = buildDiasDataDesdeSelecciones({
-          municipio: lugarInicio,
-          dias: formData.dias,
-          mes: formData.mes
-        });
-        ultimoLugar = ultimoLugar || lugarInicio;
-      } else if (!lugarInicio || !ultimoLugar) {
-        const sugerencia = sugerirRuta({
-          mes: formData.mes,
-          intereses: interesesArr,
-          tipo: formData.tipo
-        });
-        lugarInicio = lugarInicio || sugerencia.inicio;
-        ultimoLugar = ultimoLugar || sugerencia.fin;
-        actividadesSugeridas = sugerencia.actividades;
-        eventosMes = sugerencia.eventosMes;
-      }
+// lee la lista que se guarda cuando el usuario da "Me interesa"
+let municipiosInteres = [];
+try {
+  municipiosInteres = JSON.parse(localStorage.getItem("interesesMunicipios")) || [];
+} catch { municipiosInteres = []; }
+
+// Si el usuario tiene 2+ municipios marcados, construye el plan con AMBOS/VARIOS
+if (municipiosInteres.length >= 2) {
+  // fija origen/destino razonables si faltan
+  if (!lugarInicio)  lugarInicio  = municipiosInteres[0];
+  if (!ultimoLugar)  ultimoLugar  = municipiosInteres[municipiosInteres.length - 1];
+
+  diasData = buildDiasDataDesdeMultiplesSelecciones({
+    municipios: municipiosInteres,
+    dias: formData.dias,
+    mes: formData.mes
+  });
+} else if ((formData.modoDestino === "auto") && lugarInicio) {
+  // caso tradicional: solo 1 municipio
+  diasData = buildDiasDataDesdeSelecciones({
+    municipio: lugarInicio,
+    dias: formData.dias,
+    mes: formData.mes
+  });
+  ultimoLugar = ultimoLugar || lugarInicio;
+} else if (!lugarInicio || !ultimoLugar) {
+  // sugerencia fallback
+  const sugerencia = sugerirRuta({
+    mes: formData.mes,
+    intereses: interesesArr,
+    tipo: formData.tipo
+  });
+  lugarInicio = lugarInicio || sugerencia.inicio;
+  ultimoLugar = ultimoLugar || sugerencia.fin;
+  actividadesSugeridas = sugerencia.actividades;
+  eventosMes = sugerencia.eventosMes;
+}
+
+if (actividadesSugeridas.length === 0 && (!diasData || diasData.length === 0)) {
+  // al menos una actividad descriptiva
+  actividadesSugeridas = [`Desde ${lugarInicio} hasta ${ultimoLugar}`];
+}
+
+
 
       if (actividadesSugeridas.length === 0) {
         actividadesSugeridas = [`Desde ${lugarInicio} hasta ${ultimoLugar}`];
@@ -517,15 +623,22 @@ const ItinerarioForm = () => (
     <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-full px-3 py-1 mb-4 text-sm">
       <span className="text-gray-700 whitespace-nowrap">¿Sabes a dónde ir?</span>
       <div className="flex gap-2">
-        <button
-          type="button"
-          className={`px-3 py-1 rounded-full transition text-xs ${
-            formData.modoDestino === "manual" ? "bg-green-300 text-green-900" : "bg-gray-200 hover:bg-green-200"
-          }`}
-          onClick={() => setFormData({ ...formData, modoDestino: "manual" })}
-        >
-          Elegir
-        </button>
+       <button
+  type="button"
+  className={`px-3 py-1 rounded-full transition text-xs ${
+    formData.modoDestino === "manual" ? "bg-green-300 text-green-900" : "bg-gray-200 hover:bg-green-200"
+  }`}
+  onClick={() => {
+    // activa modo manual y abre el picker
+    setFormData(prev => ({ ...prev, modoDestino: "manual" }));
+    setOrigenSel(formData.lugarInicio || "");
+    setDestinoSel(formData.ultimoLugar || "");
+    setShowODPicker(true);
+  }}
+>
+  Elegir
+</button>
+
         <button
           type="button"
           className={`px-3 py-1 rounded-full transition text-xs ${
@@ -537,6 +650,21 @@ const ItinerarioForm = () => (
         </button>
       </div>
     </div>
+    {formData.modoDestino === "manual" && (formData.lugarInicio || formData.ultimoLugar) && (
+  <div className="mb-3 text-sm space-y-1">
+    {formData.lugarInicio && (
+      <span className="inline-block bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-1 rounded-full mr-2">
+        Origen: <strong>{formData.lugarInicio}</strong>
+      </span>
+    )}
+    {formData.ultimoLugar && (
+      <span className="inline-block bg-sky-100 text-sky-900 border border-sky-300 px-3 py-1 rounded-full">
+        Destino: <strong>{formData.ultimoLugar}</strong>
+      </span>
+    )}
+  </div>
+)}
+
 
     {formData.modoDestino === 'auto' && formData.lugarInicio && (
       <div className="mb-3 text-sm">
@@ -546,7 +674,7 @@ const ItinerarioForm = () => (
       </div>
     )}
 
-    {formData.modoDestino !== "auto" && (
+    {formData.modoDestino !== "auto" && false && (
       <>
         <button
           type="button"
@@ -961,6 +1089,98 @@ return (
 )}
 
       </div>
+      {showODPicker && (
+  <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40">
+    <div className="w-full max-w-lg bg-white white:bg-neutral-900 rounded-2xl shadow-xl border dark:border-neutral-700 p-5">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-semibold">Elegir Origen y Destino</h3>
+        <button
+          onClick={() => setShowODPicker(false)}
+          className="rounded-md px-2 py-1 border dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          aria-label="Cerrar"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Origen</label>
+          <select
+            value={origenSel}
+            onChange={(e) => setOrigenSel(e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-100 text-gray-900"
+
+          >
+            <option value="" disabled>Selecciona municipio…</option>
+            {listaMunicipios.map((nom) => (
+              <option key={nom} value={nom}>{nom}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Destino</label>
+          <select
+            value={destinoSel}
+            onChange={(e) => setDestinoSel(e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-100 text-gray-900"
+
+          >
+            <option value="" disabled>Selecciona municipio…</option>
+            {listaMunicipios.map((nom) => (
+              <option key={nom} value={nom}>{nom}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
+        Consejo: puedes elegir el mismo municipio para un viaje local (origen = destino).
+      </div>
+
+      <div className="flex justify-end gap-2 mt-5">
+        <button
+          onClick={() => setShowODPicker(false)}
+          className="px-3 py-2 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={() => {
+            if (!origenSel || !destinoSel) return;
+
+            // fija en el formulario
+            setFormData(prev => ({
+              ...prev,
+              modoDestino: "manual",
+              lugarInicio: origenSel,
+              ultimoLugar: destinoSel
+            }));
+
+            // opcional: persiste en el borrador del itinerario
+            try {
+              const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
+              localStorage.setItem("itinerario", JSON.stringify({
+                ...it,
+                modoDestino: "manual",
+                origen: origenSel,
+                destino: destinoSel,
+                lugarInicio: origenSel
+              }));
+            } catch {}
+
+            setShowODPicker(false);
+          }}
+          className="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </>
   );
 }
