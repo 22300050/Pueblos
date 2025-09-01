@@ -12,7 +12,90 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
   const [vistaMovil, setVistaMovil] = useState('mapa'); // 'mapa' | 'itinerario'
   const navigate = useNavigate();
 
-  // ====== Dibuja el SVG y listeners (igual patrón que Tabasco) ======
+  // -------------------- Estados auxiliares --------------------
+  const [confirmacionDias, setConfirmacionDias] = useState('');
+  const timeoutRef = useRef(null);
+
+  // -------------------- Itinerario: borrador/persistencia --------------------
+  const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
+
+  const [formData, setFormData] = useState({
+    dias: '',
+    tipo: '',
+    lugarInicio: itinerarioPersistido?.lugarInicio || '',
+    ultimoLugar: '',
+    intereses: '',
+    mes: itinerarioPersistido?.mes || '',
+    email: '',
+    modoDestino:
+      itinerarioPersistido?.modoDestino === 'automatico'
+        ? 'auto'
+        : (itinerarioPersistido?.modoDestino || '')
+  });
+
+  const [errores, setErrores] = useState([]);
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
+
+  // Picker Origen/Destino (después de formData para poder leer sus valores)
+  const [showODPicker, setShowODPicker] = useState(false);
+  const [origenSel, setOrigenSel] = useState(formData.lugarInicio || "");
+  const [destinoSel, setDestinoSel] = useState(formData.ultimoLugar || "");
+
+  // -------------------- Helpers --------------------
+  const tipoPresupuestoADinero = (tipo) => {
+    if (tipo === "Económico") return 800;
+    if (tipo === "Moderado") return 1500;
+    if (tipo === "Confort") return 2800;
+    if (tipo === "Lujo") return 5000;
+    return 1500;
+  };
+
+  const convertirMonedas = (mxn) => {
+    const USD = (mxn / 17.5);
+    const EUR = (mxn / 19);
+    return { MXN: Math.round(mxn), USD: Math.round(USD), EUR: Math.round(EUR) };
+  };
+
+  const clampFechaAlMes = (yyyy, mesNombre, dias) => {
+    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const mIdx = Math.max(0, meses.indexOf(mesNombre));
+    const inicio = new Date(yyyy, mIdx, 1);
+    const finMes = new Date(yyyy, mIdx + 1, 0);
+    const fin = new Date(inicio);
+    fin.setDate(inicio.getDate() + Math.max(0, (parseInt(dias || "1",10) - 1)));
+    return { inicio, fin: (fin > finMes ? finMes : fin) };
+  };
+
+  // Sugerencia simple para Chiapas si falta origen/destino en modo auto
+  const sugerirRuta = ({ mes, intereses = [], tipo }) => {
+    const inicio = "Tuxtla Gutiérrez";
+    const fin = "San Cristóbal de las Casas";
+    const actividades = ["Cañón del Sumidero", "Andador Eclesiástico", "Museo del Ámbar"];
+    return { inicio, fin, actividades, eventosMes: [] };
+  };
+
+  // -------------------- Municipios (para el picker) --------------------
+  const municipiosChiapas = [
+    { nombre: 'Tuxtla Gutiérrez' },
+    { nombre: 'San Cristóbal de las Casas' },
+    { nombre: 'Palenque' },
+    { nombre: 'Comitán de Domínguez' },
+    { nombre: 'Chiapa de Corzo' },
+    { nombre: 'Tapachula' },
+    { nombre: 'Toniná' },
+    { nombre: 'Ocosingo' },
+    { nombre: 'Las Margaritas' },
+    { nombre: 'San Juan Chamula' },
+    // agrega los que desees…
+  ];
+
+  const listaMunicipios = [...municipiosChiapas]
+    .map(m => m.nombre)
+    .sort((a,b) => a.localeCompare(b, 'es'));
+
+  // -------------------- Efectos --------------------
+  // 1) Dibuja SVG + listeners
   useEffect(() => {
     if (vistaMovil !== 'mapa') return;
     if (!containerRef.current) return;
@@ -30,7 +113,7 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
     const paths = containerRef.current.querySelectorAll('path, polygon');
     const handlers = [];
     paths.forEach((path) => {
-      path.classList.add('hoverable-state'); // usa tu CSS de hover
+      path.classList.add('hoverable-state');
       if (!path.getAttribute('stroke')) path.setAttribute('stroke', '#000');
       if (!path.getAttribute('stroke-width')) path.setAttribute('stroke-width', '2');
       path.setAttribute('stroke-linejoin', 'round');
@@ -68,121 +151,346 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
     };
   }, [vistaMovil, navigate]);
 
-  // ====== Formulario (panel derecho) – versión simple, mismo patrón de Tabasco ======
-  const [formData, setFormData] = useState({
-    dias: '', tipo: '', mes: '', intereses: '', email: ''
-  });
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
-  const [errores, setErrores] = useState([]);
+  // 2) Escucha cambios externos de localStorage (ej. otra vista guarda mes/origen)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const it = JSON.parse(localStorage.getItem("itinerario") || "null");
+      if (it?.mes) {
+        setFormData(prev => ({ ...prev, mes: it.mes }));
+      }
+      if (it?.lugarInicio) {
+        setFormData(prev => ({
+          ...prev,
+          lugarInicio: it.lugarInicio,
+          modoDestino: (it.modoDestino === 'automatico' ? 'auto' : (it.modoDestino || 'auto'))
+        }));
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
+  // 3) Autocalcular fechas al cambiar mes o días (limitado al mes)
+  useEffect(() => {
+    if (!formData.mes) return;
+    const hoy = new Date();
+    const yyyy = fechaInicio ? new Date(fechaInicio).getFullYear() : hoy.getFullYear();
+    const { inicio, fin } = clampFechaAlMes(yyyy, formData.mes, formData.dias || 1);
+    const iso = d => d.toISOString().split("T")[0];
+    setFechaInicio(iso(inicio));
+    setFechaFin(iso(fin));
+  }, [formData.mes, formData.dias]);
+
+  // -------------------- Formulario --------------------
   const ItinerarioForm = () => (
     <form
       onSubmit={(e) => {
         e.preventDefault();
+
         const errs = [];
-        if (!formData.dias) errs.push('📅 Indica los días de viaje');
-        if (!formData.tipo) errs.push('💰 Elige un presupuesto estimado');
-        if (!formData.mes) errs.push('📆 Elige un mes');
-        if (!fechaInicio || !fechaFin) errs.push('🗓 Selecciona fechas de viaje');
-        if (errs.length) { setErrores(errs); return; }
+        if (!formData.dias) errs.push("📅 Indica los días de viaje");
+        if (!formData.tipo) errs.push("💰 Elige un presupuesto estimado");
+        if (!formData.mes) errs.push("📆 Elige un mes");
+        if (!fechaInicio || !fechaFin) errs.push("🗓 Selecciona fechas de viaje");
+        if (formData.modoDestino === "manual") {
+          if (!formData.lugarInicio) errs.push("🏁 Elige el Origen (municipio)");
+          if (!formData.ultimoLugar) errs.push("🎯 Elige el Destino (municipio)");
+        }
+        if (errs.length > 0) { setErrores(errs); return; }
         setErrores([]);
+
+        const interesesArr = formData.intereses ? formData.intereses.split(", ").filter(Boolean) : [];
+        const presupuestoMXN = tipoPresupuestoADinero(formData.tipo);
+        const monedas = convertirMonedas(presupuestoMXN);
+
+        let origen = formData.lugarInicio;
+        let destino = formData.ultimoLugar;
+
+        if (formData.modoDestino !== "manual") {
+          const s = sugerirRuta({ mes: formData.mes, intereses: interesesArr, tipo: formData.tipo });
+          origen = origen || s.inicio;
+          destino = destino || s.fin;
+        }
+
+        const sugerencia = sugerirRuta({ mes: formData.mes, intereses: interesesArr, tipo: formData.tipo });
+
         const payload = {
           estado,
           dias: `${fechaInicio} a ${fechaFin}`,
-          tipo: formData.tipo,
+          presupuesto: presupuestoMXN,
+          monedas,
+          email: formData.email || "",
           mes: formData.mes,
-          intereses: formData.intereses,
-          email: formData.email
+          interesesSeleccionados: interesesArr,
+          origen,
+          destino,
+          eventosSeleccionados: [{
+            nombre: formData.tipo,
+            icono: "🎯",
+            fechas: `${fechaInicio} a ${fechaFin}`,
+            elementos: interesesArr.join(", "),
+            actividades: sugerencia.actividades.join(", "),
+            eventosMes: []
+          }]
         };
-        localStorage.setItem('itinerario', JSON.stringify(payload));
-        navigate('/itinerario', { state: payload });
+
+        localStorage.setItem("itinerario", JSON.stringify(payload));
+        navigate("/itinerario", { state: payload });
       }}
       className="flex flex-col gap-4 text-sm"
     >
       <label className="font-bold text-lg text-center">🐯 ITINERARIOS DE VIAJE</label>
 
       {errores.length > 0 && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3">
-          <ul className="list-disc list-inside">{errores.map((m,i)=><li key={i}>{m}</li>)}</ul>
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
+          <ul className="list-disc list-inside">
+            {errores.map((m,i)=><li key={i}>{m}</li>)}
+          </ul>
         </div>
       )}
 
-      <div className="flex items-center gap-2">
-        <button type="button"
-          onClick={() => setFormData(fd => ({ ...fd, dias: String(Math.max(1, (parseInt(fd.dias||'1')||1)-1)) }))}
-          className="px-3 py-1 bg-gray-200 rounded-full text-lg font-bold hover:bg-gray-300">−</button>
-        <input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={formData.dias}
-          onChange={(e)=>setFormData(fd=>({ ...fd, dias: e.target.value.replace(/\D/g,'') }))}
-          placeholder="1"
-          className="w-24 text-center border border-gray-300 rounded-full px-4 py-2"
-        />
-        <button type="button"
-          onClick={() => setFormData(fd => ({ ...fd, dias: String(Math.min(30, (parseInt(fd.dias||'0')||0)+1)) }))}
-          className="px-3 py-1 bg-gray-200 rounded-full text-lg font-bold hover:bg-gray-300">+</button>
+      {/* Modo destino */}
+      <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-full px-3 py-1 mb-4 text-sm">
+        <span className="text-gray-700 whitespace-nowrap">¿Sabes a dónde ir?</span>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className={`px-3 py-1 rounded-full transition text-xs ${formData.modoDestino === "manual" ? "bg-green-300 text-green-900" : "bg-gray-200 hover:bg-green-200"}`}
+            onClick={() => {
+              setFormData(prev => ({ ...prev, modoDestino: "manual" }));
+              setOrigenSel(formData.lugarInicio || "");
+              setDestinoSel(formData.ultimoLugar || "");
+              setShowODPicker(true);
+            }}
+          >
+            Elegir
+          </button>
+          <button
+            type="button"
+            className={`px-3 py-1 rounded-full transition text-xs ${formData.modoDestino === "auto" ? "bg-blue-300 text-blue-900" : "bg-gray-200 hover:bg-blue-200"}`}
+            onClick={() => setFormData(prev => ({ ...prev, modoDestino: "auto" }))}
+          >
+            Automático
+          </button>
+        </div>
       </div>
 
-      <select value={formData.tipo} onChange={e=>setFormData(fd=>({ ...fd, tipo: e.target.value }))}
-        className="w-full border border-gray-300 rounded-full px-4 py-2 bg-white" required>
+      {formData.modoDestino === "manual" && (formData.lugarInicio || formData.ultimoLugar) && (
+        <div className="mb-3 text-sm space-y-1">
+          {formData.lugarInicio && (
+            <span className="inline-block bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-1 rounded-full mr-2">
+              Origen: <strong>{formData.lugarInicio}</strong>
+            </span>
+          )}
+          {formData.ultimoLugar && (
+            <span className="inline-block bg-sky-100 text-sky-900 border border-sky-300 px-3 py-1 rounded-full">
+              Destino: <strong>{formData.ultimoLugar}</strong>
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Días */}
+      <div className="flex flex-col gap-2">
+        <label className="block text-sm font-medium text-gray-800">📅 Días de viaje</label>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const actual = parseInt(formData.dias || "1");
+              if (actual > 1) setFormData({ ...formData, dias: String(actual - 1) });
+            }}
+            className="px-3 py-1 bg-gray-200 rounded-full text-lg font-bold hover:bg-gray-300"
+          >−</button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const actual = parseInt(formData.dias || "0");
+              if (actual < 30) setFormData({ ...formData, dias: String(actual + 1) });
+            }}
+            className="px-3 py-1 bg-gray-200 rounded-full text-lg font-bold hover:bg-gray-300"
+          >+</button>
+
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={formData.dias || ''}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, "");
+              const num = parseInt(val);
+              if (!isNaN(num) && num > 0 && num <= 30) {
+                setFormData({ ...formData, dias: String(num) });
+              } else if (val === "") {
+                setFormData({ ...formData, dias: "" });
+              }
+            }}
+            placeholder="1"
+            className="w-24 text-center border border-gray-300 rounded-full px-4 py-2"
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+              const n = parseInt(formData.dias || "0", 10);
+              if (n > 0 && n <= 30) {
+                setConfirmacionDias(`✅ Se han seleccionado ${formData.dias} día${formData.dias === "1" ? '' : 's'} de viaje`);
+              } else {
+                setConfirmacionDias("⚠️ Ingrese un número válido entre 1 y 30");
+              }
+              setTimeout(() => setConfirmacionDias(''), 3000);
+            }}
+            className="ml-2 bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500"
+          >OK</button>
+        </div>
+
+        {confirmacionDias && (
+          <div className="mt-2 p-3 border-l-4 border-green-500 bg-green-100 text-green-800 rounded-md shadow-sm text-sm font-medium">
+            {confirmacionDias}
+          </div>
+        )}
+      </div>
+
+      {/* Presupuesto */}
+      <select
+        value={formData.tipo || ''}
+        onChange={e => setFormData({ ...formData, tipo: e.target.value })}
+        className="w-full border border-gray-300 rounded-full px-4 py-2 bg-white"
+        required
+      >
         <option value="" disabled>💰 Presupuesto estimado</option>
-        <option value="Económico">Económico</option>
-        <option value="Moderado">Moderado</option>
-        <option value="Confort">Confort</option>
-        <option value="Lujo">Lujo</option>
+        <option value="Económico">💸 Económico (hasta $1,000 MXN por día)</option>
+        <option value="Moderado">💼 Moderado ($1,000 – $2,000 MXN por día)</option>
+        <option value="Confort">🏨 Confort ($2,000 – $4,000 MXN por día)</option>
+        <option value="Lujo">💎 Lujo total (más de $4,000 MXN por día)</option>
       </select>
 
-      <select value={formData.mes} onChange={e=>setFormData(fd=>({ ...fd, mes: e.target.value }))}
-        className="w-full border border-gray-300 rounded-full px-4 py-2 bg-white" required>
+      {/* Mes */}
+      <select
+        value={formData.mes || ''}
+        onChange={e => {
+          const nuevoMes = e.target.value;
+          setFormData({ ...formData, mes: nuevoMes });
+          const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
+          localStorage.setItem("itinerario", JSON.stringify({ ...it, mes: nuevoMes }));
+        }}
+        className="w-full border border-gray-300 rounded-full px-4 py-2 bg-white"
+        required
+      >
         <option value="" disabled>📆 Selecciona un mes</option>
-        {["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"].map(m=>(
+        {["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"].map(m => (
           <option key={m} value={m}>{m}</option>
         ))}
       </select>
 
-      <select value=""
-        onChange={(e)=>{
-          const v = e.target.value;
-          if (!v) return;
-          if (v === 'Cerrar') { setFormData(fd=>({ ...fd, intereses: '' })); return; }
-          const arr = (formData.intereses ? formData.intereses.split(', ').filter(Boolean) : []);
-          if (!arr.includes(v)) setFormData(fd=>({ ...fd, intereses: [...arr, v].join(', ') }));
+      {/* Intereses */}
+      <select
+        value=""
+        onChange={(e) => {
+          const valor = e.target.value;
+          if (valor === 'Cerrar') {
+            setFormData({ ...formData, intereses: '' });
+          } else if (valor) {
+            const actuales = formData.intereses?.split(', ').filter(Boolean) || [];
+            if (!actuales.includes(valor)) {
+              const nuevos = [...actuales, valor];
+              setFormData({ ...formData, intereses: nuevos.join(', ') });
+            }
+          }
         }}
-        className="w-full border border-gray-300 rounded-full px-4 py-2 bg-white">
+        className="w-full border border-gray-300 rounded-full px-4 py-2 bg-white"
+      >
         <option value="" disabled>🎯 Intereses</option>
-        {["Naturaleza","Compras","Arte","Museos","Gastronomía","Aventura","Acceso gratuito","Cerrar"].map(opt=>(
-          <option key={opt} value={opt}>{opt}</option>
-        ))}
+        <option value="Naturaleza">Naturaleza</option>
+        <option value="Compras">Compras</option>
+        <option value="Arte">Arte</option>
+        <option value="Museos">Museos</option>
+        <option value="Gastronomía">Gastronomía</option>
+        <option value="Aventura">Aventura</option>
+        <option value="Acceso gratuito">Acceso gratuito</option>
+        <option value="Cerrar" className="text-red-500">Cerrar</option>
       </select>
 
-      {!!formData.intereses && (
+      {formData.intereses && formData.intereses.split(', ').length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
-          {formData.intereses.split(', ').filter(Boolean).map((i,idx)=>(
+          {formData.intereses.split(', ').map((interes, idx) => (
             <span key={idx} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2">
-              {i}
-              <button type="button" onClick={()=>{
-                const rest = formData.intereses.split(', ').filter(x=>x!==i).join(', ');
-                setFormData(fd=>({ ...fd, intereses: rest }));
-              }} className="text-red-500 hover:text-red-700 font-bold">✕</button>
+              {interes}
+              <button
+                type="button"
+                onClick={() => {
+                  const restantes = formData.intereses.split(', ').filter((i) => i !== interes);
+                  setFormData({ ...formData, intereses: restantes.join(', ') });
+                }}
+                className="text-red-500 hover:text-red-700 font-bold"
+              >✕</button>
             </span>
           ))}
         </div>
       )}
 
+      {/* Fechas */}
       <div className="flex flex-col gap-2">
         <label className="block text-sm font-medium text-gray-800">Fechas de viaje</label>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
-          <input type="date" value={fechaInicio} onChange={e=>{setFechaInicio(e.target.value); setFechaFin('');}}
-            className="w-full sm:w-[48%] border border-amber-300 rounded px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400" required />
+          <input
+            type="date"
+            min={
+              formData.mes
+                ? (() => {
+                    const hoy = new Date();
+                    const yyyy = fechaInicio ? new Date(fechaInicio).getFullYear() : hoy.getFullYear();
+                    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+                    const mIdx = Math.max(0, meses.indexOf(formData.mes));
+                    return new Date(yyyy, mIdx, 1).toISOString().split("T")[0];
+                  })()
+                : ""
+            }
+            max={
+              formData.mes
+                ? (() => {
+                    const hoy = new Date();
+                    const yyyy = fechaInicio ? new Date(fechaInicio).getFullYear() : hoy.getFullYear();
+                    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+                    const mIdx = Math.max(0, meses.indexOf(formData.mes));
+                    return new Date(yyyy, mIdx + 1, 0).toISOString().split("T")[0];
+                  })()
+                : ""
+            }
+            value={fechaInicio}
+            onChange={e => { setFechaInicio(e.target.value); setFechaFin(''); }}
+            className="w-full sm:w-[48%] border border-amber-300 rounded px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            required
+          />
           <span className="text-gray-600">→</span>
-          <input type="date" value={fechaFin} onChange={e=>setFechaFin(e.target.value)} disabled={!fechaInicio}
-            className="w-full sm:w-[48%] border border-amber-300 rounded px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:bg-gray-100" required />
+          <input
+            type="date"
+            min={fechaInicio}
+            max={
+              (() => {
+                if (!fechaInicio || !formData.mes || !formData.dias) return '';
+                const inicio = new Date(fechaInicio);
+                const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+                const yyyy = inicio.getFullYear();
+                const mIdx = Math.max(0, meses.indexOf(formData.mes));
+                const finDeMes = new Date(yyyy, mIdx + 1, 0);
+                const finPorDias = new Date(inicio);
+                finPorDias.setDate(inicio.getDate() + parseInt(formData.dias,10) - 1);
+                const fin = finPorDias < finDeMes ? finPorDias : finDeMes;
+                return fin.toISOString().split('T')[0];
+              })()
+            }
+            value={fechaFin}
+            onChange={(e) => setFechaFin(e.target.value)}
+            disabled={!fechaInicio}
+            className="w-full sm:w-[48%] border border-amber-300 rounded px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:bg-gray-100"
+            required
+          />
         </div>
       </div>
 
+      {/* Botones finales */}
       <div className="flex justify-between items-center mt-4">
         <button type="button" onClick={onRegresar} className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-200">
           Regresar
@@ -201,9 +509,10 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
     </form>
   );
 
+  // -------------------- Render --------------------
   return (
     <>
-      {/* HEADER (mismo estilo) */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
         <Link to="/" className="flex items-center gap-4">
           <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
@@ -226,12 +535,16 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
       {/* Toggle móvil Mapa / Itinerario */}
       <div className="md:hidden px-6 py-2">
         <div className="flex gap-2 rounded-full bg-white/80 p-1 shadow border">
-          <button onClick={()=>setVistaMovil('mapa')}
-            className={`flex-1 px-3 py-2 rounded-full ${vistaMovil==='mapa'?'bg-yellow-400 font-bold':''}`}>
+          <button
+            onClick={()=>setVistaMovil('mapa')}
+            className={`flex-1 px-3 py-2 rounded-full ${vistaMovil==='mapa'?'bg-yellow-400 font-bold':''}`}
+          >
             🗺️ Mapa
           </button>
-          <button onClick={()=>setVistaMovil('itinerario')}
-            className={`flex-1 px-3 py-2 rounded-full ${vistaMovil==='itinerario'?'bg-yellow-400 font-bold':''}`}>
+          <button
+            onClick={()=>setVistaMovil('itinerario')}
+            className={`flex-1 px-3 py-2 rounded-full ${vistaMovil==='itinerario'?'bg-yellow-400 font-bold':''}`}
+          >
             📋 Itinerario
           </button>
         </div>
@@ -257,13 +570,13 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
                   </div>
                 )}
               </div>
-              {/* FORMULARIO (móvil) */}
-{vistaMovil === 'itinerario' && (
-  <section className="md:hidden w-full h-full bg-white/95 backdrop-blur p-4 border-t border-gray-200 overflow-y-auto">
-    <ItinerarioForm />
-  </section>
-)}
 
+              {/* FORMULARIO (móvil) */}
+              {vistaMovil === 'itinerario' && (
+                <section className="md:hidden w-full h-full bg-white/95 backdrop-blur p-4 border-t border-gray-200 overflow-y-auto">
+                  <ItinerarioForm />
+                </section>
+              )}
 
               {/* PANEL DERECHO (Itinerario) */}
               <aside className="hidden md:block md:w-[420px] h-full bg-white/90 backdrop-blur p-6 border-l border-gray-200 overflow-y-auto">
@@ -274,7 +587,98 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
         </div>
       </main>
 
-      {/* FOOTER igual a Tabasco (fila de íconos) */}
+      {/* MODAL Origen/Destino */}
+      {showODPicker && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold">Elegir Origen y Destino</h3>
+              <button
+                onClick={() => setShowODPicker(false)}
+                className="rounded-md px-2 py-1 border hover:bg-neutral-100"
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Origen</label>
+                <select
+                  value={origenSel}
+                  onChange={(e) => setOrigenSel(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 bg-white"
+                >
+                  <option value="" disabled>Selecciona municipio…</option>
+                  {listaMunicipios.map((nom) => (
+                    <option key={nom} value={nom}>{nom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Destino</label>
+                <select
+                  value={destinoSel}
+                  onChange={(e) => setDestinoSel(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 bg-white"
+                >
+                  <option value="" disabled>Selecciona municipio…</option>
+                  {listaMunicipios.map((nom) => (
+                    <option key={nom} value={nom}>{nom}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-3 text-xs text-gray-600">
+              Consejo: puedes elegir el mismo municipio para un viaje local (origen = destino).
+            </div>
+
+            <div className="flex justify-end gap-2 mt-5">
+              <button
+                onClick={() => setShowODPicker(false)}
+                className="px-3 py-2 rounded-lg border hover:bg-neutral-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  if (!origenSel || !destinoSel) return;
+
+                  // fija en el formulario
+                  setFormData(prev => ({
+                    ...prev,
+                    modoDestino: "manual",
+                    lugarInicio: origenSel,
+                    ultimoLugar: destinoSel
+                  }));
+
+                  // persiste en borrador
+                  try {
+                    const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
+                    localStorage.setItem("itinerario", JSON.stringify({
+                      ...it,
+                      modoDestino: "manual",
+                      origen: origenSel,
+                      destino: destinoSel,
+                      lugarInicio: origenSel
+                    }));
+                  } catch {}
+
+                  setShowODPicker(false);
+                }}
+                className="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
       <footer>
         <div className="flex justify-center gap-4 mt-4 text-xl text-gray-600">
           <i className="fab fa-facebook-square" />
