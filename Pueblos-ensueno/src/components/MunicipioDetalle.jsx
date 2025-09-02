@@ -498,64 +498,79 @@ const toggleSeleccion = (payload) => {
 
 
 {/* Contenido del municipio */}
-<div className={`p-8 max-w-4xl mx-auto ${theme.bg}`}>
+<div className={`px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto ${theme.bg}`}>
       {theme.header && (
   <img
     src={theme.header}
     alt={`Header ${nombre}`}
-    className="w-full h-48 object-cover rounded-2xl mb-4"
+    className="w-full h-40 sm:h-56 lg:h-72 object-cover rounded-2xl mb-4"
   />
 )}
-<h1 className={`text-4xl font-bold mb-4 ${theme.title}`}>{nombre}</h1>
+<h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-3 ${theme.title}`}>{nombre}</h1>
+     <p className="mb-4 text-base sm:text-lg lg:text-xl">{datos.descripcion}</p>
+<h2 className={`text-2xl font-semibold mb-4 ${theme.title}`}>🌆 Lugares Destacados</h2>
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
 
-      <p className="mb-4 text-lg">{datos.descripcion}</p>
-
-<h2 className={`text-2xl font-semibold mb-2 ${theme.title}`}>Lugares destacados:</h2>
-<ul className="mb-6">
   {datos.lugares.map((lugar, idx) => (
-    <li key={`lugar-${idx}`} className="flex items-center justify-between py-1">
-      <span>📍 {lugar}</span>
-      <button
-        onClick={() => toggleSeleccion({ tipo: 'lugarDestacado', nombre: lugar })}
-        className="text-sm bg-emerald-500 text-white px-2 py-1 rounded"
-      >
-        {estaAgregado({ tipo:'lugarDestacado', nombre:lugar }) ? 'Quitar' : 'Agregar'}
-      </button>
-    </li>
+    <div key={`lugar-${idx}`} className="relative bg-white shadow rounded-xl overflow-hidden">
+      <div className="p-4">
+        <h3 className="text-lg font-extrabold">{lugar}</h3>
+        <p className="text-sm text-gray-600">Principal del municipio</p>
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => toggleSeleccion({ tipo: 'lugarDestacado', nombre: lugar })}
+            className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-sm"
+          >
+            {estaAgregado({ tipo:'lugarDestacado', nombre:lugar }) ? 'Quitar' : 'Agregar'}
+          </button>
+          <button
+            onClick={() => alert('Abrir ficha “Ver más” (demo)')}
+            className="px-3 py-1 rounded border text-sm"
+          >
+            Ver más
+          </button>
+        </div>
+      </div>
+    </div>
   ))}
-</ul>
+</div>
 
-      <h2 className="text-2xl font-semibold mt-6">Sitios imperdibles</h2>
-<ul className="mb-4">
+
+<h2 className="text-2xl font-semibold mt-6">⭐ Sitios Imperdibles</h2>
+<div className="flex gap-4 overflow-x-auto pb-2 snap-x">
   {(datos.sitiosTop || []).map((n, i) => (
-    <li key={`top-${i}`} className="flex items-center justify-between py-1">
-      <span>⭐ {n}</span>
-<button
-  onClick={() => toggleSeleccion({ tipo: 'sitioImperdible', nombre: n, categoria: 'top' })}
-  className="text-sm bg-emerald-500 text-white px-2 py-1 rounded"
->
-  {estaAgregado({ tipo:'sitioImperdible', nombre:n }) ? 'Quitar' : 'Agregar'}
-</button>
-
-    </li>
+    <div key={`top-${i}`} className="min-w-[200px] sm:min-w-[240px] lg:min-w-[280px] snap-start bg-white shadow rounded-xl p-3 flex-shrink-0">
+      <p className="text-sm font-semibold">{n}</p>
+      <p className="text-xs text-gray-600 mt-1">No te lo puedes perder</p>
+      <button
+        onClick={() => toggleSeleccion({ tipo: 'sitioImperdible', nombre: n, categoria: 'top' })}
+        className="mt-2 px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
+      >
+        {estaAgregado({ tipo:'sitioImperdible', nombre:n }) ? 'Quitar' : 'Agregar'}
+      </button>
+    </div>
   ))}
-</ul>
+</div>
 
-<h2 className="text-2xl font-semibold">Joyitas poco conocidas</h2>
-<ul className="mb-4">
+
+<h2 className="text-2xl font-semibold mb-4">🌿 Joyitas Poco Conocidas</h2>
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mb-8">
   {(datos.sitiosOcultos || []).map((n, i) => (
-    <li key={`hide-${i}`} className="flex items-center justify-between py-1">
-      <span>🌿 {n}</span>
-<button
-  onClick={() => toggleSeleccion({ tipo: 'joyaPocoConocida', nombre: n, categoria: 'oculto' })}
-  className="text-sm bg-emerald-500 text-white px-2 py-1 rounded"
->
-  {estaAgregado({ tipo:'joyaPocoConocida', nombre:n }) ? 'Quitar' : 'Agregar'}
-</button>
-
-    </li>
+    <div key={`hide-${i}`} className="bg-white rounded-xl p-3 shadow flex items-start justify-between">
+      <div>
+        <p className="text-sm font-semibold">Secreto local</p>
+        <p className="text-sm text-gray-700 mt-1">{n}</p>
+      </div>
+      <button
+        onClick={() => toggleSeleccion({ tipo: 'joyaPocoConocida', nombre: n, categoria: 'oculto' })}
+        className="ml-3 px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm h-8"
+      >
+        {estaAgregado({ tipo:'joyaPocoConocida', nombre:n }) ? 'Quitar' : 'Agregar'}
+      </button>
+    </div>
   ))}
-</ul>
+</div>
+
 
 <div className="flex items-center justify-between">
   <h2 className="text-2xl font-semibold">Eventos culturales</h2>
@@ -608,7 +623,7 @@ const toggleSeleccion = (payload) => {
       </button>
     </div>
   ) : (
-    <ul className="mb-4">
+    <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-6">
       {(eventosCentroPorMes[mesSeleccionado] && eventosCentroPorMes[mesSeleccionado].length > 0
         ? eventosCentroPorMes[mesSeleccionado]
         : ["No hay eventos este mes"]
@@ -624,7 +639,8 @@ const toggleSeleccion = (payload) => {
               })}
               className="text-sm bg-indigo-500 text-white px-2 py-1 rounded"
             >
-              {estaAgregado({ tipo:'evento', nombre: nombreEvento /* o ev.nombre */ }) ? 'Quitar' : 'Agregar'}
+              {estaAgregado({ tipo:'evento', nombre: nombreEvento /* o ev.nombre */ }) ? 'Quitar' : 'Agendar en mi viaje'}
+
             </button>
           )}
         </li>
@@ -655,7 +671,7 @@ const toggleSeleccion = (payload) => {
           (ev.fecha || "").toLowerCase().includes(mesSeleccionado.toLowerCase())
         )
         .map((ev, i) => (
-          <li key={`ev-${i}`} className="flex items-center justify-between py-1">
+          <li key={`ev-${i}`} className="flex items-center justify-between p-3 bg-white rounded-xl shadow">
             <span>🎭 {ev.nombre} · {ev.fecha}</span>
 <button
   onClick={() => toggleSeleccion({
@@ -674,63 +690,57 @@ const toggleSeleccion = (payload) => {
 )}
 
 
-<h2 className="text-2xl font-semibold">Artesanías y comida</h2>
-<ul className="mb-6">
-  {(datos.artesanias || []).map((a, i) => (
-    <li key={`art-${i}`} className="flex items-center justify-between py-1">
-      <span>🧺 {a.nombre} {a.precio ? `· ${a.precio}` : ''}</span>
-      <div className="flex gap-2">
-<button
-  onClick={() => toggleSeleccion({ tipo: 'Artesanías', nombre: a.nombre, meta: { precio: a.precio } })}
-  className="text-sm bg-pink-500 text-white px-2 py-1 rounded"
->
-  {estaAgregado({ tipo:'Artesanías', nombre:a.nombre }) ? 'Quitar' : 'Agregar'}
-</button>
+<h2 className="text-2xl font-semibold mb-4">🧺 Artesanías</h2>
+<div className="mb-8">
+  <Link to="/productos-tabasco" state={{ municipio: nombre }}>
+    <button className="w-full sm:w-auto px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-lg shadow transition">
+      {`Productos artesanales de ${nombre || 'Centro'}`}
+    </button>
+  </Link>
+</div>
 
-        <button
-          onClick={() => alert('🛒 (Demo) Añadido al carrito')}
-          className="text-sm bg-orange-500 text-white px-2 py-1 rounded"
-        >
-          Comprar
-        </button>
-      </div>
-    </li>
-  ))}
-</ul>
-<h2 className="text-2xl font-semibold">Talleres y espacios temáticos</h2>
-<ul className="mb-6">
+
+
+<h2 className="text-2xl font-semibold mb-4">🎓 Talleres y Espacios Temáticos</h2>
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 md:gap-4 mb-8">
   {(datos.talleres || []).map((t, i) => (
-    <li key={`taller-${i}`} className="flex items-center justify-between py-1">
-      <span>🎓 {t}</span>
+    <div key={`taller-${i}`} className="bg-white rounded-xl p-3 shadow flex items-center justify-between">
+      <p className="text-sm">{t}</p>
       <button
         onClick={() => toggleSeleccion({ tipo: 'Talleres y espacios temáticos', nombre: t })}
-        className="text-sm bg-blue-500 text-white px-2 py-1 rounded"
+        className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
       >
-        {estaAgregado({ tipo:'Talleres y espacios temáticos', nombre:t }) ? 'Quitar' : 'Agregar'}
+        {estaAgregado({ tipo:'Talleres y espacios temáticos', nombre:t }) ? 'Quitar' : 'Inscribirme'}
       </button>
-    </li>
+    </div>
   ))}
-</ul>
+</div>
 
-<h2 className="text-2xl font-semibold">Gastronomía típica</h2>
-<ul className="mb-6">
+
+<h2 className="text-2xl font-semibold mb-4">🍽️ Gastronomía Típica</h2>
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 md:gap-4 mb-10">
   {(datos.gastronomia || []).map((g, i) => (
-    <li key={`gastronomia-${i}`} className="flex items-center justify-between py-1">
-      <span>🍽️ {g}</span>
+    <div key={`gastronomia-${i}`} className="bg-white rounded-xl p-3 shadow flex items-center justify-between">
+      <div>
+        <p className="font-semibold">{g}</p>
+        <p className="text-xs text-gray-600">Receta tradicional</p>
+      </div>
       <button
         onClick={() => toggleSeleccion({ tipo: 'Gastronomía típica', nombre: g })}
-        className="text-sm bg-green-500 text-white px-2 py-1 rounded"
+        className="text-sm bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
       >
         {estaAgregado({ tipo:'Gastronomía típica', nombre:g }) ? 'Quitar' : 'Agregar'}
       </button>
-    </li>
+    </div>
   ))}
-</ul>
+</div>
 
 
-      <div className="flex gap-4 mt-6">
+
+      <div className="flex flex-wrap gap-3 sm:gap-4 mt-8">
+        
 <Link to="/mapa-tabasco">
-<button className={`${theme.btnPrimary} px-4 py-2 rounded transition`}>
+<button className={`${theme.btnPrimary} px-4 py-2 rounded transition w-full sm:w-auto`}>
   ← Regresar al mapa
 </button>
 </Link>

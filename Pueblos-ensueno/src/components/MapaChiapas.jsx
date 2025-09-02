@@ -1,12 +1,22 @@
-// MapaChiapas.jsx
+// MapaChiapas.jsx — con Mapbox integrado
 import React, { useEffect, useRef, useState } from 'react';
 import chiapasSvg from '../assets/Chiapas.svg?raw';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/Logo.png';
 import { Menu } from 'lucide-react';
 
+// 🔹 Mapbox
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+
 export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
   const containerRef = useRef(null);
+  const mapContainer = useRef(null);         // ⬅️ contenedor Mapbox
+  const mapRef = useRef(null);               // ⬅️ instancia del mapa
+  const [mostrarMapaMapbox, setMostrarMapaMapbox] = useState(false); // ⬅️ toggle
+  const [clickCoords, setClickCoords] = useState(null);
+
   const [tooltip, setTooltip] = useState({ visible: false, name: '', x: 0, y: 0 });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [vistaMovil, setVistaMovil] = useState('mapa'); // 'mapa' | 'itinerario'
@@ -37,7 +47,7 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
 
-  // Picker Origen/Destino (después de formData para poder leer sus valores)
+  // Picker Origen/Destino
   const [showODPicker, setShowODPicker] = useState(false);
   const [origenSel, setOrigenSel] = useState(formData.lugarInicio || "");
   const [destinoSel, setDestinoSel] = useState(formData.ultimoLugar || "");
@@ -67,7 +77,7 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
     return { inicio, fin: (fin > finMes ? finMes : fin) };
   };
 
-  // Sugerencia simple para Chiapas si falta origen/destino en modo auto
+  // Sugerencia simple si falta origen/destino en modo auto
   const sugerirRuta = ({ mes, intereses = [], tipo }) => {
     const inicio = "Tuxtla Gutiérrez";
     const fin = "San Cristóbal de las Casas";
@@ -75,29 +85,29 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
     return { inicio, fin, actividades, eventosMes: [] };
   };
 
-  // -------------------- Municipios (para el picker) --------------------
+  // -------------------- Municipios (para markers y picker) --------------------
+  // Coordenadas aproximadas [lng, lat]
   const municipiosChiapas = [
-    { nombre: 'Tuxtla Gutiérrez' },
-    { nombre: 'San Cristóbal de las Casas' },
-    { nombre: 'Palenque' },
-    { nombre: 'Comitán de Domínguez' },
-    { nombre: 'Chiapa de Corzo' },
-    { nombre: 'Tapachula' },
-    { nombre: 'Toniná' },
-    { nombre: 'Ocosingo' },
-    { nombre: 'Las Margaritas' },
-    { nombre: 'San Juan Chamula' },
-    // agrega los que desees…
+    { nombre: 'Tuxtla Gutiérrez',          coords: [-93.1150, 16.7539] },
+    { nombre: 'San Cristóbal de las Casas',coords: [-92.6386, 16.7370] },
+    { nombre: 'Palenque',                   coords: [-91.9840, 17.5092] },
+    { nombre: 'Comitán de Domínguez',       coords: [-92.1386, 16.2521] },
+    { nombre: 'Chiapa de Corzo',            coords: [-93.0073, 16.7071] },
+    { nombre: 'Tapachula',                  coords: [-92.2570, 14.9018] },
+    { nombre: 'Toniná',                     coords: [-92.0088, 16.9118] },
+    { nombre: 'Ocosingo',                   coords: [-92.0951, 16.9063] },
+    { nombre: 'Las Margaritas',             coords: [-91.9781, 16.3141] },
+    { nombre: 'San Juan Chamula',           coords: [-92.7030, 16.7928] },
   ];
 
   const listaMunicipios = [...municipiosChiapas]
     .map(m => m.nombre)
     .sort((a,b) => a.localeCompare(b, 'es'));
 
-  // -------------------- Efectos --------------------
-  // 1) Dibuja SVG + listeners
+  // -------------------- SVG: Dibuja y listeners (solo si no está Mapbox) --------------------
   useEffect(() => {
     if (vistaMovil !== 'mapa') return;
+    if (mostrarMapaMapbox) return;            // ⬅️ si está Mapbox, NO pintes el SVG
     if (!containerRef.current) return;
 
     containerRef.current.innerHTML = chiapasSvg;
@@ -149,9 +159,96 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
       });
       if (containerRef.current) containerRef.current.innerHTML = '';
     };
-  }, [vistaMovil, navigate]);
+  }, [vistaMovil, mostrarMapaMapbox, navigate, chiapasSvg]);
 
-  // 2) Escucha cambios externos de localStorage (ej. otra vista guarda mes/origen)
+  // -------------------- MAPBOX: Inicialización (similar a Tabasco) --------------------
+  useEffect(() => {
+    if (vistaMovil !== 'mapa') return;
+    if (!mostrarMapaMapbox || !mapContainer.current) return;
+
+    // Evita recrear si ya existe
+    if (mapRef.current) {
+      mapRef.current.resize();
+      return;
+    }
+
+    const map = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [-92.5, 16.7],  // centro aproximado de Chiapas
+      zoom: 6.5,
+      pitch: 0,
+      bearing: 0,
+    });
+    mapRef.current = map;
+
+    map.once('load', () => map.resize());
+    setTimeout(() => map.resize(), 0);
+
+    map.dragRotate.disable();
+    map.touchZoomRotate.disableRotation();
+    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    // Click para popup de coordenadas
+    map.on('click', (e) => {
+      const { lng, lat } = e.lngLat;
+      setClickCoords({ lng, lat });
+      new mapboxgl.Popup({ closeOnClick: true, offset: 10 })
+        .setLngLat([lng, lat])
+        .setHTML(`
+          <strong>📍 Coordenadas</strong><br>
+          Lat: ${lat.toFixed(5)}<br>
+          Lng: ${lng.toFixed(5)}
+        `)
+        .addTo(map);
+    });
+
+    // Marcadores de municipios
+    municipiosChiapas.forEach((municipio) => {
+      const el = document.createElement('div');
+      el.style.width = '18px';
+      el.style.height = '18px';
+      el.style.borderRadius = '50%';
+      el.style.backgroundColor = '#1E90FF';
+      el.style.cursor = 'pointer';
+
+      new mapboxgl.Marker(el)
+        .setLngLat(municipio.coords)
+        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(
+          `<strong>${municipio.nombre}</strong><br>Municipio de Chiapas`
+        ))
+        .addTo(map);
+
+      el.addEventListener('click', () => {
+        // Soporta tu flujo de selección manual si lo activas aquí
+        const seleccion = document.body.getAttribute("data-seleccionando");
+        if (seleccion === 'inicio') {
+          setFormData(prev => ({ ...prev, lugarInicio: municipio.nombre }));
+          document.body.removeAttribute("data-seleccionando");
+          return;
+        }
+        if (seleccion === 'fin') {
+          setFormData(prev => ({ ...prev, ultimoLugar: municipio.nombre }));
+          document.body.removeAttribute("data-seleccionando");
+          return;
+        }
+        navigate(`/municipio/${municipio.nombre}`);
+      });
+    });
+
+    const onResize = () => map.resize();
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [mostrarMapaMapbox, vistaMovil]);
+
+  // -------------------- Escucha cambios externos de localStorage --------------------
   useEffect(() => {
     const handleStorageChange = () => {
       const it = JSON.parse(localStorage.getItem("itinerario") || "null");
@@ -170,7 +267,7 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // 3) Autocalcular fechas al cambiar mes o días (limitado al mes)
+  // -------------------- Autocalcular fechas --------------------
   useEffect(() => {
     if (!formData.mes) return;
     const hoy = new Date();
@@ -239,7 +336,9 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
       }}
       className="flex flex-col gap-4 text-sm"
     >
-      <label className="font-bold text-lg text-center">🐯 ITINERARIOS DE VIAJE</label>
+      <label className="font-bold text-lg text-center">
+        {mostrarMapaMapbox ? '📍 Explora los municipios de Chiapas' : '🐯 ITINERARIOS DE VIAJE'}
+      </label>
 
       {errores.length > 0 && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
@@ -520,6 +619,7 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
             Pueblos de Ensueño
           </h1>
         </Link>
+
         <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
           <Link to="/">
             <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
@@ -527,6 +627,7 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
             </button>
           </Link>
         </nav>
+
         <button className="block md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           <Menu size={24} />
         </button>
@@ -556,18 +657,41 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
           <div className="relative rounded-xl shadow-lg overflow-hidden h-[80vh] sm:h-[85vh] md:h-[90vh] lg:h-[100vh]">
             <div className="flex flex-col lg:flex-row h-full">
               {/* MAPA (izquierda) */}
+              
               <div className={`${vistaMovil!=='mapa' ? 'hidden md:block' : ''} relative flex-1`}>
-                <div
-                  ref={containerRef}
-                  className="absolute inset-0 w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
-                />
-                {tooltip.visible && (
-                  <div
-                    className="absolute z-40 bg-yellow-200 text-gray-800 text-xs sm:text-sm font-bold px-3 py-2 rounded-xl shadow-lg border-2 border-amber-300"
-                    style={{ top: Math.min(tooltip.y + 24, window.innerHeight - 56), left: Math.min(tooltip.x + 24, window.innerWidth - 160) }}
-                  >
-                    🌸 {tooltip.name}
-                  </div>
+                {/* Botón para alternar SVG / Mapbox */}
+                <div className="absolute top-2 left-2 z-20 flex gap-2">
+                 <button onClick={() => setMostrarMapaMapbox(v => !v)}
+                    className="bg-white border border-gray-300 px-4 py-2 rounded shadow hover:bg-gray-100 transition">
+                      {mostrarMapaMapbox ? '🌐 Ver mapa SVG' : '🗺️ Ver mapa Mapbox'}
+                        </button>
+                         </div>
+                    {mostrarMapaMapbox ? (
+                  <>
+                    <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
+                    {clickCoords && (
+                      <div className="absolute bottom-3 left-3 z-40 bg-white/85 p-2 rounded shadow text-xs">
+                        <div className="font-medium">📍 Coordenadas</div>
+                        <div>Lat: {clickCoords.lat.toFixed(5)}</div>
+                        <div>Lng: {clickCoords.lng.toFixed(5)}</div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div
+                      ref={containerRef}
+                      className="absolute inset-0 w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
+                    />
+                    {tooltip.visible && (
+                      <div
+                        className="absolute z-40 bg-yellow-200 text-gray-800 text-xs sm:text-sm font-bold px-3 py-2 rounded-xl shadow-lg border-2 border-amber-300"
+                        style={{ top: Math.min(tooltip.y + 24, window.innerHeight - 56), left: Math.min(tooltip.x + 24, window.innerWidth - 160) }}
+                      >
+                        🌸 {tooltip.name}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -647,7 +771,6 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
                 onClick={() => {
                   if (!origenSel || !destinoSel) return;
 
-                  // fija en el formulario
                   setFormData(prev => ({
                     ...prev,
                     modoDestino: "manual",
@@ -655,7 +778,6 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
                     ultimoLugar: destinoSel
                   }));
 
-                  // persiste en borrador
                   try {
                     const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
                     localStorage.setItem("itinerario", JSON.stringify({
