@@ -4,15 +4,17 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
+// Al inicio de src/components/Home.jsx
+import { View, Sparkles, Bot, Route, MapPin, Navigation } from 'lucide-react';
 
 import Navbar from './Navbar';
 import Footer from './Footer';
 
-import placeholder from '../assets/PueblosMagicos.png';
-import LogoPueblos from '../assets/LogoPueblos.png';
-import ArtesanosRA from '../assets/ArtesanosRA.png';
-import ArtesanoGPS from '../assets/ArtesanoGPS.png';
-import VisionMisionValores from '../assets/VisionMisionValores.png';
+import placeholder from '../assets/img2D/PueblosMagicos.png';
+import LogoPueblos from '../assets/Logos/LogoPueblos.png';
+import ArtesanosRA from '../assets/img2D/ArtesanosRA.png';
+import ArtesanoGPS from '../assets/img2D/ArtesanoGPS.png';
+import VisionMisionValores from '../assets/img2D/VisionMisionValores.png';
 import SpeedDial from "./SpeedDial";
 import Chatbot from "./Chatbot";
 
@@ -77,35 +79,122 @@ export default function Home() {
 
       </main>
       
-      {/* Resto de las secciones (sin cambios) */}
-      <section id="que-es" className="px-4 sm:px-8 lg:px-24 py-16 bg-[#EAEAEA] text-zinc-800">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-10">
-          <img src={LogoPueblos} alt="Logo Pueblos de Ensueño" className="w-full md:w-1/3 rounded-lg object-cover" />
-          <div className="flex-1">
-            <h2 className="text-3xl font-extrabold mb-6 text-center md:text-left">{t('section.whatIsTitle')}</h2>
-            <p className="text-lg leading-relaxed max-w-prose text-left">{t('section.whatIsText')}</p>
+    {/* ¿Qué es? - PADDING VERTICAL REDUCIDO */}
+      <section id="que-es" className="bg-[#EAEAEA] py-12 lg:py-10">
+        <div className="container mx-auto grid lg:grid-cols-3 gap-16 items-center px-10 lg:px-20">
+          
+          {/* Lado Izquierdo: Imagen */}
+          <div className="w-full lg:col-span-1">
+            <img
+              src={LogoPueblos}
+              alt="Logo Pueblos de Ensueño"
+              className="w-full h-auto object-cover rounded-2xl shadow-xl"
+              loading="lazy" 
+              decoding="async"
+            />
+          </div>
+
+          {/* Lado Derecho: Texto */}
+          <div className="lg:col-span-2 text-center lg:text-left">
+            <h2 className="text-4xl md:text-5xl font-black text-zinc-800 leading-tight">
+              {t('section.whatIsTitle')}
+            </h2>
+            
+            <div className="w-24 h-1.5 bg-[#F39106] mt-4 mb-6 mx-auto lg:mx-0"></div>
+
+            <p className="text-lg text-gray-600 leading-relaxed">
+              {t('section.whatIsText')}
+            </p>
           </div>
         </div>
       </section>
 
-      <section id="tecnologia" className="px-4 sm:px-8 lg:px-24 py-16 bg-[#EAEAEA] text-zinc-800">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
-          <div className="md:w-2/3">
-            <h2 className="text-3xl font-extrabold mb-6 text-center md:text-left">{t('section.techTitle')}</h2>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-lg">
-              <li className="flex items-center gap-3">🔹 {t('section.tech.ar')}</li>
-              <li className="flex items-center gap-3">🔹 {t('section.tech.maps')}</li>
-              <li className="flex items-center gap-3">🔹 {t('section.tech.chatbot')}</li>
-              <li className="flex items-center gap-3">🔹 {t('section.tech.itineraries')}</li>
-              <li className="flex items-center gap-3">🔹 {t('section.tech.interactiveMap')}</li>
-              <li className="flex items-center gap-3">🔹 {t('section.tech.gps')}</li>
+{/* Tecnología - IMAGEN SIN FONDO DE COLOR */}
+      <section id="tecnologia" className="bg-white py-12 lg:py-20">
+        <div className="container mx-auto grid lg:grid-cols-3 gap-16 items-center px-8 md:px-12 lg:px-20">
+          
+          {/* Lado Izquierdo: Título y Lista de Características */}
+          <div className="lg:col-span-2 mt-10 lg:mt-0">
+            <div className="text-center lg:text-left">
+              <h2 className="text-4xl md:text-5xl font-black text-zinc-800 leading-tight">
+                {t('section.techTitle')}
+              </h2>
+              <div className="w-24 h-1.5 bg-[#F39106] mt-4 mb-6 mx-auto lg:mx-0"></div>
+            </div>
+            
+            <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-6 mt-8">
+              <li className="flex items-start gap-4">
+                <div className="bg-red-100 p-3 rounded-full">
+                  <View className="w-6 h-6 text-[#C3272B]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-800">Realidad Aumentada</h3>
+                  <p className="text-gray-600">{t('section.tech.ar')}</p>
+                </div>
+              </li>
+              <li className="flex items-start gap-4">
+                <div className="bg-yellow-100 p-3 rounded-full">
+                  <Sparkles className="w-6 h-6 text-[#F39106]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-800">Recomendaciones</h3>
+                  <p className="text-gray-600">{t('section.tech.maps')}</p>
+                </div>
+              </li>
+              <li className="flex items-start gap-4">
+                <div className="bg-green-100 p-3 rounded-full">
+                  <Bot className="w-6 h-6 text-[#2E7D32]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-800">Chatbot Inteligente</h3>
+                  <p className="text-gray-600">{t('section.tech.chatbot')}</p>
+                </div>
+              </li>
+              <li className="flex items-start gap-4">
+                <div className="bg-blue-100 p-3 rounded-full">
+                  <Route className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-800">Itinerarios Personalizados</h3>
+                  <p className="text-gray-600">{t('section.tech.itineraries')}</p>
+                </div>
+              </li>
+              <li className="flex items-start gap-4">
+                <div className="bg-pink-100 p-3 rounded-full">
+                  <MapPin className="w-6 h-6 text-[#E94E80]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-800">Mapa Interactivo</h3>
+                  <p className="text-gray-600">{t('section.tech.interactiveMap')}</p>
+                </div>
+              </li>
+              <li className="flex items-start gap-4">
+                <div className="bg-gray-200 p-3 rounded-full">
+                  <Navigation className="w-6 h-6 text-[#1A2B3B]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-800">GPS para Artesanos</h3>
+                  <p className="text-gray-600">{t('section.tech.gps')}</p>
+                </div>
+              </li>
             </ul>
           </div>
-          <img src={ArtesanosRA} alt="Representación de artesanos con RA" className="w-full md:w-1/3 rounded-lg object-cover mt-8 md:mt-0" />
+
+          {/* Lado Derecho: Imagen (diseño simple) */}
+          <div className="w-full lg:col-span-1">
+            <img
+              src={ArtesanosRA}
+              alt="Representación de artesanos con Realidad Aumentada"
+              className="w-full h-auto object-cover rounded-2xl shadow-xl"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+
         </div>
       </section>
 
-      <section id="por-que" className="px-4 sm:px-8 lg:px-24 py-16 bg-white text-zinc-800">
+      <section id="por-que" className="px-4 sm:px-8 lg:px-24 py-16 bg-[#EAEAEA] text-zinc-800">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-10">
           <img src={ArtesanoGPS} alt="Artesano mostrando GPS" className="w-full md:w-1/3 rounded-lg object-cover" />
           <div className="flex-1">
