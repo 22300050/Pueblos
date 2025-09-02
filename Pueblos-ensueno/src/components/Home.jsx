@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
-// Al inicio de src/components/Home.jsx
 import { View, Sparkles, Bot, Route, MapPin, Navigation } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -109,7 +109,7 @@ export default function Home() {
         </div>
       </section>
 
-{/* Tecnología - IMAGEN SIN FONDO DE COLOR */}
+    {/* Tecnología - IMAGEN SIN FONDO DE COLOR */}
       <section id="tecnologia" className="bg-white py-12 lg:py-20">
         <div className="container mx-auto grid lg:grid-cols-3 gap-16 items-center px-8 md:px-12 lg:px-20">
           
@@ -194,18 +194,60 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="por-que" className="px-4 sm:px-8 lg:px-24 py-16 bg-[#EAEAEA] text-zinc-800">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-10">
-          <img src={ArtesanoGPS} alt="Artesano mostrando GPS" className="w-full md:w-1/3 rounded-lg object-cover" />
-          <div className="flex-1">
-            <h2 className="text-3xl font-extrabold mb-6 text-center md:text-left">{t('section.whyTitle')}</h2>
-            <ul className="list-disc list-inside text-lg space-y-3 max-w-prose text-left">
-              <li>{t('section.why.item1')}</li>
-              <li>{t('section.why.item2')}</li>
-              <li>{t('section.why.item3')}</li>
-              <li>{t('section.why.item4')}</li>
+    {/* ¿Por qué? - FONDO GRIS */}
+      <section id="por-que" className="bg-[#EAEAEA] py-10 lg:py-20">
+        {/* Usamos la misma estructura de grid para consistencia */}
+        <div className="container mx-auto grid lg:grid-cols-3 gap-16 items-center px-8 md:px-10 lg:px-20">
+          
+          {/* Lado Izquierdo: Imagen */}
+          <div className="w-full lg:col-span-1">
+            <img
+              src={ArtesanoGPS}
+              alt="Artesano mostrando ubicación en el mapa"
+              className="w-full h-auto object-cover rounded-2xl shadow-xl"
+              loading="lazy" 
+              decoding="async"
+            />
+          </div>
+
+          {/* Lado Derecho: Título y Lista de Beneficios */}
+          <div className="lg:col-span-2">
+            <div className="text-center lg:text-left">
+              <h2 className="text-4xl md:text-5xl font-black text-zinc-800 leading-tight">
+                {t('section.whyTitle')}
+              </h2>
+              <div className="w-24 h-1.5 bg-[#F39106] mt-4 mb-6 mx-auto lg:mx-0"></div>
+            </div>
+            
+            {/* Nueva lista de beneficios con iconos */}
+            <ul className="space-y-5 mt-8">
+              <li className="flex items-start gap-4">
+                <CheckCircle className="w-7 h-7 text-green-600 flex-shrink-0 mt-1" />
+                <span className="text-lg text-gray-700">
+                  {t('section.why.item1')}
+                </span>
+              </li>
+              <li className="flex items-start gap-4">
+                <CheckCircle className="w-7 h-7 text-green-600 flex-shrink-0 mt-1" />
+                <span className="text-lg text-gray-700">
+                  {t('section.why.item2')}
+                </span>
+              </li>
+              <li className="flex items-start gap-4">
+                <CheckCircle className="w-7 h-7 text-green-600 flex-shrink-0 mt-1" />
+                <span className="text-lg text-gray-700">
+                  {t('section.why.item3')}
+                </span>
+              </li>
+              <li className="flex items-start gap-4">
+                <CheckCircle className="w-7 h-7 text-green-600 flex-shrink-0 mt-1" />
+                <span className="text-lg text-gray-700">
+                  {t('section.why.item4')}
+                </span>
+              </li>
             </ul>
           </div>
+
         </div>
       </section>
 
