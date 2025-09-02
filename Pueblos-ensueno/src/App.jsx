@@ -1,9 +1,11 @@
 // Archivo: src/App.jsx
 
-// --- 1. IMPORTACIONES ADICIONALES ---
-import React, { useState, useEffect } from 'react'; // Asegúrate que useState y useEffect estén aquí
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LoadingAnimation from './components/LoadingAnimation'; // Importamos la animación
+
+// --- 1. IMPORTAMOS AMBAS ANIMACIONES ---
+import WelcomeAnimation from './components/WelcomeAnimation';
+import LoadingAnimation from './components/LoadingAnimation';
 
 // El resto de tus componentes
 import Register from './components/Register';
@@ -26,10 +28,14 @@ import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
 
 function App() {
 
-  // --- 2. ESTADO PARA CONTROLAR LA CARGA ---
+  // --- 2. NUEVO ESTADO PARA LA ANIMACIÓN DE BIENVENIDA ---
+  // Revisa si el usuario ya vio la animación en esta sesión del navegador.
+  const [showWelcome, setShowWelcome] = useState(!sessionStorage.getItem('hasSeenWelcome'));
+  
+  // Estado para la animación de carga (se mantiene igual)
   const [isLoading, setIsLoading] = useState(true);
 
-  // Este es tu código original para el Service Worker, se queda igual.
+  // Tu código para el Service Worker (se mantiene igual)
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
@@ -39,24 +45,36 @@ function App() {
     }
   }, []);
 
-  // --- 3. LÓGICA PARA SIMULAR EL TIEMPO DE CARGA ---
+  // Lógica para la animación de carga (se mantiene igual)
   useEffect(() => {
-    // Simulamos una carga de 2.5 segundos
     const timer = setTimeout(() => {
-      setIsLoading(false); // Después del tiempo, ocultamos la animación
+      setIsLoading(false);
     }, 2500);
 
     return () => clearTimeout(timer);
   }, []);
 
+  // --- 3. NUEVA FUNCIÓN PARA CUANDO LA BIENVENIDA TERMINE ---
+  const handleWelcomeComplete = () => {
+    // Guarda en la memoria de la sesión que la animación ya se vio.
+    sessionStorage.setItem('hasSeenWelcome', 'true');
+    // Oculta el componente de bienvenida.
+    setShowWelcome(false);
+  };
 
-  // --- 4. RENDERIZADO CONDICIONAL ---
-  // Si la página aún está cargando, muestra la animación y nada más.
+  // --- 4. LÓGICA DE RENDERIZADO ACTUALIZADA ---
+
+  // Primero, revisa si hay que mostrar la animación de bienvenida.
+  if (showWelcome) {
+    return <WelcomeAnimation onAnimationComplete={handleWelcomeComplete} />;
+  }
+
+  // Si no, revisa si hay que mostrar la animación de carga.
   if (isLoading) {
     return <LoadingAnimation />;
   }
 
-  // Si la carga ha terminado, muestra tu aplicación normal con todas las rutas.
+  // Si ninguna de las anteriores, muestra la aplicación.
   return (
     <Router>
       <div className="min-h-screen flex flex-col">

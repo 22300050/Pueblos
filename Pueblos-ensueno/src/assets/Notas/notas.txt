@@ -1,0 +1,7 @@
+animacion de carga
+npm install framer-motion
+
+https://www.flaticon.es/icono-gratis/piramide_2166433?term=piramide+azteca&related_id=2166433
+https://www.flaticon.es/icono-gratis/artesanias_3697962?term=artesanias&related_id=3697962
+https://www.flaticon.es/icono-gratis/olmeca_5018265?term=cabeza+olmeca&related_id=5018265
+https://www.flaticon.es/icono-gratis/iglesia_9702016?term=iglesia&related_id=9702016
