@@ -31,41 +31,46 @@ export default function Home() {
       
       <Navbar />
 
-    {/* Hero Section - BORDE DE LÍNEA FINA */}
-      <main id="contenido" className="flex flex-col lg:flex-row justify-between items-center px-4 sm:px-8 lg:px-24 py-10 sm:py-16 bg-[#EAEAEA] text-zinc-800">
+    {/* Hero Section - DISEÑO RESPONSIVO MEJORADO */}
+      <main id="contenido" className="container mx-auto grid lg:grid-cols-2 gap-12 items-center px-6 py-16 ">
         
         {/* Lado Izquierdo: Texto y Botones */}
-        <div className="max-w-full lg:max-w-xl text-center lg:text-left">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 leading-tight">
+        <div className="text-center lg:text-left">
+          {/* Título */}
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-zinc-800 mb-5 leading-tight">
             {t('hero.subtitle')}
             <br />
             <span className="text-[#F39106]">{t('header.title')}</span>
           </h2>
-          <p className="text-lg sm:text-xl mb-8 max-w-prose mx-auto lg:mx-0 text-gray-600">
+
+          {/* Párrafo */}
+          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto lg:mx-0 text-gray-600">
             {t('hero.text')}
           </p>
+
+          {/* Botones - AJUSTES AQUÍ */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Link to="/nosotros">
-              <button className="px-6 py-2.5 rounded-full font-semibold bg-[#F39106] text-white shadow-md hover:opacity-90 transition-all">
+            <Link to="/nosotros" className="w-full sm:w-auto"> {/* Añadido w-full en móvil */}
+              <button className="w-full sm:w-auto px-6 py-3 rounded-full font-bold bg-[#F39106] text-white shadow-lg hover:bg-opacity-90 transition-all transform hover:-translate-y-1">
                 Nuestro equipo
               </button>
             </Link>
             <button
               onClick={() => scrollToId('como-funciona')}
-              className="px-6 py-2.5 rounded-full font-semibold border border-[#F39106] text-[#F39106] bg-transparent hover:bg-[#F39106] hover:text-white transition-all"
+              className="w-full sm:w-auto px-6 py-3 rounded-full font-bold border-2 border-[#F39106] text-[#F39106] bg-transparent hover:bg-[#F39106] hover:text-white shadow-md transition-all transform hover:-translate-y-1"
             >
               {t('section.howTitle')}
             </button>
           </div>
         </div>
         
-        {/* Lado Derecho: Imagen con fondo blanco y borde de línea fina */}
-        <div className="w-full lg:w-5/12 mt-10 lg:mt-0">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 transition-transform hover:scale-105">
+        {/* Lado Derecho: Imagen */}
+        <div className="w-full mt-10 lg:mt-0">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
             <img
               src={placeholder}
               alt="Escena de Pueblos de Ensueño"
-              className="w-full h-auto object-contain rounded-xl" 
+              className="w-full h-auto object-contain rounded-2xl" 
             />
           </div>
         </div>
@@ -73,7 +78,7 @@ export default function Home() {
       </main>
       
       {/* Resto de las secciones (sin cambios) */}
-      <section id="que-es" className="px-4 sm:px-8 lg:px-24 py-16 bg-white text-zinc-800">
+      <section id="que-es" className="px-4 sm:px-8 lg:px-24 py-16 bg-[#EAEAEA] text-zinc-800">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-10">
           <img src={LogoPueblos} alt="Logo Pueblos de Ensueño" className="w-full md:w-1/3 rounded-lg object-cover" />
           <div className="flex-1">
