@@ -3,9 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// --- 1. IMPORTAMOS AMBAS ANIMACIONES ---
+// Tus componentes de animación
 import WelcomeAnimation from './components/WelcomeAnimation';
 import LoadingAnimation from './components/LoadingAnimation';
+
+// --- 1. IMPORTAMOS NUESTRO NUEVO DETECTOR ---
+import useIsDesktop from './hooks/useIsDesktop';
 
 // El resto de tus componentes
 import Register from './components/Register';
@@ -27,15 +30,13 @@ import Nosotros from './components/Nosotros';
 import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
 
 function App() {
-
-  // --- 2. NUEVO ESTADO PARA LA ANIMACIÓN DE BIENVENIDA ---
-  // Revisa si el usuario ya vio la animación en esta sesión del navegador.
-  const [showWelcome, setShowWelcome] = useState(!sessionStorage.getItem('hasSeenWelcome'));
+  // --- 2. USAMOS EL DETECTOR PARA SABER EL TAMAÑO DE LA PANTALLA ---
+  const isDesktop = useIsDesktop();
   
-  // Estado para la animación de carga (se mantiene igual)
+  const [showWelcome, setShowWelcome] = useState(!sessionStorage.getItem('hasSeenWelcome'));
   const [isLoading, setIsLoading] = useState(true);
 
-  // Tu código para el Service Worker (se mantiene igual)
+  // useEffects (sin cambios)
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
@@ -45,36 +46,31 @@ function App() {
     }
   }, []);
 
-  // Lógica para la animación de carga (se mantiene igual)
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2500);
-
     return () => clearTimeout(timer);
   }, []);
 
-  // --- 3. NUEVA FUNCIÓN PARA CUANDO LA BIENVENIDA TERMINE ---
   const handleWelcomeComplete = () => {
-    // Guarda en la memoria de la sesión que la animación ya se vio.
     sessionStorage.setItem('hasSeenWelcome', 'true');
-    // Oculta el componente de bienvenida.
     setShowWelcome(false);
   };
 
-  // --- 4. LÓGICA DE RENDERIZADO ACTUALIZADA ---
 
-  // Primero, revisa si hay que mostrar la animación de bienvenida.
-  if (showWelcome) {
+  // --- 3. ACTUALIZAMOS LA LÓGICA DE RENDERIZADO ---
+  // Ahora la animación de bienvenida solo se mostrará si `showWelcome` es true Y si `isDesktop` es true.
+  if (showWelcome && isDesktop) {
     return <WelcomeAnimation onAnimationComplete={handleWelcomeComplete} />;
   }
 
-  // Si no, revisa si hay que mostrar la animación de carga.
+  // La lógica de la animación de carga no cambia.
   if (isLoading) {
     return <LoadingAnimation />;
   }
 
-  // Si ninguna de las anteriores, muestra la aplicación.
+  // La aplicación principal.
   return (
     <Router>
       <div className="min-h-screen flex flex-col">
