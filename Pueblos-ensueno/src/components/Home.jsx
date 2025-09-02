@@ -5,11 +5,9 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 
-// 1. Importamos los nuevos componentes que creamos
 import Navbar from './Navbar';
 import Footer from './Footer';
 
-// 2. Importamos solo las imágenes y componentes necesarios para esta página
 import placeholder from '../assets/PueblosMagicos.png';
 import LogoPueblos from '../assets/LogoPueblos.png';
 import ArtesanosRA from '../assets/ArtesanosRA.png';
@@ -31,38 +29,50 @@ export default function Home() {
   return (
     <div className="bg-white">
       
-      {/* 3. Usamos el componente Navbar */}
       <Navbar />
 
-      {/* Hero Section - GRIS #EAEAEA */}
-      <main id="contenido" className="flex flex-col lg:flex-row justify-between items-center px-4 sm:px-8 lg:px-24 py-12 sm:py-20 bg-[#EAEAEA]">
+    {/* Hero Section - BORDE DE LÍNEA FINA */}
+      <main id="contenido" className="flex flex-col lg:flex-row justify-between items-center px-4 sm:px-8 lg:px-24 py-10 sm:py-16 bg-[#EAEAEA] text-zinc-800">
+        
+        {/* Lado Izquierdo: Texto y Botones */}
         <div className="max-w-full lg:max-w-xl text-center lg:text-left">
-          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold mb-4 leading-tight text-zinc-800">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 leading-tight">
             {t('hero.subtitle')}
             <br />
-            <span className="text-[#D92626]">{t('header.title')}</span>
+            <span className="text-[#F39106]">{t('header.title')}</span>
           </h2>
-          <p className="text-base sm:text-lg mb-6 max-w-prose mx-auto lg:mx-0 text-zinc-700">
+          <p className="text-lg sm:text-xl mb-8 max-w-prose mx-auto lg:mx-0 text-gray-600">
             {t('hero.text')}
           </p>
-          <div className="flex gap-3 justify-center lg:justify-start">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <Link to="/nosotros">
-              <button className="px-6 py-3 rounded-full font-semibold bg-[#D92626] text-white hover:opacity-90 transition">
+              <button className="px-6 py-2.5 rounded-full font-semibold bg-[#F39106] text-white shadow-md hover:opacity-90 transition-all">
                 Nuestro equipo
               </button>
             </Link>
             <button
               onClick={() => scrollToId('como-funciona')}
-              className="px-6 py-3 rounded-full font-semibold border border-gray-300 bg-white hover:bg-gray-200 text-zinc-800 transition"
+              className="px-6 py-2.5 rounded-full font-semibold border border-[#F39106] text-[#F39106] bg-transparent hover:bg-[#F39106] hover:text-white transition-all"
             >
               {t('section.howTitle')}
             </button>
           </div>
         </div>
-        <img src={placeholder} alt="Escena de Pueblos de Ensueño" className="w-full lg:w-1/2 h-auto object-contain mt-8 lg:mt-0" />
+        
+        {/* Lado Derecho: Imagen con fondo blanco y borde de línea fina */}
+        <div className="w-full lg:w-5/12 mt-10 lg:mt-0">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 transition-transform hover:scale-105">
+            <img
+              src={placeholder}
+              alt="Escena de Pueblos de Ensueño"
+              className="w-full h-auto object-contain rounded-xl" 
+            />
+          </div>
+        </div>
+
       </main>
       
-      {/* ¿Qué es? - BLANCO */}
+      {/* Resto de las secciones (sin cambios) */}
       <section id="que-es" className="px-4 sm:px-8 lg:px-24 py-16 bg-white text-zinc-800">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-10">
           <img src={LogoPueblos} alt="Logo Pueblos de Ensueño" className="w-full md:w-1/3 rounded-lg object-cover" />
@@ -73,7 +83,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Tecnología - GRIS #EAEAEA */}
       <section id="tecnologia" className="px-4 sm:px-8 lg:px-24 py-16 bg-[#EAEAEA] text-zinc-800">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="md:w-2/3">
@@ -91,7 +100,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ¿Por qué? - BLANCO */}
       <section id="por-que" className="px-4 sm:px-8 lg:px-24 py-16 bg-white text-zinc-800">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-10">
           <img src={ArtesanoGPS} alt="Artesano mostrando GPS" className="w-full md:w-1/3 rounded-lg object-cover" />
@@ -107,7 +115,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Visión, Misión y Valores - GRIS #EAEAEA */}
       <section id="vision-mision-valores" className="px-4 sm:px-8 lg:px-24 py-16 bg-[#EAEAEA] text-zinc-800">
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 items-center">
           <div><h3 className="text-xl font-semibold mb-2">{t('section.vision.title')}</h3><p>{t('section.vision.text')}</p></div>
@@ -117,7 +124,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Cómo Funciona - BLANCO */}
       <section id="como-funciona" className="px-4 sm:px-8 lg:px-24 py-16 bg-white text-zinc-800">
         <div className="max-w-4xl mx-auto mb-8 text-center"><h2 className="text-3xl font-extrabold">{t('section.howTitle')}</h2></div>
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
@@ -126,7 +132,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Final - GRIS #EAEAEA */}
       <section className="py-16 text-center bg-[#EAEAEA] text-zinc-800">
         <h2 className="text-3xl font-bold mb-2">{t('cta.title')}</h2>
         <p className="mb-6 text-lg">{t('cta.text')}</p>
@@ -137,7 +142,6 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* 4. Usamos el componente Footer */}
       <Footer />
       
       <Chatbot
