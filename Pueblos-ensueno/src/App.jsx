@@ -16,11 +16,13 @@ import LoadingAnimation from './components/LoadingAnimation';
 import useIsDesktop from './hooks/useIsDesktop';
 
 // El resto de tus componentes de página
+import Home from './components/pages/Home';
+import Nosotros from './components/pages/Nosotros';
+
 import Register from './components/Register';
 import Login from './components/Login';
 import InterestsSelector from './components/InterestsSelector';
 import MapaMexico from './components/MapaMexico';
-import Home from './components/pages/Home';
 import PuntosCercanos from './components/PuntosCercanos';
 import ProductosTabasco from './components/ProductosTabasco';
 import PerfilUsuario from './components/PerfilUsuario';
@@ -31,7 +33,6 @@ import MunicipioDetalle from './components/MunicipioDetalle';
 import MapaTabasco from './components/MapaTabasco';
 import './locales/i18n';
 import Directorios from "./components/Directorios";
-import Nosotros from './components/Nosotros';
 import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
 
 function App() {
