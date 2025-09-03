@@ -15,7 +15,6 @@ import placeholder from '../assets/img2D/PueblosMagicos.png';
 import LogoPueblos from '../assets/Logos/LogoPueblos.png';
 import ArtesanosRA from '../assets/img2D/ArtesanosRA.png';
 import ArtesanoGPS from '../assets/img2D/ArtesanoGPS.png';
-import VisionMisionValores from '../assets/img2D/VisionMisionValores.png';
 import SpeedDial from "./SpeedDial";
 import Chatbot from "./Chatbot";
 
@@ -34,8 +33,8 @@ export default function Home() {
       
       <Navbar />
 
-    {/* Hero Section - DISEÑO RESPONSIVO MEJORADO */}
-      <main id="contenido" className="container mx-auto grid lg:grid-cols-2 gap-12 items-center px-6 py-16 ">
+    {/* Hero Section */}
+      <main id="contenido" className="container mx-auto grid lg:grid-cols-2 gap-12 items-center px-8 md:px-10 lg:px-20 py-4 lg:py-8">
         
         {/* Lado Izquierdo: Texto y Botones */}
         <div className="text-center lg:text-left">
@@ -51,16 +50,16 @@ export default function Home() {
             {t('hero.text')}
           </p>
 
-          {/* Botones - AJUSTES AQUÍ */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Link to="/nosotros" className="w-full sm:w-auto"> {/* Añadido w-full en móvil */}
-              <button className="w-full sm:w-auto px-6 py-3 rounded-full font-bold bg-[#F39106] text-white shadow-lg hover:bg-opacity-90 transition-all transform hover:-translate-y-1">
+          {/* Botones */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+            <Link to="/nosotros">
+              <button className="px-6 py-3 rounded-full font-bold bg-[#F39106] text-white shadow-lg hover:bg-opacity-90 transition-all transform hover:-translate-y-1">
                 Nuestro equipo
               </button>
             </Link>
             <button
               onClick={() => scrollToId('como-funciona')}
-              className="w-full sm:w-auto px-6 py-3 rounded-full font-bold border-2 border-[#F39106] text-[#F39106] bg-transparent hover:bg-[#F39106] hover:text-white shadow-md transition-all transform hover:-translate-y-1"
+              className="px-6 py-3 rounded-full font-bold border-2 border-[#F39106] text-[#F39106] bg-transparent hover:bg-[#F39106] hover:text-white shadow-md transition-all transform hover:-translate-y-1"
             >
               {t('section.howTitle')}
             </button>
@@ -80,7 +79,7 @@ export default function Home() {
 
       </main>
       
-    {/* ¿Qué es? - PADDING VERTICAL REDUCIDO */}
+    {/* ¿Qué es? */}
       <section id="que-es" className="bg-[#EAEAEA] py-12 lg:py-10">
         <div className="container mx-auto grid lg:grid-cols-3 gap-16 items-center px-10 lg:px-20">
           
@@ -110,7 +109,7 @@ export default function Home() {
         </div>
       </section>
 
-    {/* Tecnología - IMAGEN SIN FONDO DE COLOR */}
+    {/* Tecnología */}
       <section id="tecnologia" className="bg-white py-12 lg:py-20">
         <div className="container mx-auto grid lg:grid-cols-3 gap-16 items-center px-8 md:px-12 lg:px-20">
           
@@ -195,9 +194,8 @@ export default function Home() {
         </div>
       </section>
 
-    {/* ¿Por qué? - FONDO GRIS */}
+    {/* ¿Por qué? */}
       <section id="por-que" className="bg-[#EAEAEA] py-10 lg:py-20">
-        {/* Usamos la misma estructura de grid para consistencia */}
         <div className="container mx-auto grid lg:grid-cols-3 gap-16 items-center px-8 md:px-10 lg:px-20">
           
           {/* Lado Izquierdo: Imagen */}
@@ -252,17 +250,9 @@ export default function Home() {
         </div>
       </section>
 
-{/* Visión, Misión y Valores - NUEVO DISEÑO DE TARJETAS */}
+    {/* Visión, Misión y Valores */}
       <section id="vision-mision-valores" className="bg-white py-10 lg:py-20">
         <div className="container mx-auto px-8 md:px-10 lg:px-20">
-          
-          {/* Título de la Sección */}
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-zinc-800 leading-tight">
-              Nuestros Principios
-            </h2>
-            <div className="w-24 h-1.5 bg-[#F39106] mt-4 mx-auto"></div>
-          </div>
           
           {/* Grid para las 3 tarjetas */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -300,22 +290,88 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="como-funciona" className="px-4 sm:px-8 lg:px-24 py-16 bg-white text-zinc-800">
-        <div className="max-w-4xl mx-auto mb-8 text-center"><h2 className="text-3xl font-extrabold">{t('section.howTitle')}</h2></div>
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-          <div className="lg:w-1/2"><video src="/video-mexico.mp4" className="w-full rounded-2xl shadow-xl object-cover" controls playsInline preload="metadata" /></div>
-          <div className="lg:w-1/2"><ol className="list-decimal list-inside space-y-3 text-lg max-w-prose text-left"><li>{t('section.how.step1')}</li><li>{t('section.how.step2')}</li><li>{t('section.how.step3')}</li><li>{t('section.how.step4')}</li><li>{t('section.how.step5')}</li></ol></div>
+    {/* Cómo Funciona */}
+      <section id="como-funciona" className="bg-[#EAEAEA] py-10 lg:py-20">
+        <div className="container mx-auto grid lg:grid-cols-2 gap-16 items-center px-8 md:px-10 lg:px-20">
+          
+          {/* Lado Izquierdo: Título y Lista de Pasos */}
+          <div>
+            <div className="text-center lg:text-left mb-10">
+              <h2 className="text-4xl md:text-5xl font-black text-zinc-800 leading-tight">
+                {t('section.howTitle')}
+              </h2>
+              <div className="w-24 h-1.5 bg-[#F39106] mt-4 mb-6 mx-auto lg:mx-0"></div>
+            </div>
+            
+            {/* Nueva lista de pasos con números estilizados */}
+            <ol className="space-y-6">
+              <li className="flex items-start gap-4">
+                <div className="flex-shrink-0 bg-[#F39106] w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">1</div>
+                <p className="text-lg text-gray-700 pt-1">{t('section.how.step1')}</p>
+              </li>
+              <li className="flex items-start gap-4">
+                <div className="flex-shrink-0 bg-[#F39106] w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">2</div>
+                <p className="text-lg text-gray-700 pt-1">{t('section.how.step2')}</p>
+              </li>
+              <li className="flex items-start gap-4">
+                <div className="flex-shrink-0 bg-[#F39106] w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">3</div>
+                <p className="text-lg text-gray-700 pt-1">{t('section.how.step3')}</p>
+              </li>
+              <li className="flex items-start gap-4">
+                <div className="flex-shrink-0 bg-[#F39106] w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">4</div>
+                <p className="text-lg text-gray-700 pt-1">{t('section.how.step4')}</p>
+              </li>
+              <li className="flex items-start gap-4">
+                <div className="flex-shrink-0 bg-[#F39106] w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">5</div>
+                <p className="text-lg text-gray-700 pt-1">{t('section.how.step5')}</p>
+              </li>
+            </ol>
+          </div>
+
+          {/* Lado Derecho: Video con marco decorativo */}
+          <div className="relative w-full">
+            <div className="absolute top-0 left-0 w-full h-full bg-green-300 rounded-2xl transform translate-x-4 translate-y-4"></div>
+            <video
+              src="/video-mexico.mp4"
+              className="relative z-10 w-full rounded-2xl shadow-xl object-cover"
+              controls
+              playsInline
+              preload="metadata"
+            />
+          </div>
+
         </div>
       </section>
 
-      <section className="py-16 text-center bg-[#EAEAEA] text-zinc-800">
-        <h2 className="text-3xl font-bold mb-2">{t('cta.title')}</h2>
-        <p className="mb-6 text-lg">{t('cta.text')}</p>
-        <Link to="/registro">
-          <button className="px-8 py-3 rounded-full font-semibold bg-[#D92626] text-white hover:opacity-90 transition-transform hover:scale-105">
-            {t('cta.button')}
-          </button>
-        </Link>
+    {/* CTA Final  */}
+      <section className="relative bg-white pt-20 pb-16 lg:pt-24 lg:pb-20">
+        
+        {/* Listón digital decorativo en la parte superior */}
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-[linear-gradient(to_right,_#D92626,_#3A994A,_#F2B705,_#1C69A6)]"></div>
+        
+        <div className="container mx-auto px-6 text-center">
+          
+          {/* Título */}
+          <h2 className="text-4xl md:text-5xl font-black text-zinc-800 mb-4">
+            {t('cta.title')}
+          </h2>
+
+          {/* Párrafo */}
+          <p className="text-xl mb-8 max-w-2xl mx-auto text-gray-600">
+            {t('cta.text')}
+          </p>
+
+          {/* Botón */}
+          <Link to="/registro">
+            <button 
+              className="px-10 py-4 rounded-full font-bold bg-[#F39106] text-white shadow-lg 
+                         transition-all duration-300 hover:bg-opacity-90 transform hover:-translate-y-1"
+            >
+              {t('cta.button')}
+            </button>
+          </Link>
+          
+        </div>
       </section>
 
       <Footer />
