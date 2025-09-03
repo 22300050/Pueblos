@@ -8,3 +8,6 @@ https://www.flaticon.es/icono-gratis/iglesia_9702016?term=iglesia&related_id=970
 
 layouts/: Aquí pondremos los componentes que definen la estructura principal de tu sitio, como el Topbar, Navbar y Footer, ya que se repiten en todas las páginas.
 pages/: Aquí irán los componentes que representan una página completa, como Home, Login, MapaMexico, etc.
+
+PARA RECORTAR SVG
+https://svg-cropper.com/

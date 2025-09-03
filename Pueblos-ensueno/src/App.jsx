@@ -19,10 +19,12 @@ import useIsDesktop from './hooks/useIsDesktop';
 import Home from './components/pages/Home';
 import Nosotros from './components/pages/Nosotros';
 
+import MapaMexico from './components/pages/MapaMexico';
+
 import Register from './components/Register';
 import Login from './components/Login';
 import InterestsSelector from './components/InterestsSelector';
-import MapaMexico from './components/MapaMexico';
+
 import PuntosCercanos from './components/PuntosCercanos';
 import ProductosTabasco from './components/ProductosTabasco';
 import PerfilUsuario from './components/PerfilUsuario';
