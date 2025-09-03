@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 import { View, Sparkles, Bot, Route, MapPin, Navigation } from 'lucide-react';
 import { CheckCircle } from 'lucide-react';
+import { Eye, Target, Gem, Check } from 'lucide-react';
 
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -251,12 +252,51 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="vision-mision-valores" className="px-4 sm:px-8 lg:px-24 py-16 bg-[#EAEAEA] text-zinc-800">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 items-center">
-          <div><h3 className="text-xl font-semibold mb-2">{t('section.vision.title')}</h3><p>{t('section.vision.text')}</p></div>
-          <div><h3 className="text-xl font-semibold mb-2">{t('section.mission.title')}</h3><p>{t('section.mission.text')}</p></div>
-          <div><h3 className="text-xl font-semibold mb-2">{t('section.values.title')}</h3><ul className="list-disc list-inside"><li>{t('section.values.item1')}</li><li>{t('section.values.item2')}</li><li>{t('section.values.item3')}</li><li>{t('section.values.item4')}</li></ul></div>
-          <div className="flex justify-center md:justify-end"><img src={VisionMisionValores} alt="Visión, Misión y Valores" className="w-32 h-32 md:w-40 md:h-40 rounded-lg object-contain" /></div>
+{/* Visión, Misión y Valores - NUEVO DISEÑO DE TARJETAS */}
+      <section id="vision-mision-valores" className="bg-white py-10 lg:py-20">
+        <div className="container mx-auto px-8 md:px-10 lg:px-20">
+          
+          {/* Título de la Sección */}
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-black text-zinc-800 leading-tight">
+              Nuestros Principios
+            </h2>
+            <div className="w-24 h-1.5 bg-[#F39106] mt-4 mx-auto"></div>
+          </div>
+          
+          {/* Grid para las 3 tarjetas */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            {/* Tarjeta 1: Visión (Acento Amarillo) */}
+            <div className="bg-white p-8 rounded-2xl shadow-xl border-t-8 border-[#F39106] 
+                            transition-transform duration-300 hover:-translate-y-2 h-full">
+              <Eye className="w-12 h-12 text-[#F39106] mb-5" />
+              <h3 className="text-2xl font-bold text-zinc-800 mb-3">{t('section.vision.title')}</h3>
+              <p className="text-gray-600 leading-relaxed">{t('section.vision.text')}</p>
+            </div>
+
+            {/* Tarjeta 2: Misión (Acento Rojo) */}
+            <div className="bg-white p-8 rounded-2xl shadow-xl border-t-8 border-[#C3272B] 
+                            transition-transform duration-300 hover:-translate-y-2 h-full">
+              <Target className="w-12 h-12 text-[#C3272B] mb-5" />
+              <h3 className="text-2xl font-bold text-zinc-800 mb-3">{t('section.mission.title')}</h3>
+              <p className="text-gray-600 leading-relaxed">{t('section.mission.text')}</p>
+            </div>
+
+            {/* Tarjeta 3: Valores (Acento Verde) */}
+            <div className="bg-white p-8 rounded-2xl shadow-xl border-t-8 border-[#2E7D32] 
+                            transition-transform duration-300 hover:-translate-y-2 h-full">
+              <Gem className="w-12 h-12 text-[#2E7D32] mb-5" />
+              <h3 className="text-2xl font-bold text-zinc-800 mb-3">{t('section.values.title')}</h3>
+              <ul className="space-y-3 text-left text-gray-600">
+                <li className="flex items-start gap-3"><Check className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" /><span>{t('section.values.item1')}</span></li>
+                <li className="flex items-start gap-3"><Check className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" /><span>{t('section.values.item2')}</span></li>
+                <li className="flex items-start gap-3"><Check className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" /><span>{t('section.values.item3')}</span></li>
+                <li className="flex items-start gap-3"><Check className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" /><span>{t('section.values.item4')}</span></li>
+              </ul>
+            </div>
+
+          </div>
         </div>
       </section>
 
