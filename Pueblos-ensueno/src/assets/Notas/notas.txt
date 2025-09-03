@@ -11,3 +11,28 @@ pages/: Aquí irán los componentes que representan una página completa, como H
 
 PARA RECORTAR SVG
 https://svg-cropper.com/
+
+/img
+│
+├── chiapas
+│   ├── san_cristobal_de_las_casas
+│   │   ├── img1.jpg
+│   │   ├── img2.jpg
+│   │   └── ...
+│   ├── cascadas_de_agua_azul
+│   │   ├── img1.jpg
+│   │   └── ...
+│   └── palenque
+│       ├── img1.jpg
+│       └── ...
+│
+├── tabasco
+│   ├── villahermosa
+│   │   ├── img1.jpg
+│   │   └── ...
+│   ├── pantanos_de_centla
+│   │   ├── img1.jpg
+│   │   └── ...
+│   └── comalcalco
+│       ├── img1.jpg
+│       └── ...

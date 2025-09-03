@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+
 import svgUrl from '../../assets/svg/Mexico.svg?url';
-import MapaTabasco from '../MapaTabasco';
+
+import MapaTabasco from './MapaTabasco';
 import MapaChiapas from '../MapaChiapas';
 
 function MapaMexico() {
   const containerRef = useRef(null);
-  // Eliminamos x,y del estado del tooltip ya que no seguirá al cursor
   const [tooltip, setTooltip] = useState({ visible: false, name: '' });
   const [estadoSeleccionado, setEstadoSeleccionado] = useState(null);
 
@@ -52,7 +53,7 @@ function MapaMexico() {
             path.setAttribute('role', 'button');
             path.setAttribute('aria-label', `Ver detalles de ${title}`);
 
-            const onEnter = () => { // Ya no necesitamos e.clientX, e.clientY
+            const onEnter = () => { 
               path.classList.add('map-hover');
               setTooltip({ visible: true, name: title });
             };
