@@ -1,16 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
-import tabascoSvg from '../assets/Tabasco_only.svg?raw';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import gifVillahermosa from '../assets/Villahermosa.gif';
-import logo from '../assets/Logo.png';
-import { Menu } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
+
+// --- RUTAS DE ASSETS ---
+import tabascoSvg from '../../assets/svg/Tabasco.svg?raw';
+import gifVillahermosa from '../../assets/img/tabasco/Villahermosa.gif';
+import popurriTabasco from '../../assets/img/tabasco/PopurriTabasco.mp3';
+import { getSelecciones } from '../../utils/itinerarioStore';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { getSelecciones } from '../utils/itinerarioStore';
-import popurriTabasco from '../assets/Popurri Tabasco.mp3';
+
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+
 function MapaTabasco({ onRegresar, estado, eventos }) {
   const containerRef = useRef(null);
   const [tooltip, setTooltip] = useState({ visible: false, name: '', x: 0, y: 0 });
@@ -923,56 +925,8 @@ if (actividadesSugeridas.length === 0 && (!diasData || diasData.length === 0)) {
 
 return (
   <>
-    {/* HEADER */}
-    <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
-<Link to="/" className="flex items-center gap-4">
-  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
-  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-    Pueblos de Ensueño
-  </h1>
-</Link>
-<div className="md:hidden fixed bottom-3 left-3 right-3 z-40">
-  <audio id="popurri-player-mobile" controls preload="auto" className="w-full rounded-md border border-amber-300 bg-white/90" >
-    <source src={popurriTabasco} type="audio/mpeg" />
-  </audio>
-</div>
-
-<nav className="hidden md:flex gap-3 lg:gap-5 items-center">
-<Link to="/">
-  <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] text-black rounded-full font-semibold shadow-sm transition">
-    Ir al Home
-  </button>
-</Link>
-
-  {/* Reproductor en header: permanece montado */}
-  <audio
-    id="popurri-player"
-    controls
-    preload="auto"
-    className="h-10 w-48 sm:w-56 rounded-md border border-amber-300 bg-white/80"
-  >
-    <source src={popurriTabasco} type="audio/mpeg" />
-    Tu navegador no soporta la reproducción de audio.
-  </audio>
-</nav>
 
 
-      <button className="block md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-        <Menu size={24} />
-      </button>
-      
-    </header>
-    {/* NAV MOBILE */}
-    {mobileMenuOpen && (
-      <nav className="md:hidden bg-[var(--color-tertiary)] shadow-md px-6 py-4 space-y-2">
-<Link to="/">
-  <button className="w-full px-4 py-2 bg-[var(--color-tertiary)] hover:bg-[var(--color-secondary)] rounded-lg font-semibold transition">
-    Ir al Home
-  </button>
-</Link>
-
-      </nav>
-    )}
     {/* Toggle móvil: Mapa / Itinerario */}
 <div className="md:hidden px-6 py-2">
   <div className="flex gap-2 rounded-full bg-white/80 p-1 shadow border">
