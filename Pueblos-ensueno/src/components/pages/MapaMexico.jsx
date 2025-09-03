@@ -112,7 +112,7 @@ function MapaMexico() {
         <p id="instrucciones-mapa" className="sr-only">
           Usa Tab para navegar por los estados del mapa y presiona Enter para ver detalles. Pasa el cursor para ver el nombre del estado.
         </p>
-        <div className="w-full max-w-5xl aspect-[5/6] sm:aspect-[4/3] relative">
+        <div className="w-full max-w-5xl relative">
           <div
             id="mapa-svg-container"
             ref={containerRef}
@@ -122,7 +122,7 @@ function MapaMexico() {
           {/* --- TOOLTIP UNIFICADO Y FIJO ARRIBA DEL MAPA --- */}
           {tooltip.visible && (
             <div 
-              className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[calc(100%+15px)] 
+              className="fixed top-24 left-1/2 -translate-x-1/2  
                          bg-white text-zinc-800 text-sm p-2.5 rounded-lg shadow-xl 
                          border border-gray-200 z-50 pointer-events-none 
                          flex flex-col gap-1.5 min-w-[200px]" // Ancho mínimo para legibilidad
