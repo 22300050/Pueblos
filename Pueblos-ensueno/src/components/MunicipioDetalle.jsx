@@ -169,7 +169,7 @@ const THEME_BY_MUNICIPIO = {
     badge: 'bg-sky-100 text-sky-800'
   },
   "Centro": {
-    header: new URL('../assets/centro-header.jpg', import.meta.url).href,
+    header: new URL('../assets/villahermosa.jpg', import.meta.url).href,
     bg: 'bg-emerald-50', title: 'text-emerald-800', card: 'bg-white/80',
     btnPrimary: 'bg-emerald-600 hover:bg-emerald-700 text-white',
     btnSecondary: 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800',
@@ -276,6 +276,40 @@ const THEME_BY_MUNICIPIO = {
     badge: 'bg-amber-100 text-amber-800'
   }
 };
+// 📷 Imágenes para cada municipio/categoría/nombre
+const MEDIA_BY_MUNICIPIO = {
+  Centro: {
+    lugares: {
+      "Parque-Museo La Venta – museo al aire libre con una de las colecciones olmecas más importantes del país (cabezas colosales, altares, estelas).":
+        new URL('../assets/museo.jpg', import.meta.url).href,
+
+      "Malecón “Carlos A. Madrazo” (río Grijalva) – corredor peatonal y ciclovía con nueva infraestructura urbana e iluminación; obra inaugurada en 2024.":
+        new URL('../assets/malecon.jpeg', import.meta.url).href,
+
+      "Laguna de las Ilusiones – símbolo natural de la ciudad; miradores y parques a su alrededor.":
+        new URL('../assets/Laguna-de-las-ilusiones.jpg', import.meta.url).href,
+
+      "Museo Regional de Antropología “Carlos Pellicer Cámara” – arqueología y etnografía regional (Olmeca y Maya).":
+        new URL('../assets/museo-regional.jpg', import.meta.url).href,
+
+      "Yumká (Centro de Interpretación y Convivencia con la Naturaleza) – recorrido guiado por selva, sabana y humedales.":
+        new URL('../assets/yumka.jpg', import.meta.url).href,
+    },
+    gastronomia: {
+      "Puchero tabasqueño": new URL('../assets/gastro-puchero.jpg', import.meta.url).href,
+      "Pejelagarto asado": new URL('../assets/gastro-pejelagarto.jpg', import.meta.url).href,
+      "Pozol y chorote": new URL('../assets/gastro-pozol.jpg', import.meta.url).href,
+      "Tamales de chipilín": new URL('../assets/gastro-chipilin.jpg', import.meta.url).href,
+      "Chocolate/cacao local (marcas como CACEP)": new URL('../assets/gastro-cacao.png', import.meta.url).href,
+    },
+    artesanias: {
+      "Máscaras chontales": new URL('../assets/artesano.gif', import.meta.url).href,
+      "Cacao artesanal": new URL('../assets/artesano.gif', import.meta.url).href,
+    },
+  },
+};
+
+
 
 
 const eventosCentroPorMes = {
@@ -331,6 +365,10 @@ const agregar = (payload) => {
   alert(`✅ ${payload.nombre} (${payload.tipo}) se registró en tu itinerario${ok ? '' : ' (ya estaba antes)'}`);
   setUltimoIdAgregado(id);
 };
+const getMedia = (categoria, itemNombre) => {
+  const m = MEDIA_BY_MUNICIPIO[nombre] || {};
+  return (m[categoria] && m[categoria][itemNombre]) || theme.header || null;
+};
 
 
 
@@ -382,6 +420,94 @@ useEffect(() => {
 
 const navigate = useNavigate();
 const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+// ==== Modal estilo Meta ====
+const [modalOpen, setModalOpen] = useState(false);
+const [modalSection, setModalSection] = useState(null); // 'lugares' | 'imperdibles' | 'joyitas' | 'talleres'
+
+const openSection = (section) => {
+  setModalSection(section);
+  setModalOpen(true);
+};
+
+const closeModal = () => {
+  setModalOpen(false);
+  setModalSection(null);
+};
+
+// Componente de modal
+// Componente de modal (look Meta)
+const ModalShell = ({ title, children }) => (
+  <div className="fixed inset-0 z-[60]">
+    {/* Backdrop oscurecido */}
+    <div
+      className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+      onClick={closeModal}
+      aria-hidden="true"
+    />
+    <div className="absolute inset-0 overflow-y-auto">
+      <div className="min-h-full flex items-start md:items-center justify-center p-3 sm:p-4 md:p-8">
+        {/* Panel */}
+        <div
+          className="
+            w-[calc(100%-1.5rem)]
+            sm:w-[min(720px,calc(100%-2rem))]
+            md:w-[min(860px,calc(100%-4rem))]
+            bg-white rounded-[22px] shadow-2xl overflow-hidden
+            ring-1 ring-black/5
+            animate-[modalIn_.18s_ease-out] origin-center
+          "
+          style={{
+            // pequeña animación de entrada
+            transformOrigin: 'center'
+          }}
+        >
+          {/* Header sticky como Meta */}
+          <div className="
+              sticky top-0 z-10
+              bg-white/95 backdrop-blur
+              px-5 sm:px-6 md:px-8 py-4 md:py-5
+              border-b border-black/5
+              flex items-start justify-between
+            ">
+            <div className="pr-3">
+              <h3 className="text-[22px] sm:text-[24px] md:text-[26px] leading-tight font-bold">
+                {title}
+              </h3>
+              <p className="text-[13px] text-gray-600 mt-1">
+                Explora y agrega a tu itinerario sin salir de la página.
+              </p>
+            </div>
+            <button
+              onClick={closeModal}
+              className="
+                shrink-0 w-10 h-10 grid place-content-center
+                rounded-2xl border border-black/10
+                hover:bg-black/5 active:bg-black/10
+                transition
+              "
+              aria-label="Cerrar"
+            >
+              <span className="text-[18px] leading-none">✕</span>
+            </button>
+          </div>
+
+          {/* Cuerpo scrollable */}
+          <div className="px-5 sm:px-6 md:px-8 py-6 bg-[#F7F8FA] max-h-[78vh] overflow-y-auto space-y-5">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* keyframes inline para la animación */}
+    <style>{`
+      @keyframes modalIn {
+        from { opacity: .6; transform: scale(.98) translateY(6px); }
+        to   { opacity: 1;  transform: scale(1)   translateY(0); }
+      }
+    `}</style>
+  </div>
+);
 
 
 // Filtra eventos del municipio por el mes seleccionado (si hay mes)
@@ -436,9 +562,259 @@ const toggleSeleccion = (payload) => {
   }
 };
 
+// ---- UI helpers estilo Meta ----
+const scrollToId = (id) => {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+const CategoryCard = ({ title, subtitle, onClick, bgImg }) => (
+  <div
+    className="relative rounded-2xl overflow-hidden group cursor-pointer min-h-[260px] flex items-end"
+    onClick={onClick}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => (e.key === 'Enter' ? onClick() : null)}
+  >
+    <div
+      className="absolute inset-0 bg-center bg-cover"
+      style={{
+        backgroundImage: bgImg ? `url(${bgImg})` : 'linear-gradient(135deg, #f5f5f5, #eaeaea)'
+      }}
+    />
+    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition" />
+    <div className="relative w-full p-6">
+      <h3 className="text-white text-2xl md:text-3xl font-extrabold drop-shadow">
+        {title}
+      </h3>
+      <p className="text-white/90">{subtitle}</p>
+      <div className="mt-4 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/90 group-hover:bg-white transition">
+        <span className="text-gray-800 text-xl leading-none">＋</span>
+      </div>
+    </div>
+  </div>
+);
+// Tarjeta hero para carrusel (estilo Meta)
+const HeroCard = ({ title, img, onAdd, className = "" }) => (
+  <div
+    data-hero-card
+    className={`relative rounded-[22px] overflow-hidden snap-center min-w-[260px] w-[280px] sm:w-[320px] aspect-[3/4] ${className}`}
+  >
+    <div
+      className="absolute inset-0 bg-center bg-cover"
+      style={{ backgroundImage: img ? `url(${img})` : 'linear-gradient(135deg,#e8eef6,#e9f7ef)' }}
+    />
+    <div className="absolute inset-0 bg-black/25" />
+    <div className="absolute top-4 left-4 right-4">
+      <h4 className="text-white text-xl font-bold leading-tight drop-shadow">{title}</h4>
+    </div>
+    <button
+      onClick={onAdd}
+      className="absolute right-4 bottom-4 w-10 h-10 rounded-full bg-white/90 hover:bg-white grid place-content-center shadow-md text-xl leading-none"
+      aria-label="Agregar"
+    >
+      +
+    </button>
+  </div>
+);
+// ==== Drag scroll para el carrusel de gastronomía ====
+// ==== Drag + Momentum + Snap para carrusel de gastronomía ====
+const gastroScrollRef = useRef(null);
+const isDraggingRef = useRef(false);
+const startXRef = useRef(0);
+const scrollLeftRef = useRef(0);
+
+// para calcular velocidad
+const lastXRef = useRef(0);
+const lastTRef = useRef(0);
+let rafIdRef = null;
+
+const getCardWidthWithGap = (el) => {
+  const firstCard = el.querySelector('[data-hero-card]');
+  if (!firstCard) return 300;
+  const cardRect = firstCard.getBoundingClientRect();
+  const styles = getComputedStyle(firstCard.parentElement);
+  const gap = parseFloat(styles.columnGap || styles.gap || '0');
+  return cardRect.width + gap; // ancho de tarjeta + gap
+};
+
+const snapToNearest = (el) => {
+  const step = getCardWidthWithGap(el);
+  const targetIndex = Math.round(el.scrollLeft / step);
+  const targetLeft = targetIndex * step;
+  el.scrollTo({ left: targetLeft, behavior: 'smooth' });
+};
+
+const onGastroMouseDown = (e) => {
+  const el = gastroScrollRef.current;
+  if (!el) return;
+  cancelAnimationFrame(rafIdRef);
+  isDraggingRef.current = true;
+  el.classList.add('dragging');    // estilito opcional (cursor)
+  startXRef.current = e.pageX - el.getBoundingClientRect().left;
+  scrollLeftRef.current = el.scrollLeft;
+  lastXRef.current = e.pageX;
+  lastTRef.current = performance.now();
+};
+
+const onGastroMouseLeaveOrUp = () => {
+  const el = gastroScrollRef.current;
+  if (!el) return;
+  if (!isDraggingRef.current) return;
+
+  isDraggingRef.current = false;
+  el.classList.remove('dragging');
+
+  // inercia: velocidad a partir de la última delta
+  const now = performance.now();
+  let v = (lastXRef.current - startXRef.current) / (now - lastTRef.current || 1); // px/ms aprox.
+  v = Math.max(Math.min(v, 1.2), -1.2); // cap de velocidad
+
+  const decay = 0.95;          // fricción
+  const minV = 0.08;           // umbral de parada
+
+  const step = () => {
+    el.scrollLeft -= v * 40;   // factor de desplazamiento
+    v *= decay;
+    if (Math.abs(v) > minV) {
+      rafIdRef = requestAnimationFrame(step);
+    } else {
+      snapToNearest(el);       // al final, ajusta al card más cercano
+    }
+  };
+  rafIdRef = requestAnimationFrame(step);
+};
+
+const onGastroMouseMove = (e) => {
+  const el = gastroScrollRef.current;
+  if (!el || !isDraggingRef.current) return;
+  e.preventDefault();
+  const x = e.pageX - el.getBoundingClientRect().left;
+  const walk = (x - startXRef.current);
+  el.scrollLeft = scrollLeftRef.current - walk;
+
+  // registra último delta para la velocidad
+  lastXRef.current = e.pageX;
+  lastTRef.current = performance.now();
+};
 
   return (
       <div className="text-[var(--color-text)]">
+        {/* ===== Modal dinámico de secciones ===== */}
+{modalOpen && (
+  <ModalShell
+    title={
+      modalSection === 'lugares' ? 'Lugares destacados' :
+      modalSection === 'imperdibles' ? 'Sitios imperdibles' :
+      modalSection === 'joyitas' ? 'Joyitas poco conocidas' :
+      modalSection === 'talleres' ? 'Talleres y espacios' : ''
+    }
+  >
+{modalSection === 'lugares' && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    {datos.lugares.map((lugar, idx) => (
+      <div
+        key={`mlugar-${idx}`}
+        className="
+          rounded-2xl bg-white ring-1 ring-black/5 shadow-sm overflow-hidden
+        "
+      >
+        {/* área media tipo cover */}
+        <div
+  className="w-full aspect-[16/9] bg-center bg-cover"
+  style={{ backgroundImage: `url(${getMedia('lugares', lugar)})` }}
+/>
+        <div className="p-4 sm:p-5">
+          <h4 className="text-[15px] sm:text-[16px] font-extrabold leading-snug">
+            {lugar}
+          </h4>
+          <p className="text-[12px] text-gray-600 mt-1">Principal del municipio</p>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              onClick={() => toggleSeleccion({ tipo: 'lugarDestacado', nombre: lugar })}
+              className="
+                px-3 py-1.5 rounded-full
+                bg-emerald-600 hover:bg-emerald-700
+                text-white text-[13px] font-medium
+              "
+            >
+              {estaAgregado({ tipo:'lugarDestacado', nombre:lugar }) ? 'Quitar' : 'Agregar'}
+            </button>
+
+            <button
+              onClick={() => alert('Abrir ficha “Ver más” (demo)')}
+              className="
+                px-3 py-1.5 rounded-full border border-black/10
+                text-[13px] font-medium hover:bg-black/5
+              "
+            >
+              Ver más
+            </button>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+
+{modalSection === 'imperdibles' && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    {(datos.sitiosTop || []).map((n, i) => (
+      <div key={`mtop-${i}`} className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm p-4 sm:p-5">
+        <p className="font-semibold text-[15px]">{n}</p>
+        <p className="text-[12px] text-gray-600 mt-1">No te lo puedes perder</p>
+        <button
+          onClick={() => toggleSeleccion({ tipo: 'sitioImperdible', nombre: n, categoria: 'top' })}
+          className="mt-3 px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium"
+        >
+          {estaAgregado({ tipo:'sitioImperdible', nombre:n }) ? 'Quitar' : 'Agregar'}
+        </button>
+      </div>
+    ))}
+  </div>
+)}
+
+
+{modalSection === 'joyitas' && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    {(datos.sitiosOcultos || []).map((n, i) => (
+      <div key={`mhide-${i}`} className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm p-4 sm:p-5">
+        <p className="text-[12px] font-semibold text-emerald-700">Secreto local</p>
+        <p className="text-[14px] text-gray-800 mt-1">{n}</p>
+        <div className="mt-3">
+          <button
+            onClick={() => toggleSeleccion({ tipo: 'joyaPocoConocida', nombre: n, categoria: 'oculto' })}
+            className="px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium"
+          >
+            {estaAgregado({ tipo:'joyaPocoConocida', nombre:n }) ? 'Quitar' : 'Agregar'}
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+
+{modalSection === 'talleres' && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    {(datos.talleres || []).map((t, i) => (
+      <div key={`mtaller-${i}`} className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm p-4 sm:p-5 flex items-center justify-between">
+        <p className="text-[14px]">{t}</p>
+        <button
+          onClick={() => toggleSeleccion({ tipo: 'Talleres y espacios temáticos', nombre: t })}
+          className="px-3 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium"
+        >
+          {estaAgregado({ tipo:'Talleres y espacios temáticos', nombre:t }) ? 'Quitar' : 'Inscribirme'}
+        </button>
+      </div>
+    ))}
+  </div>
+)}
+  </ModalShell>
+)}
+
     {/* ===== Header de Home ===== */}
     <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
 <Link to="/" className="flex items-center gap-4">
@@ -499,79 +875,38 @@ const toggleSeleccion = (payload) => {
 
 {/* Contenido del municipio */}
 <div className={`px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto ${theme.bg}`}>
-      {theme.header && (
+{theme.header && (
   <img
     src={theme.header}
     alt={`Header ${nombre}`}
     className="w-full h-40 sm:h-56 lg:h-72 object-cover rounded-2xl mb-4"
   />
 )}
-<h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-3 ${theme.title}`}>{nombre}</h1>
-     <p className="mb-4 text-base sm:text-lg lg:text-xl">{datos.descripcion}</p>
-<h2 className={`text-2xl font-semibold mb-4 ${theme.title}`}>🌆 Lugares Destacados</h2>
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
-
-  {datos.lugares.map((lugar, idx) => (
-    <div key={`lugar-${idx}`} className="relative bg-white shadow rounded-xl overflow-hidden">
-      <div className="p-4">
-        <h3 className="text-lg font-extrabold">{lugar}</h3>
-        <p className="text-sm text-gray-600">Principal del municipio</p>
-        <div className="mt-3 flex gap-2">
-          <button
-            onClick={() => toggleSeleccion({ tipo: 'lugarDestacado', nombre: lugar })}
-            className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-sm"
-          >
-            {estaAgregado({ tipo:'lugarDestacado', nombre:lugar }) ? 'Quitar' : 'Agregar'}
-          </button>
-          <button
-            onClick={() => alert('Abrir ficha “Ver más” (demo)')}
-            className="px-3 py-1 rounded border text-sm"
-          >
-            Ver más
-          </button>
-        </div>
-      </div>
-    </div>
-  ))}
+  <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-3 ${theme.title}`}>{nombre}</h1>
+  <p className="mb-4 text-base sm:text-lg lg:text-xl">{datos.descripcion}</p>
+{/* ---- Grid estilo Meta Quest 3 ---- */}
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+  <CategoryCard
+    title="Lugares destacados"
+    onClick={() => openSection('lugares')}
+    bgImg={theme.header}
+  />
+  <CategoryCard
+    title="Sitios Imperdibles"
+    onClick={() => openSection('imperdibles')}
+    bgImg={theme.header}
+  />
+  <CategoryCard
+    title="Joyitas poco conocidas"
+    onClick={() => openSection('joyitas')}
+    bgImg={theme.header}
+  />
+  <CategoryCard
+    title="Talleres y espacios"
+    onClick={() => openSection('talleres')}
+    bgImg={theme.header}
+  />
 </div>
-
-
-<h2 className="text-2xl font-semibold mt-6">⭐ Sitios Imperdibles</h2>
-<div className="flex gap-4 overflow-x-auto pb-2 snap-x">
-  {(datos.sitiosTop || []).map((n, i) => (
-    <div key={`top-${i}`} className="min-w-[200px] sm:min-w-[240px] lg:min-w-[280px] snap-start bg-white shadow rounded-xl p-3 flex-shrink-0">
-      <p className="text-sm font-semibold">{n}</p>
-      <p className="text-xs text-gray-600 mt-1">No te lo puedes perder</p>
-      <button
-        onClick={() => toggleSeleccion({ tipo: 'sitioImperdible', nombre: n, categoria: 'top' })}
-        className="mt-2 px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
-      >
-        {estaAgregado({ tipo:'sitioImperdible', nombre:n }) ? 'Quitar' : 'Agregar'}
-      </button>
-    </div>
-  ))}
-</div>
-
-
-<h2 className="text-2xl font-semibold mb-4">🌿 Joyitas Poco Conocidas</h2>
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mb-8">
-  {(datos.sitiosOcultos || []).map((n, i) => (
-    <div key={`hide-${i}`} className="bg-white rounded-xl p-3 shadow flex items-start justify-between">
-      <div>
-        <p className="text-sm font-semibold">Secreto local</p>
-        <p className="text-sm text-gray-700 mt-1">{n}</p>
-      </div>
-      <button
-        onClick={() => toggleSeleccion({ tipo: 'joyaPocoConocida', nombre: n, categoria: 'oculto' })}
-        className="ml-3 px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm h-8"
-      >
-        {estaAgregado({ tipo:'joyaPocoConocida', nombre:n }) ? 'Quitar' : 'Agregar'}
-      </button>
-    </div>
-  ))}
-</div>
-
-
 <div className="flex items-center justify-between">
   <h2 className="text-2xl font-semibold">Eventos culturales</h2>
   <select
@@ -691,49 +1026,54 @@ const toggleSeleccion = (payload) => {
 
 
 <h2 className="text-2xl font-semibold mb-4">🧺 Artesanías</h2>
-<div className="mb-8">
-  <Link to="/productos-tabasco" state={{ municipio: nombre }}>
-    <button className="w-full sm:w-auto px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-lg shadow transition">
-      {`Productos artesanales de ${nombre || 'Centro'}`}
-    </button>
-  </Link>
-</div>
 
-
-
-<h2 className="text-2xl font-semibold mb-4">🎓 Talleres y Espacios Temáticos</h2>
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 md:gap-4 mb-8">
-  {(datos.talleres || []).map((t, i) => (
-    <div key={`taller-${i}`} className="bg-white rounded-xl p-3 shadow flex items-center justify-between">
-      <p className="text-sm">{t}</p>
-      <button
-        onClick={() => toggleSeleccion({ tipo: 'Talleres y espacios temáticos', nombre: t })}
-        className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
-      >
-        {estaAgregado({ tipo:'Talleres y espacios temáticos', nombre:t }) ? 'Quitar' : 'Inscribirme'}
+<div className="relative rounded-[22px] overflow-hidden mb-8">
+  <img
+    src={getMedia('artesanias', 'Máscaras chontales')}
+    alt="Artesanías en acción"
+    className="w-full h-64 sm:h-80 object-cover"
+  />
+  <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white text-center p-4">
+    <h3 className="text-2xl sm:text-3xl font-bold drop-shadow">🧺 Artesanías</h3>
+    <p className="mt-2 text-sm sm:text-base">Conoce el trabajo de nuestros artesanos {nombre}</p>
+    <Link to="/productos-tabasco" state={{ municipio: nombre }}>
+      <button className="mt-4 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-lg shadow transition">
+        Ver artesanías
       </button>
-    </div>
-  ))}
+    </Link>
+  </div>
 </div>
 
 
 <h2 className="text-2xl font-semibold mb-4">🍽️ Gastronomía Típica</h2>
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 md:gap-4 mb-10">
-  {(datos.gastronomia || []).map((g, i) => (
-    <div key={`gastronomia-${i}`} className="bg-white rounded-xl p-3 shadow flex items-center justify-between">
-      <div>
-        <p className="font-semibold">{g}</p>
-        <p className="text-xs text-gray-600">Receta tradicional</p>
-      </div>
-      <button
-        onClick={() => toggleSeleccion({ tipo: 'Gastronomía típica', nombre: g })}
-        className="text-sm bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
-      >
-        {estaAgregado({ tipo:'Gastronomía típica', nombre:g }) ? 'Quitar' : 'Agregar'}
-      </button>
+
+{/* Carrusel horizontal estilo Meta */}
+<div className="relative -mx-4 px-4 mb-10">
+  <div
+  ref={gastroScrollRef}
+  className="overflow-x-auto no-scrollbar snap-x snap-mandatory select-none cursor-grab active:cursor-grabbing scroll-smooth"
+
+  onMouseDown={onGastroMouseDown}
+  onMouseLeave={onGastroMouseLeaveOrUp}
+  onMouseUp={onGastroMouseLeaveOrUp}
+  onMouseMove={onGastroMouseMove}
+>
+    <div className="flex gap-4 sm:gap-5 pb-2">
+      {(datos.gastronomia || []).map((g, i) => {
+        const img = getMedia('gastronomia', g); // usa tu helper
+        return (
+          <HeroCard
+            key={`gas-${i}`}
+            title={g}
+            img={img}
+            onAdd={() => toggleSeleccion({ tipo: 'Gastronomía típica', nombre: g })}
+          />
+        );
+      })}
     </div>
-  ))}
+  </div>
 </div>
+
 
 
 

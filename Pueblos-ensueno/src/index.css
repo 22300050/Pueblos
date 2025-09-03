@@ -230,6 +230,14 @@ svg path.hoverable-state:hover {
   outline: none;
   filter: drop-shadow(0 0 6px rgba(0,0,0,0.35));
 }
+/* Ocultar scrollbars cross-browser */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE y Edge antiguos */
+  scrollbar-width: none;    /* Firefox */
+}
 
 
 
