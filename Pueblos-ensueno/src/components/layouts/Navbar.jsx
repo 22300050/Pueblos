@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Menu } from 'lucide-react';
-import logo from '../assets/Logos/Logo.png'; // Ruta de imagen actualizada
+import logo from '../../assets/Logos/Logo.png'; // Ruta de imagen actualizada
 
 export default function Navbar() {
   const { t } = useTranslation(); // 'i18n' no se usaba, así que lo quité

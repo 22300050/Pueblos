@@ -3,14 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Tus componentes de animación
+// Componentes de Layout
+import Topbar from './components/layouts/Topbar';
+import Navbar from './components/layouts/Navbar';
+import Footer from './components/layouts/Footer'; 
+
+// Componentes de Animación
 import WelcomeAnimation from './components/WelcomeAnimation';
 import LoadingAnimation from './components/LoadingAnimation';
 
-// --- 1. IMPORTAMOS NUESTRO NUEVO DETECTOR ---
+// Hook de Detección de Escritorio
 import useIsDesktop from './hooks/useIsDesktop';
 
-// El resto de tus componentes
+// El resto de tus componentes de página
 import Register from './components/Register';
 import Login from './components/Login';
 import InterestsSelector from './components/InterestsSelector';
@@ -30,9 +35,7 @@ import Nosotros from './components/Nosotros';
 import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
 
 function App() {
-  // --- 2. USAMOS EL DETECTOR PARA SABER EL TAMAÑO DE LA PANTALLA ---
   const isDesktop = useIsDesktop();
-  
   const [showWelcome, setShowWelcome] = useState(!sessionStorage.getItem('hasSeenWelcome'));
   const [isLoading, setIsLoading] = useState(true);
 
@@ -58,40 +61,46 @@ function App() {
     setShowWelcome(false);
   };
 
-
-  // --- 3. ACTUALIZAMOS LA LÓGICA DE RENDERIZADO ---
-  // Ahora la animación de bienvenida solo se mostrará si `showWelcome` es true Y si `isDesktop` es true.
+  // Lógica de Renderizado de Animaciones
   if (showWelcome && isDesktop) {
     return <WelcomeAnimation onAnimationComplete={handleWelcomeComplete} />;
   }
-
-  // La lógica de la animación de carga no cambia.
   if (isLoading) {
     return <LoadingAnimation />;
   }
 
-  // La aplicación principal.
+  // La aplicación principal con el layout completo
   return (
     <Router>
       <div className="min-h-screen flex flex-col">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/InterestsSelector" element={<InterestsSelector />} />
-          <Route path="/mapa" element={<MapaMexico />} />
-          <Route path="/puntos-cercanos" element={<PuntosCercanos />} />
-          <Route path="/productos-tabasco" element={<ProductosTabasco />} />
-          <Route path="/perfil" element={<PerfilUsuario />} />
-          <Route path="/real-time-map" element={<RealTimeMap />} />
-          <Route path="/homelogin" element={<HomeLogin />} />
-          <Route path="/itinerario" element={<Itinerario />} />
-          <Route path="/municipio/:nombre" element={<MunicipioDetalle />} />
-          <Route path="/mapa-tabasco" element={<MapaTabasco />} />
-          <Route path="/directorios" element={<Directorios />} />
-          <Route path="/nosotros" element={<Nosotros />} />
-          <Route path="/monumento/cabeza-olmeca" element={<MonumentoCabezaOlmeca />} />
-        </Routes>
+        {/* Layout Persistente Superior */}
+        <Topbar />
+        <Navbar />
+
+        {/* Contenido Principal de la Página */}
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/InterestsSelector" element={<InterestsSelector />} />
+            <Route path="/mapa" element={<MapaMexico />} />
+            <Route path="/puntos-cercanos" element={<PuntosCercanos />} />
+            <Route path="/productos-tabasco" element={<ProductosTabasco />} />
+            <Route path="/perfil" element={<PerfilUsuario />} />
+            <Route path="/real-time-map" element={<RealTimeMap />} />
+            <Route path="/homelogin" element={<HomeLogin />} />
+            <Route path="/itinerario" element={<Itinerario />} />
+            <Route path="/municipio/:nombre" element={<MunicipioDetalle />} />
+            <Route path="/mapa-tabasco" element={<MapaTabasco />} />
+            <Route path="/directorios" element={<Directorios />} />
+            <Route path="/nosotros" element={<Nosotros />} />
+            <Route path="/monumento/cabeza-olmeca" element={<MonumentoCabezaOlmeca />} />
+          </Routes>
+        </main>
+
+        {/* Layout Persistente Inferior */}
+        <Footer />
       </div>
     </Router>
   )
