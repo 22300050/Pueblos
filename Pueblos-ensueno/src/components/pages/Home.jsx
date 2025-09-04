@@ -258,16 +258,20 @@ export default function Home() {
       
       {/* El Footer no se incluye aquí, porque ya está en App.jsx */}
       
-      <Chatbot
-        open={showChatbot}
-        onClose={() => setShowChatbot(false)}
-        actions={{
-          navigate: (path) => navigate(path),
-          scrollTo: (id) => scrollToId(id),
-          changeLang: (lang) => i18n.changeLanguage(lang),
-        }}
-      />
-      <SpeedDial onChatbotClick={() => setShowChatbot((s) => !s)} />
+<Chatbot
+  open={showChatbot}
+  onClose={() => setShowChatbot(false)}
+  actions={{
+    navigate: (path) => navigate(path),
+    scrollTo: (id) => scrollToId(id),
+    changeLang: (lang) => i18n.changeLanguage(lang),
+  }}
+/>
+
+<SpeedDial
+  onChatbotClick={() => setShowChatbot((s) => !s)}  // toggle
+  isChatbotOpen={showChatbot}
+/>
     </div>
   );
 }

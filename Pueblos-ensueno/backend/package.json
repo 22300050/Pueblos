@@ -1,14 +1,17 @@
 {
-  "name": "backend-registro",
+  "name": "pueblos-ensueno-backend",
   "version": "1.0.0",
-  "main": "app.js",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "start": "node app.js"
+    "dev": "node server.js",
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "mysql2": "^3.3.5"
+    "mysql2": "^3.3.5",
+    "node-fetch": "^3.3.2"
   }
 }

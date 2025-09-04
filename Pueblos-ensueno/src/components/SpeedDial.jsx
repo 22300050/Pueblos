@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { X, Bot, MapPin, LifeBuoy, AlertTriangle } from "lucide-react";
 
-export default function SpeedDial({ onChatbotClick }) {
+export default function SpeedDial({ onChatbotClick, isChatbotOpen }) {
     const [open, setOpen] = useState(false);  
 const [showPanic, setShowPanic] = useState(false);
 const getCoords = () =>
@@ -43,7 +43,13 @@ const copyLocation = async () => {
 const items = [
   { type: "action", onClick: () => { setShowPanic(true); setOpen(false); }, icon: <AlertTriangle size={18} />, label: "Pánico", bg: "linear-gradient(135deg,#ef4444,#b91c1c)" },
   { type: "link",   to: "/directorios", icon: <LifeBuoy size={18} />, label: "Directorios" },
-  { type: "action", onClick: () => { onChatbotClick?.(); setOpen(false); }, icon: <Bot size={18} />, label: "Chatbot" },
+  { type: "action",onClick: () => { onChatbotClick?.();  // toggle desde el padre
+setOpen(false);      // cierra el menú speed dial
+},
+  icon: <Bot size={18} />,
+  label: "Chatbot"
+},
+
   { type: "link",   to: "/mapa", icon: <MapPin size={18} />, label: "Mapa" },
 ];
 
@@ -146,7 +152,16 @@ const positions = (() => {
       </div>
 
       <button
-        onClick={() => setOpen((s) => !s)}
+        onClick={() => {
+  if (isChatbotOpen) {
+    // Si el chatbot está abierto, este mismo botón lo cierra
+    onChatbotClick?.();   // toggle que viene del padre
+    setOpen(false);       // cierra el menú si estaba abierto
+    return;
+  }
+  // Si el chatbot NO está abierto, este botón controla el menú del dial
+  setOpen((s) => !s);
+}}
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
         className="w-16 h-16 rounded-full text-white shadow-xl grid place-items-center
                    transition-transform hover:scale-[1.03] active:scale-95"

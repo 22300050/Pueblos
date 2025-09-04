@@ -1,13 +1,22 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+
+import chatRoutes from "./routes/chat.js";
+// Si tienes este módulo de registro, pásalo a ESM e impórtalo así:
+// import registroRoutes from "./routes/registro.js";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/registro', require('./routes/registro'));
+// Rutas IA (Gemini)
+app.use("/api/chat", chatRoutes);
 
-app.listen(process.env.PORT, () => {
-  console.log(`✅ Servidor corriendo en http://localhost:${process.env.PORT}`);
-});
+// Si necesitas mantener la parte de registro, descomenta:
+// app.use("/api/registro", registroRoutes);
+
+// 👇 IMPORTANTE: aquí NO va app.listen. Solo exportamos el app.
+export default app;
