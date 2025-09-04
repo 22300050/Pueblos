@@ -947,9 +947,7 @@ return (
   </div>
 </div>
     {/* CONTENIDO PRINCIPAL */}
-<div
-  className="relative min-h-[100dvh] p-6 overflow-hidden text-gray-800 bg-gradient-to-b from-[var(--color-cuatro)] to-[var(--color-verde)] transition-all duration-300 ease-in-out"
->
+<div className="relative min-h-[100dvh] p-6 overflow-hidden text-gray-800 bg-[#EAEAEA]">
 {/* Contenedor del mapa + formulario a la derecha */}
 <div className={`${vistaMovil !== 'mapa' ? 'hidden md:block' : ''}`}>
   <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 xl:px-8">
@@ -962,72 +960,86 @@ return (
       : '',
   ].join(' ')}
 >
-      {/* Botones flotantes del mapa */}
-      <div className="absolute top-2 left-2 z-20 flex gap-2">
-        <button
-          onClick={() => setMostrarMapaMapbox(v => !v)}
-          className="bg-white border border-gray-300 px-4 py-2 rounded shadow hover:bg-gray-100 transition"
-        >
-          {mostrarMapaMapbox ? '🌐 Ver mapa SVG' : '🗺️ Ver mapa Mapbox'}
-        </button>
-      </div>
 
       {/* Layout: mapa (izquierda) + panel derecho (formulario) */}
       <div className="flex flex-col lg:flex-row h-full">
-        {/* MAPA */}
-        <div className="relative flex-1">
-          {mostrarMapaMapbox ? (
-            <>
-              <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
-              {clickCoords && (
-                <div className="absolute bottom-3 left-3 z-40 bg-white/85 p-2 rounded shadow text-xs">
-                  <div className="font-medium">📍 Coordenadas</div>
-                  <div>Lat: {clickCoords.lat.toFixed(5)}</div>
-                  <div>Lng: {clickCoords.lng.toFixed(5)}</div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div
-              ref={containerRef}
-              className="absolute inset-0 w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
-            >
-              {tooltipSeleccion && (
-                <div className="absolute top-3 right-3 z-40 bg-white/90 text-blue-900 text-sm font-medium px-3 py-2 rounded-xl shadow-lg border border-blue-300">
-                  {tooltipSeleccion}
-                </div>
-              )}
-              {tooltip.visible && (
-                <div
-                  className="absolute z-40 bg-yellow-200 text-gray-800 text-xs sm:text-sm font-bold px-3 py-2 rounded-xl shadow-lg border-2 border-amber-300"
-                  style={{
-                    top: Math.min(tooltip.y + 24, window.innerHeight - 56),
-                    left: Math.min(tooltip.x + 24, window.innerWidth - 160),
-                  }}
-                >
-                  🌸 {tooltip.name}
-                </div>
-              )}
-              {gifVisible && (
-                <img
-                  src={gifVillahermosa}
-                  alt="Villahermosa"
-                  className="absolute z-30 w-40 sm:w-52 rounded-xl shadow-lg border-4 border-white"
-                  style={{ top: gifPosition.y + 40, left: gifPosition.x + 40 }}
-                />
-              )}
+        {/* MAPA (NUEVO DISEÑO) */}
+        <div className="relative flex-1 p-6"> {/* Agregamos padding al contenedor principal */}
+          {/* 1. Forma de color desfasada (fondo) */}
+          <div className="absolute inset-0 bg-[#F39106] rounded-3xl"></div>
+          
+          {/* 2. Contenedor principal del mapa con fondo blanco y detalles */}
+          <div className="relative z-10 w-full h-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
+            {/* Encabezado del mapa con el selector SVG/Mapbox */}
+            <div className="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-800">
+                Mapa de <span className="text-[#F39106]">Tabasco</span>
+              </h2>
+              <button
+                onClick={() => setMostrarMapaMapbox(v => !v)}
+                className="bg-white border border-gray-300 px-4 py-2 rounded-lg shadow-sm hover:bg-gray-100 transition text-sm font-medium"
+              >
+                {mostrarMapaMapbox ? '🗺️ Ver SVG' : '🌐 Ver Mapbox'}
+              </button>
             </div>
-          )}
-        </div>
 
-{/* PANEL DERECHO: formulario (solo en escritorio/tablet) */}
-<aside
-  className={`hidden md:block md:w-[420px] h-full bg-white/90 backdrop-blur p-6 
-              border-t lg:border-t-0 lg:border-l border-gray-200 overflow-y-auto 
-              ${mostrarZonas ? 'border-yellow-300' : 'border-teal-300'}`}
->
-  <ItinerarioForm />
-</aside>
+            {/* Contenido del mapa (SVG o Mapbox) */}
+            <div className="relative flex-1 overflow-hidden"> {/* Este div ahora contiene el mapa */}
+              {mostrarMapaMapbox ? (
+                <>
+                  <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
+                  {clickCoords && (
+                    <div className="absolute bottom-3 left-3 z-40 bg-white/85 p-2 rounded shadow text-xs">
+                      <div className="font-medium">📍 Coordenadas</div>
+                      <div>Lat: {clickCoords.lat.toFixed(5)}</div>
+                      <div>Lng: {clickCoords.lng.toFixed(5)}</div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div
+                  ref={containerRef}
+                  className="absolute inset-0 w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
+                >
+                  {tooltipSeleccion && (
+                    <div className="absolute top-3 right-3 z-40 bg-white text-zinc-800 text-sm font-medium px-4 py-2 rounded-lg shadow-xl border border-gray-200">
+                      {tooltipSeleccion}
+                    </div>
+                  )}
+                  {tooltip.visible && (
+                    <div
+                      className="absolute z-40 bg-white text-zinc-800 text-sm p-2.5 rounded-lg shadow-xl border border-gray-200 pointer-events-none flex items-center gap-2"
+                      style={{
+                        top: Math.min(tooltip.y + 24, window.innerHeight - 56),
+                        left: Math.min(tooltip.x + 24, window.innerWidth - 160),
+                      }}
+                    >
+                      <span className="text-lg leading-none" aria-hidden="true">📍</span> {/* Usamos un emoji de pin */}
+                      <span className="font-semibold">{tooltip.name}</span>
+                    </div>
+                  )}
+                  {gifVisible && (
+                    <img
+                      src={gifVillahermosa}
+                      alt="Villahermosa"
+                      className="absolute z-30 w-40 sm:w-52 rounded-xl shadow-lg border-4 border-white"
+                      style={{ top: gifPosition.y + 40, left: gifPosition.x + 40 }}
+                    />
+                  )}
+                </div>
+              )}
+            </div> {/* Fin del div que contiene el mapa */}
+          </div> {/* Fin del contenedor principal del mapa con fondo blanco */}
+        </div> {/* Fin del contenedor principal con padding y efecto desfasado */}
+
+        {/* PANEL DERECHO: formulario (solo en escritorio/tablet) */}
+        <aside
+          className={`hidden md:block md:w-[420px] h-full bg-white/90 backdrop-blur p-6 
+                      border-t lg:border-t-0 lg:border-l border-gray-200 overflow-y-auto 
+                      ${mostrarZonas ? 'border-yellow-300' : 'border-teal-300'}`}
+        >
+          <ItinerarioForm />
+        </aside>
 
       </div>
     </div>
