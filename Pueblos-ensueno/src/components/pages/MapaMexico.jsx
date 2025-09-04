@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import svgUrl from '../../assets/svg/Mexico.svg?url';
 
 import MapaTabasco from './MapaTabasco';
-import MapaChiapas from '../MapaChiapas';
+import MapaChiapas from './MapaChiapas';
 
 function MapaMexico() {
   const containerRef = useRef(null);
