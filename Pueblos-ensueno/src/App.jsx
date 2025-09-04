@@ -19,10 +19,13 @@ import useIsDesktop from './hooks/useIsDesktop';
 import Home from './components/pages/Home';
 import Nosotros from './components/pages/Nosotros';
 
+import MapaMexico from './components/pages/MapaMexico';
+import MapaTabasco from './components/pages/MapaTabasco';
+
 import Register from './components/Register';
 import Login from './components/Login';
 import InterestsSelector from './components/InterestsSelector';
-import MapaMexico from './components/MapaMexico';
+
 import PuntosCercanos from './components/PuntosCercanos';
 import ProductosTabasco from './components/ProductosTabasco';
 import PerfilUsuario from './components/PerfilUsuario';
@@ -30,7 +33,6 @@ import RealTimeMap from './components/RealTimeMap';
 import HomeLogin from './components/HomeLogin';
 import Itinerario from './components/Itinerario';
 import MunicipioDetalle from './components/MunicipioDetalle';
-import MapaTabasco from './components/MapaTabasco';
 import './locales/i18n';
 import Directorios from "./components/Directorios";
 import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
