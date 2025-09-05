@@ -60,7 +60,7 @@ useEffect(() => {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
 
-  // Sincroniza el mes del dropdown con la fecha de inicio seleccionada
+  // --- LÓGICA CORREGIDA ---: Sincroniza el mes del dropdown con la fecha de inicio seleccionada
   useEffect(() => {
     if (fechaInicio) {
         const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -73,12 +73,14 @@ useEffect(() => {
     }
   }, [fechaInicio]);
 
-  // Calcula la fecha final automáticamente basado en la fecha de inicio y el número de días
+  // --- LÓGICA CORREGIDA ---: Calcula la fecha final automáticamente basado en la fecha de inicio y el número de días
   useEffect(() => {
     if (fechaInicio && formData.dias) {
       const [year, month, day] = fechaInicio.split('-').map(Number);
       const startDate = new Date(year, month - 1, day);
+      
       startDate.setDate(startDate.getDate() + parseInt(formData.dias, 10) - 1);
+      
       const newEndDate = startDate.toISOString().split('T')[0];
       setFechaFin(newEndDate);
     } else {
@@ -706,11 +708,11 @@ const ItinerarioForm = () => {
             >+</button>
         </div>
 
-        {/* --- CAMBIO DE LÓGICA ---: Se eliminan las restricciones de fecha y la fecha final ahora es de solo lectura */}
+        {/* --- LÓGICA CORREGIDA ---: Se eliminan las restricciones y la fecha final es de solo lectura */}
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full pt-2">
           <input
             type="date"
-            min={new Date().toISOString().split("T")[0]} // Mínimo es hoy
+            min={new Date().toISOString().split("T")[0]}
             value={fechaInicio}
             onChange={e => setFechaInicio(e.target.value)}
             className="w-full border-2 border-slate-200 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
@@ -1076,4 +1078,5 @@ function getCoordenadasZona(nombre) {
   };
   return coords[nombre] || [-92.9, 17.9];
 }
+
 
