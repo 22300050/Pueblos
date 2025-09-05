@@ -36,3 +36,53 @@ https://svg-cropper.com/
 │   └── comalcalco
 │       ├── img1.jpg
 │       └── ...
+
+
+components/
+│
+├── layouts/
+│   ├── Footer.jsx
+│   ├── Navbar.jsx
+│   └── Topbar.jsx
+│
+├── animations/
+│   ├── LoadingAnimation.jsx
+│   ├── WelcomeAnimation.jsx
+│   └── ...
+│
+├── maps/
+│   ├── MapaChiapas.jsx
+│   ├── MapaMexico.jsx
+│   ├── MapaTabasco.jsx
+│   ├── RealTimeMap.jsx
+│   └── MonumentoCabezaOlmeca.jsx
+│
+├── pages/
+│   ├── Home.jsx
+│   ├── HomeLogin.jsx
+│   ├── Login.jsx
+│   ├── Register.jsx
+│   ├── Nosotros.jsx
+│   ├── Mantenimiento.jsx
+│   ├── PerfilUsuario.jsx
+│   ├── MunicipioDetalle.jsx
+│   └── ...
+│
+├── features/
+│   ├── Chatbot.jsx
+│   ├── InterestsSelector.jsx
+│   ├── Itinerario.jsx
+│   ├── PuntosCercanos.jsx
+│   ├── ProductosTabasco.jsx
+│   └── ...
+│
+├── ui/
+│   ├── SpeedDial.jsx
+│   └── ...
+│
+├── assets/
+│   └── MapaMexico.zip
+│   └── MapaTabasco.zip
+│
+└── public/
+    └── (solo si usas archivos públicos estáticos)

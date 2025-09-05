@@ -9,8 +9,8 @@ import Navbar from './components/layouts/Navbar';
 import Footer from './components/layouts/Footer'; 
 
 // Componentes de Animación
-import WelcomeAnimation from './components/WelcomeAnimation';
-import LoadingAnimation from './components/LoadingAnimation';
+import WelcomeAnimation from './components/animations/WelcomeAnimation';
+import LoadingAnimation from './components/animations/LoadingAnimation';
 
 // Hook de Detección de Escritorio
 import useIsDesktop from './hooks/useIsDesktop';
@@ -18,11 +18,11 @@ import useIsDesktop from './hooks/useIsDesktop';
 // El resto de tus componentes de página
 import Home from './components/pages/Home';
 import Nosotros from './components/pages/Nosotros';
-
-import MapaMexico from './components/pages/MapaMexico';
-import MapaTabasco from './components/pages/MapaTabasco';
-
 import Mantenimiento from './components/pages/Mantenimiento';
+
+import MapaMexico from './components/maps/MapaMexico';
+import MapaTabasco from './components/maps/MapaTabasco';
+import MapaChiapas from './components/maps/MapaChiapas';
 
 import Register from './components/Register';
 import Login from './components/Login';
@@ -86,11 +86,17 @@ function App() {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/nosotros" element={<Nosotros />} />            
             <Route path="/Mantenimiento" element={<Mantenimiento />} />
+
+            <Route path="/mapa" element={<MapaMexico />} />
+            <Route path="/mapa-tabasco" element={<MapaTabasco />} />
+            <Route path="/mapa-chiapas" element={<MapaChiapas />} />  
+                      
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/InterestsSelector" element={<InterestsSelector />} />
-            <Route path="/mapa" element={<MapaMexico />} />
+
             <Route path="/puntos-cercanos" element={<PuntosCercanos />} />
             <Route path="/productos-tabasco" element={<ProductosTabasco />} />
             <Route path="/perfil" element={<PerfilUsuario />} />
@@ -98,9 +104,8 @@ function App() {
             <Route path="/homelogin" element={<HomeLogin />} />
             <Route path="/itinerario" element={<Itinerario />} />
             <Route path="/municipio/:nombre" element={<MunicipioDetalle />} />
-            <Route path="/mapa-tabasco" element={<MapaTabasco />} />
+
             <Route path="/directorios" element={<Directorios />} />
-            <Route path="/nosotros" element={<Nosotros />} />
             <Route path="/monumento/cabeza-olmeca" element={<MonumentoCabezaOlmeca />} />
           </Routes>
         </main>
