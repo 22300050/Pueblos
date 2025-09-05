@@ -19,6 +19,7 @@ import useIsDesktop from './hooks/useIsDesktop';
 import Home from './components/pages/Home';
 import Nosotros from './components/pages/Nosotros';
 import Mantenimiento from './components/pages/Mantenimiento';
+import Directorios from "./components/pages/Directorios";
 
 import MapaMexico from './components/maps/MapaMexico';
 import MapaTabasco from './components/maps/MapaTabasco';
@@ -36,7 +37,7 @@ import HomeLogin from './components/HomeLogin';
 import Itinerario from './components/Itinerario';
 import MunicipioDetalle from './components/MunicipioDetalle';
 import './locales/i18n';
-import Directorios from "./components/Directorios";
+
 import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
 
 function App() {
@@ -88,6 +89,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/nosotros" element={<Nosotros />} />            
             <Route path="/Mantenimiento" element={<Mantenimiento />} />
+            <Route path="/directorios" element={<Directorios />} />
 
             <Route path="/mapa" element={<MapaMexico />} />
             <Route path="/mapa-tabasco" element={<MapaTabasco />} />
@@ -105,7 +107,7 @@ function App() {
             <Route path="/itinerario" element={<Itinerario />} />
             <Route path="/municipio/:nombre" element={<MunicipioDetalle />} />
 
-            <Route path="/directorios" element={<Directorios />} />
+
             <Route path="/monumento/cabeza-olmeca" element={<MonumentoCabezaOlmeca />} />
           </Routes>
         </main>
