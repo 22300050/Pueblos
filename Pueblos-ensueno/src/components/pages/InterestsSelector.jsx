@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Palette, Landmark, Utensils, Music, Drama, Brush, Mountain, School, Map, Check } from 'lucide-react';
 
-// --- CAMBIO DE DISEÑO: Se reestructuran los datos para incluir iconos ---
 const culturalEvents = [
   { name: "Ferias Tradicionales", Icon: Palette },
   { name: "Carnavales", Icon: Drama },
@@ -41,10 +40,12 @@ export default function InterestsSelector() {
       JSON.stringify({ culturales, estaticos })
     );
     setMensajeVisible(true);
-    setTimeout(() => navigate('/mapa'), 2000);
+    // Redirección después de 2 segundos
+    setTimeout(() => {
+        navigate('/mapa');
+    }, 2000);
   };
 
-  // --- CAMBIO DE DISEÑO: Componente de tarjeta reutilizable ---
   const InterestCard = ({ item, isSelected, onSelect }) => {
     const { name, Icon } = item;
     return (
@@ -68,19 +69,45 @@ export default function InterestsSelector() {
   };
 
   return (
-    // --- CAMBIO DE DISEÑO: Padding superior aumentado ---
     <div className="min-h-screen w-screen bg-slate-50 flex flex-col items-center px-4 pt-16 pb-28 text-gray-800">
+        {/* Estilos para la animación y el fondo del modal */}
+        <style>{`
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes scaleIn {
+                from { opacity: 0; transform: scale(0.9); }
+                to { opacity: 1; transform: scale(1); }
+            }
+            .animate-fadeIn {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            .animate-scaleIn {
+                animation: scaleIn 0.3s ease-out forwards;
+            }
+            .modal-backdrop {
+                background-color: rgba(0, 0, 0, 0.6);
+            }
+        `}</style>
+
+      {/* --- MODAL CON FONDO TRANSLÚCIDO --- */}
+      {/* Se usa la clase 'modal-backdrop' para asegurar la transparencia */}
       {mensajeVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white py-5 px-8 rounded-2xl shadow-2xl border-2 border-green-300 text-green-800 text-lg font-semibold text-center flex items-center gap-3">
-            <Check size={24} />
-            <span>Intereses guardados con éxito</span>
+        <div className="fixed inset-0 flex items-center justify-center modal-backdrop backdrop-blur-sm z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-sm w-full mx-4 animate-scaleIn border">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-5">
+              <Check className="h-10 w-10 text-green-600" strokeWidth={3} />
+            </div>
+            <h3 className="text-2xl font-bold text-zinc-800">¡Listo!</h3>
+            <p className="text-slate-600 mt-2">
+              Tus intereses se han guardado. <br/> Redirigiendo al mapa...
+            </p>
           </div>
         </div>
       )}
 
       <div className="w-full max-w-4xl mx-auto">
-        {/* --- CAMBIO DE DISEÑO: Encabezado --- */}
         <div className="text-center mb-10">
             <h1 className="text-4xl md:text-5xl font-black text-zinc-800">¿Qué te apasiona?</h1>
             <p className="text-slate-600 mt-2 text-lg">Selecciona tus intereses para personalizar tu aventura.</p>
@@ -117,7 +144,6 @@ export default function InterestsSelector() {
         </div>
       </div>
 
-      {/* --- CAMBIO DE DISEÑO: Botón de guardar fijo en la parte inferior --- */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-gray-200">
         <div className="max-w-4xl mx-auto">
             <button
@@ -135,3 +161,4 @@ export default function InterestsSelector() {
     </div>
   );
 }
+
