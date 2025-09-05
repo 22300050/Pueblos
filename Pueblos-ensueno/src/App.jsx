@@ -22,6 +22,8 @@ import Nosotros from './components/pages/Nosotros';
 import MapaMexico from './components/pages/MapaMexico';
 import MapaTabasco from './components/pages/MapaTabasco';
 
+import Mantenimiento from './components/pages/Mantenimiento';
+
 import Register from './components/Register';
 import Login from './components/Login';
 import InterestsSelector from './components/InterestsSelector';
@@ -84,6 +86,7 @@ function App() {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/Mantenimiento" element={<Mantenimiento />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/InterestsSelector" element={<InterestsSelector />} />

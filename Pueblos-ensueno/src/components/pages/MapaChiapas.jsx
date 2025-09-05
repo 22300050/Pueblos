@@ -160,7 +160,9 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
         const r = containerRef.current.getBoundingClientRect();
         setTooltip(prev => ({...prev, x: e.clientX - r.left, y: e.clientY - r.top }));
       });
-      path.addEventListener('click', () => navigate(`/municipio/${name}`));
+      //SE EDITO LA RUTA PARA QUE EL USUARIO NO VAYA A UNA PÁGINA EN BLANCO
+      //path.addEventListener('click', () => navigate(`/municipio/${name}`));
+      path.addEventListener('click', () => navigate(`/Mantenimiento`));
     });
   }, [vistaMovil, mostrarMapaMapbox]);
 
