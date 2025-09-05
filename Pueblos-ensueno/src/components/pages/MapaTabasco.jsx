@@ -19,7 +19,7 @@ function MapaTabasco({ onRegresar, estado, eventos }) {
 // Leer mes guardado en localStorage al iniciar
 const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
 
-const [formData, setFormData] = useState({ 
+const [formData, setFormData] = useState({
   dias: '',
   tipo: '',
   lugarInicio: itinerarioPersistido?.lugarInicio || '',
@@ -32,7 +32,7 @@ const [formData, setFormData] = useState({
 
 
   const [eventoIndex, setEventoIndex] = useState(0);
-  
+
   // 🔹 Escuchar cambios de mes desde MunicipioDetalle (y otros componentes)
 useEffect(() => {
   const handleStorageChange = () => {
@@ -59,17 +59,32 @@ useEffect(() => {
   const [errorEvento, setErrorEvento] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
+
+  // Sincroniza el mes del dropdown con la fecha de inicio seleccionada
   useEffect(() => {
-  if (!formData.mes) return;
-  // Año por defecto: si ya eligió fechaInicio, usa ese año; si no, el actual
-  const hoy = new Date();
-  const yyyy = fechaInicio ? new Date(fechaInicio).getFullYear() : hoy.getFullYear();
-  const { inicio, fin } = clampFechaAlMes(yyyy, formData.mes, formData.dias || 1);
-  // Ajusta fecha inicio al primer día del mes; fecha fin limitada por días y mes
-  const iso = d => d.toISOString().split("T")[0];
-  setFechaInicio(iso(inicio));
-  setFechaFin(iso(fin));
-}, [formData.mes, formData.dias]); // cambia al elegir mes o días
+    if (fechaInicio) {
+        const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        const [year, month, day] = fechaInicio.split('-').map(Number);
+        const startDate = new Date(year, month - 1, day);
+        const monthName = meses[startDate.getMonth()];
+        if (formData.mes !== monthName) {
+            setFormData(prev => ({ ...prev, mes: monthName }));
+        }
+    }
+  }, [fechaInicio]);
+
+  // Calcula la fecha final automáticamente basado en la fecha de inicio y el número de días
+  useEffect(() => {
+    if (fechaInicio && formData.dias) {
+      const [year, month, day] = fechaInicio.split('-').map(Number);
+      const startDate = new Date(year, month - 1, day);
+      startDate.setDate(startDate.getDate() + parseInt(formData.dias, 10) - 1);
+      const newEndDate = startDate.toISOString().split('T')[0];
+      setFechaFin(newEndDate);
+    } else {
+      setFechaFin('');
+    }
+  }, [fechaInicio, formData.dias]);
 
   const [presupuestoInput, setPresupuestoInput] = useState('');
   const [mostrarZonas, setMostrarZonas] = useState(false);
@@ -467,7 +482,7 @@ el.addEventListener('click', () => {
      diasData[d].actividades.push({
        titulo: s.nombre,
        icono: s.icono || '📍',
-       tipo: s.tipo, 
+       tipo: s.tipo,
        meta: s.meta || {},
      });
    });
@@ -509,550 +524,448 @@ const buildDiasDataDesdeMultiplesSelecciones = ({ municipios = [], dias, mes }) 
 
 
 // --- Subcomponente para reutilizar el formulario de itinerario ---
-const ItinerarioForm = () => (
-  <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      const errores = [];
-      if (!formData.dias) errores.push("📅 Indica los días de viaje");
-      if (!formData.tipo) errores.push("💰 Elige un presupuesto estimado");
-      if (!formData.mes) errores.push("📆 Elige un mes");
-      if (!fechaInicio || !fechaFin) errores.push("🗓 Selecciona fechas de viaje");
-       if (formData.modoDestino === "manual") {
-   if (!formData.lugarInicio) errores.push("🏁 Elige el Origen (municipio)");
-   if (!formData.ultimoLugar) errores.push("🎯 Elige el Destino (municipio)");
- }
-      if (errores.length > 0) { setErrorEvento(errores); return; }
-      setErrorEvento(false);
+const ItinerarioForm = () => {
+  // --- CAMBIO DE DISEÑO ---: Lista de intereses para los nuevos botones
+  const interesesDisponibles = ["Naturaleza", "Compras", "Arte", "Museos", "Gastronomía", "Aventura"];
 
-      let { lugarInicio, ultimoLugar } = formData;
-      const interesesArr = formData.intereses ? formData.intereses.split(", ").filter(Boolean) : [];
-      const presupuestoMXN = tipoPresupuestoADinero(formData.tipo);
-      const monedas = convertirMonedas(presupuestoMXN);
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const errores = [];
+        if (!formData.dias) errores.push("📅 Indica los días de viaje");
+        if (!formData.tipo) errores.push("💰 Elige un presupuesto estimado");
+        if (!formData.mes) errores.push("📆 Elige un mes");
+        if (!fechaInicio || !fechaFin) errores.push("🗓 Selecciona fechas de viaje");
+         if (formData.modoDestino === "manual") {
+     if (!formData.lugarInicio) errores.push("🏁 Elige el Origen (municipio)");
+     if (!formData.ultimoLugar) errores.push("🎯 Elige el Destino (municipio)");
+   }
+        if (errores.length > 0) { setErrorEvento(errores); return; }
+        setErrorEvento(false);
 
-let actividadesSugeridas = [];
-let eventosMes = [];
-let diasData = [];
+        let { lugarInicio, ultimoLugar } = formData;
+        const interesesArr = formData.intereses ? formData.intereses.split(", ").filter(Boolean) : [];
+        const presupuestoMXN = tipoPresupuestoADinero(formData.tipo);
+        const monedas = convertirMonedas(presupuestoMXN);
 
-// lee la lista que se guarda cuando el usuario da "Me interesa"
-let municipiosInteres = [];
-try {
-  municipiosInteres = JSON.parse(localStorage.getItem("interesesMunicipios")) || [];
-} catch { municipiosInteres = []; }
+  let actividadesSugeridas = [];
+  let eventosMes = [];
+  let diasData = [];
 
-// Si el usuario tiene 2+ municipios marcados, construye el plan con AMBOS/VARIOS
-if (municipiosInteres.length >= 2) {
-  // fija origen/destino razonables si faltan
-  if (!lugarInicio)  lugarInicio  = municipiosInteres[0];
-  if (!ultimoLugar)  ultimoLugar  = municipiosInteres[municipiosInteres.length - 1];
+  // lee la lista que se guarda cuando el usuario da "Me interesa"
+  let municipiosInteres = [];
+  try {
+    municipiosInteres = JSON.parse(localStorage.getItem("interesesMunicipios")) || [];
+  } catch { municipiosInteres = []; }
 
-  diasData = buildDiasDataDesdeMultiplesSelecciones({
-    municipios: municipiosInteres,
-    dias: formData.dias,
-    mes: formData.mes
-  });
-} else if ((formData.modoDestino === "auto") && lugarInicio) {
-  // caso tradicional: solo 1 municipio
-  diasData = buildDiasDataDesdeSelecciones({
-    municipio: lugarInicio,
-    dias: formData.dias,
-    mes: formData.mes
-  });
-  ultimoLugar = ultimoLugar || lugarInicio;
-} else if (!lugarInicio || !ultimoLugar) {
-  // sugerencia fallback
-  const sugerencia = sugerirRuta({
-    mes: formData.mes,
-    intereses: interesesArr,
-    tipo: formData.tipo
-  });
-  lugarInicio = lugarInicio || sugerencia.inicio;
-  ultimoLugar = ultimoLugar || sugerencia.fin;
-  actividadesSugeridas = sugerencia.actividades;
-  eventosMes = sugerencia.eventosMes;
-}
+  // Si el usuario tiene 2+ municipios marcados, construye el plan con AMBOS/VARIOS
+  if (municipiosInteres.length >= 2) {
+    // fija origen/destino razonables si faltan
+    if (!lugarInicio)  lugarInicio  = municipiosInteres[0];
+    if (!ultimoLugar)  ultimoLugar  = municipiosInteres[municipiosInteres.length - 1];
 
-if (actividadesSugeridas.length === 0 && (!diasData || diasData.length === 0)) {
-  // al menos una actividad descriptiva
-  actividadesSugeridas = [`Desde ${lugarInicio} hasta ${ultimoLugar}`];
-}
+    diasData = buildDiasDataDesdeMultiplesSelecciones({
+      municipios: municipiosInteres,
+      dias: formData.dias,
+      mes: formData.mes
+    });
+  } else if ((formData.modoDestino === "auto") && lugarInicio) {
+    // caso tradicional: solo 1 municipio
+    diasData = buildDiasDataDesdeSelecciones({
+      municipio: lugarInicio,
+      dias: formData.dias,
+      mes: formData.mes
+    });
+    ultimoLugar = ultimoLugar || lugarInicio;
+  } else if (!lugarInicio || !ultimoLugar) {
+    // sugerencia fallback
+    const sugerencia = sugerirRuta({
+      mes: formData.mes,
+      intereses: interesesArr,
+      tipo: formData.tipo
+    });
+    lugarInicio = lugarInicio || sugerencia.inicio;
+    ultimoLugar = ultimoLugar || sugerencia.fin;
+    actividadesSugeridas = sugerencia.actividades;
+    eventosMes = sugerencia.eventosMes;
+  }
+
+  if (actividadesSugeridas.length === 0 && (!diasData || diasData.length === 0)) {
+    // al menos una actividad descriptiva
+    actividadesSugeridas = [`Desde ${lugarInicio} hasta ${ultimoLugar}`];
+  }
 
 
 
-      if (actividadesSugeridas.length === 0) {
-        actividadesSugeridas = [`Desde ${lugarInicio} hasta ${ultimoLugar}`];
-      }
+        if (actividadesSugeridas.length === 0) {
+          actividadesSugeridas = [`Desde ${lugarInicio} hasta ${ultimoLugar}`];
+        }
 
-      const payload = {
-        estado,
-        dias: `${fechaInicio} a ${fechaFin}`,
-        presupuesto: presupuestoMXN,
-        monedas,
-        email: formData.email || "",
-        mes: formData.mes,
-        interesesSeleccionados: interesesArr,
-        origen: lugarInicio,
-        destino: ultimoLugar,
-        eventosSeleccionados: [{
-          nombre: formData.tipo,
-          icono: "🎯",
-          fechas: `${fechaInicio} a ${fechaFin}`,
-          elementos: interesesArr.join(", "),
-          actividades: actividadesSugeridas.join(", "),
-          eventosMes
-        }],
-        ...(diasData.length ? { diasData } : {})
-      };
+        const payload = {
+          estado,
+          dias: `${fechaInicio} a ${fechaFin}`,
+          presupuesto: presupuestoMXN,
+          monedas,
+          email: formData.email || "",
+          mes: formData.mes,
+          interesesSeleccionados: interesesArr,
+          origen: lugarInicio,
+          destino: ultimoLugar,
+          eventosSeleccionados: [{
+            nombre: formData.tipo,
+            icono: "🎯",
+            fechas: `${fechaInicio} a ${fechaFin}`,
+            elementos: interesesArr.join(", "),
+            actividades: actividadesSugeridas.join(", "),
+            eventosMes
+          }],
+          ...(diasData.length ? { diasData } : {})
+        };
 
-      localStorage.setItem("itinerario", JSON.stringify(payload));
-      navigate("/itinerario", { state: payload });
-    }}
-    className="flex flex-col gap-4 text-sm"
-  >
-    <label className="font-bold text-lg text-center">
-      {mostrarMapaMapbox ? '📍 Explora los municipios de Tabasco' : '🐯 ITINERARIOS DE VIAJE'}
-    </label>
-
-    {Array.isArray(errorEvento) && errorEvento.length > 0 && (
-      <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
-        <ul className="list-disc list-inside">
-          {errorEvento.map((msg, i) => <li key={i}>{msg}</li>)}
-        </ul>
+        localStorage.setItem("itinerario", JSON.stringify(payload));
+        navigate("/itinerario", { state: payload });
+      }}
+      // --- CAMBIO DE DISEÑO ---: Se aumenta el espaciado general del formulario
+      className="flex flex-col gap-6 text-sm"
+    >
+      {/* --- CAMBIO DE DISEÑO ---: Encabezado del formulario más prominente y centrado */}
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Planea tu Aventura</h2>
+        <p className="text-slate-500 text-sm">Completa los datos para crear tu ruta ideal por Tabasco</p>
       </div>
-    )}
-
-    {/* Modo destino */}
-    <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-full px-3 py-1 mb-4 text-sm">
-      <span className="text-gray-700 whitespace-nowrap">¿Sabes a dónde ir?</span>
-      <div className="flex gap-2">
-       <button
-  type="button"
-  className={`px-3 py-1 rounded-full transition text-xs ${
-    formData.modoDestino === "manual" ? "bg-green-300 text-green-900" : "bg-gray-200 hover:bg-green-200"
-  }`}
-  onClick={() => {
-    // activa modo manual y abre el picker
-    setFormData(prev => ({ ...prev, modoDestino: "manual" }));
-    setOrigenSel(formData.lugarInicio || "");
-    setDestinoSel(formData.ultimoLugar || "");
-    setShowODPicker(true);
-  }}
->
-  Elegir
-</button>
-
-        <button
-          type="button"
-          className={`px-3 py-1 rounded-full transition text-xs ${
-            formData.modoDestino === "auto" ? "bg-blue-300 text-blue-900" : "bg-gray-200 hover:bg-blue-200"
-          }`}
-          onClick={() => setFormData(prev => ({ ...prev, modoDestino: "auto" }))}
-        >
-          Automático
-        </button>
-      </div>
-    </div>
-    {formData.modoDestino === "manual" && (formData.lugarInicio || formData.ultimoLugar) && (
-  <div className="mb-3 text-sm space-y-1">
-    {formData.lugarInicio && (
-      <span className="inline-block bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-1 rounded-full mr-2">
-        Origen: <strong>{formData.lugarInicio}</strong>
-      </span>
-    )}
-    {formData.ultimoLugar && (
-      <span className="inline-block bg-sky-100 text-sky-900 border border-sky-300 px-3 py-1 rounded-full">
-        Destino: <strong>{formData.ultimoLugar}</strong>
-      </span>
-    )}
-  </div>
-)}
 
 
-    {formData.modoDestino === 'auto' && formData.lugarInicio && (
-      <div className="mb-3 text-sm">
-        <span className="inline-block bg-green-100 text-green-900 border border-green-300 px-3 py-1 rounded-full">
-          ✅ Destino seleccionado: <strong>{formData.lugarInicio}</strong> (desde Municipios)
-        </span>
-      </div>
-    )}
-
-    {formData.modoDestino !== "auto" && false && (
-      <>
-        <button
-          type="button"
-          onClick={() => {
-            setSeleccionando('inicio');
-            document.body.setAttribute("data-seleccionando", "inicio");
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            setTooltipSeleccion("🖱 Haz clic en el mapa para elegir tu primera parada");
-            timeoutRef.current = setTimeout(() => setTooltipSeleccion(''), 3000);
-          }}
-          className="w-full border border-blue-300 rounded-full px-4 py-2 bg-blue-100 hover:bg-blue-200 transition text-left"
-        >
-          {formData.lugarInicio || 'Seleccionar primera parada'}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setSeleccionando('fin');
-            document.body.setAttribute("data-seleccionando", "fin");
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            setTooltipSeleccion("🖱 Haz clic en el mapa para elegir tu última parada");
-            timeoutRef.current = setTimeout(() => setTooltipSeleccion(''), 3000);
-          }}
-          className="w-full border border-green-300 rounded-full px-4 py-2 bg-green-100 hover:bg-green-200 transition text-left"
-        >
-          {formData.ultimoLugar || 'Seleccionar última parada'}
-        </button>
-      </>
-    )}
-
-    {/* Días */}
-    <div className="flex flex-col gap-2">
-      <label className="block text-sm font-medium text-gray-800">📅 Días de viaje</label>
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            const actual = parseInt(formData.dias || "1");
-            if (actual > 1) setFormData({ ...formData, dias: String(actual - 1) });
-          }}
-          className="px-3 py-1 bg-gray-200 rounded-full text-lg font-bold hover:bg-gray-300"
-        >−</button>
-        
-  <button
-    type="button"
-    onClick={() => {
-      const actual = parseInt(formData.dias || "0");
-      if (actual < 30) setFormData({ ...formData, dias: String(actual + 1) });
-    }}
-    className="px-3 py-1 bg-gray-200 rounded-full text-lg font-bold hover:bg-gray-300"
-  >+</button>
-        <input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={formData.dias || ''}
-          onChange={(e) => {
-            const val = e.target.value.replace(/\D/g, "");
-            const num = parseInt(val);
-            if (!isNaN(num) && num > 0 && num <= 30) {
-              setFormData({ ...formData, dias: String(num) });
-            } else if (val === "") {
-              setFormData({ ...formData, dias: "" });
-            }
-          }}
-          placeholder="1"
-          className="w-24 text-center border border-gray-300 rounded-full px-4 py-2"
-        />
-        <button
-          type="button"
-          onClick={() => {
-            const n = parseInt(formData.dias || "0", 10);
-            if (n > 0 && n <= 30) {
-              setConfirmacionDias(`✅ Se han seleccionado ${formData.dias} día${formData.dias === "1" ? '' : 's'} de viaje`);
-            } else {
-              setConfirmacionDias("⚠️ Ingrese un número válido entre 1 y 30");
-            }
-            setTimeout(() => setConfirmacionDias(''), 3000);
-          }}
-          className="ml-2 bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500"
-        >OK</button>
-      </div>
-      {confirmacionDias && (
-        <div className="mt-2 p-3 border-l-4 border-green-500 bg-green-100 text-green-800 rounded-md shadow-sm text-sm font-medium">
-          {confirmacionDias}
+      {Array.isArray(errorEvento) && errorEvento.length > 0 && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
+          <ul className="list-disc list-inside">
+            {errorEvento.map((msg, i) => <li key={i}>{msg}</li>)}
+          </ul>
         </div>
       )}
-    </div>
 
-    {/* Selects */}
-    <select
-      value={formData.tipo || ''}
-      onChange={e => setFormData({ ...formData, tipo: e.target.value })}
-      className="w-full border border-gray-300 rounded-full px-4 py-2 bg-white"
-      required
-    >
-      <option value="" disabled>💰 Presupuesto estimado</option>
-      <option value="Económico">💸 Económico (hasta $1,000 MXN por día)</option>
-      <option value="Moderado">💼 Moderado ($1,000 – $2,000 MXN por día)</option>
-      <option value="Confort">🏨 Confort ($2,000 – $4,000 MXN por día)</option>
-      <option value="Lujo">💎 Lujo total (más de $4,000 MXN por día)</option>
-    </select>
+      {/* --- CAMBIO DE DISEÑO (ORDEN LÓGICO) ---: Sección 1 para fechas y duración */}
+      <div className="space-y-4 rounded-lg border border-slate-200 p-4">
+        <label className="block text-sm font-semibold text-slate-700">1. ¿Cuándo y por cuánto tiempo?</label>
+        
+        <div className="relative">
+          <select
+            value={formData.mes || ''}
+            onChange={e => {
+              const nuevoMes = e.target.value;
+              setFormData({ ...formData, mes: nuevoMes });
+              const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
+              localStorage.setItem("itinerario", JSON.stringify({ ...it, mes: nuevoMes }));
+            }}
+            className="w-full appearance-none border-2 border-slate-200 rounded-lg px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+            required
+          >
+            <option value="" disabled>Elige el mes de inicio</option>
+            {["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"].map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+             <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+          </div>
+        </div>
 
-    <select
-      value={formData.mes || ''}
-      onChange={e => {
-        const nuevoMes = e.target.value;
-        setFormData({ ...formData, mes: nuevoMes });
-        const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
-        localStorage.setItem("itinerario", JSON.stringify({ ...it, mes: nuevoMes }));
-      }}
-      className="w-full border border-gray-300 rounded-full px-4 py-2 bg-white"
-      required
-    >
-      <option value="" disabled>📆 Selecciona un mes</option>
-      {["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"].map(m => (
-        <option key={m} value={m}>{m}</option>
-      ))}
-    </select>
-
-    <select
-      value=""
-      onChange={(e) => {
-        const valor = e.target.value;
-        if (valor === 'Cerrar') {
-          setFormData({ ...formData, intereses: '' });
-        } else {
-          const actuales = formData.intereses?.split(', ').filter(Boolean) || [];
-          if (!actuales.includes(valor)) {
-            const nuevos = [...actuales, valor];
-            setFormData({ ...formData, intereses: nuevos.join(', ') });
-          }
-        }
-      }}
-      className="w-full border border-gray-300 rounded-full px-4 py-2 bg-white"
-    >
-      <option value="" disabled>🎯 Intereses</option>
-      <option value="Naturaleza">Naturaleza</option>
-      <option value="Compras">Compras</option>
-      <option value="Arte">Arte</option>
-      <option value="Museos">Museos</option>
-      <option value="Gastronomía">Gastronomía</option>
-      <option value="Aventura">Aventura</option>
-      <option value="Acceso gratuito">Acceso gratuito</option>
-      <option value="Cerrar" className="text-red-500">Cerrar</option>
-    </select>
-
-    {formData.intereses && formData.intereses.split(', ').length > 0 && (
-      <div className="flex flex-wrap gap-2 mt-2">
-        {formData.intereses.split(', ').map((interes, idx) => (
-          <span key={idx} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2">
-            {interes}
+        <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => {
-                const restantes = formData.intereses.split(', ').filter((i) => i !== interes);
-                setFormData({ ...formData, intereses: restantes.join(', ') });
+                const actual = parseInt(formData.dias || "1");
+                if (actual > 1) setFormData({ ...formData, dias: String(actual - 1) });
               }}
-              className="text-red-500 hover:text-red-700 font-bold"
-            >✕</button>
-          </span>
-        ))}
+              className="w-10 h-10 flex items-center justify-center bg-slate-200 rounded-full text-lg font-bold hover:bg-slate-300 transition-colors"
+            >−</button>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={formData.dias || ''}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "");
+                const num = parseInt(val);
+                if (!isNaN(num) && num > 0 && num <= 30) {
+                  setFormData({ ...formData, dias: String(num) });
+                } else if (val === "") {
+                  setFormData({ ...formData, dias: "" });
+                }
+              }}
+              placeholder="N° de días"
+              className="w-full text-center text-lg font-semibold border-2 border-slate-200 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const actual = parseInt(formData.dias || "0");
+                if (actual < 30) setFormData({ ...formData, dias: String(actual + 1) });
+              }}
+              className="w-10 h-10 flex items-center justify-center bg-slate-200 rounded-full text-lg font-bold hover:bg-slate-300 transition-colors"
+            >+</button>
+        </div>
+
+        {/* --- CAMBIO DE LÓGICA ---: Se eliminan las restricciones de fecha y la fecha final ahora es de solo lectura */}
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full pt-2">
+          <input
+            type="date"
+            min={new Date().toISOString().split("T")[0]} // Mínimo es hoy
+            value={fechaInicio}
+            onChange={e => setFechaInicio(e.target.value)}
+            className="w-full border-2 border-slate-200 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+            required
+          />
+          <span className="text-slate-500 font-semibold">→</span>
+          <input
+            type="date"
+            min={fechaInicio || ''}
+            value={fechaFin}
+            readOnly
+            className="w-full border-2 border-slate-200 rounded-lg px-4 py-2 bg-slate-100 cursor-not-allowed focus:outline-none transition"
+            required
+          />
+        </div>
       </div>
-    )}
 
-    {/* Fechas */}
-    <div className="flex flex-col gap-2">
-      <label className="block text-sm font-medium text-gray-800">Fechas de viaje</label>
-      <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
-        <input
-          type="date"
-          min={
-            formData.mes
-              ? (() => {
-                  const hoy = new Date();
-                  const yyyy = fechaInicio ? new Date(fechaInicio).getFullYear() : hoy.getFullYear();
-                  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-                  const mIdx = Math.max(0, meses.indexOf(formData.mes));
-                  return new Date(yyyy, mIdx, 1).toISOString().split("T")[0];
-                })()
-              : ""
-          }
-          max={
-            formData.mes
-              ? (() => {
-                  const hoy = new Date();
-                  const yyyy = fechaInicio ? new Date(fechaInicio).getFullYear() : hoy.getFullYear();
-                  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-                  const mIdx = Math.max(0, meses.indexOf(formData.mes));
-                  return new Date(yyyy, mIdx + 1, 0).toISOString().split("T")[0];
-                })()
-              : ""
-          }
-          value={fechaInicio}
-          onChange={e => { setFechaInicio(e.target.value); setFechaFin(''); }}
-          className="w-full sm:w-[48%] border border-amber-300 rounded px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-          required
-        />
-        <span className="text-gray-600">→</span>
-        <input
-          type="date"
-          min={fechaInicio}
-          max={
-            (() => {
-              if (!fechaInicio || !formData.mes || !formData.dias) return '';
-              const inicio = new Date(fechaInicio);
-              const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-              const yyyy = inicio.getFullYear();
-              const mIdx = Math.max(0, meses.indexOf(formData.mes));
-              const finDeMes = new Date(yyyy, mIdx + 1, 0);
-              const finPorDias = new Date(inicio);
-              finPorDias.setDate(inicio.getDate() + parseInt(formData.dias,10) - 1);
-              const fin = finPorDias < finDeMes ? finPorDias : finDeMes;
-              return fin.toISOString().split('T')[0];
-            })()
-          }
-          value={fechaFin}
-          onChange={(e) => setFechaFin(e.target.value)}
-          disabled={!fechaInicio}
-          className="w-full sm:w-[48%] border border-amber-300 rounded px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:bg-gray-100"
-          required
-        />
+      {/* --- CAMBIO DE DISEÑO (ORDEN LÓGICO) ---: Sección 2 para la ruta */}
+      <div className="space-y-4 rounded-lg border border-slate-200 p-4">
+        <label className="block text-sm font-semibold text-slate-700">2. Elige tu ruta</label>
+        <div className="flex items-center justify-between bg-slate-100 rounded-lg p-1 text-sm">
+          <span className="text-slate-600 pl-2">¿Sabes a dónde ir?</span>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-md transition text-xs font-semibold ${
+                formData.modoDestino === "manual" ? "bg-white text-orange-600 shadow" : "bg-transparent text-slate-500 hover:bg-white/50"
+              }`}
+              onClick={() => {
+                setFormData(prev => ({ ...prev, modoDestino: "manual" }));
+                setOrigenSel(formData.lugarInicio || "");
+                setDestinoSel(formData.ultimoLugar || "");
+                setShowODPicker(true);
+              }}
+            >
+              Elegir
+            </button>
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-md transition text-xs font-semibold ${
+                formData.modoDestino === "auto" ? "bg-white text-orange-600 shadow" : "bg-transparent text-slate-500 hover:bg-white/50"
+              }`}
+              onClick={() => setFormData(prev => ({ ...prev, modoDestino: "auto" }))}
+            >
+              Automático
+            </button>
+          </div>
+        </div>
+        {formData.modoDestino === "manual" && (formData.lugarInicio || formData.ultimoLugar) && (
+          <div className="text-xs space-y-1">
+            {formData.lugarInicio && (
+              <span className="inline-block bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full mr-2">
+                Origen: <strong>{formData.lugarInicio}</strong>
+              </span>
+            )}
+            {formData.ultimoLugar && (
+              <span className="inline-block bg-sky-100 text-sky-900 px-3 py-1 rounded-full">
+                Destino: <strong>{formData.ultimoLugar}</strong>
+              </span>
+            )}
+          </div>
+        )}
       </div>
-    </div>
+      
+      {/* --- CAMBIO DE DISEÑO (ORDEN LÓGICO) ---: Sección 3 para estilo y gustos */}
+       <div className="space-y-4 rounded-lg border border-slate-200 p-4">
+        <label className="block text-sm font-semibold text-slate-700">3. Define tu estilo y gustos</label>
+        <div className="relative">
+          <select
+            value={formData.tipo || ''}
+            onChange={e => setFormData({ ...formData, tipo: e.target.value })}
+            className="w-full appearance-none border-2 border-slate-200 rounded-lg px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+            required
+          >
+            <option value="" disabled>💰 Presupuesto estimado</option>
+            <option value="Económico">💸 Económico (hasta $1,000 MXN)</option>
+            <option value="Moderado">💼 Moderado ($1,000 – $2,000 MXN)</option>
+            <option value="Confort">🏨 Confort ($2,000 – $4,000 MXN)</option>
+            <option value="Lujo">💎 Lujo (más de $4,000 MXN)</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+             <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 pt-2">
+          {interesesDisponibles.map(interes => {
+            const isSelected = formData.intereses?.includes(interes);
+            return (
+              <button
+                key={interes}
+                type="button"
+                onClick={() => {
+                  const actuales = formData.intereses?.split(', ').filter(Boolean) || [];
+                  if (isSelected) {
+                    const nuevos = actuales.filter(i => i !== interes);
+                    setFormData({ ...formData, intereses: nuevos.join(', ') });
+                  } else {
+                    const nuevos = [...actuales, interes];
+                    setFormData({ ...formData, intereses: nuevos.join(', ') });
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
+                  isSelected
+                    ? 'bg-orange-500 text-white border-orange-500'
+                    : 'bg-white hover:bg-orange-50 hover:border-orange-300 border-slate-200'
+                }`}
+              >
+                {interes}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-    {/* Botones finales */}
-    <div className="flex justify-between items-center mt-4">
-      <button type="button" onClick={onRegresar} className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-200">
-        Regresar
-      </button>
-      <button type="submit" className="bg-yellow-400 text-black font-bold px-6 py-2 rounded-full hover:bg-yellow-500">
-        CREAR
-      </button>
-    </div>
-
-    <div className="flex justify-center gap-4 mt-4 text-xl text-gray-600">
-      <i className="fab fa-facebook-square" />
-      <i className="fab fa-twitter" />
-      <i className="fab fa-instagram" />
-      <i className="far fa-envelope" />
-    </div>
-  </form>
-);
+      {/* --- CAMBIO DE DISEÑO ---: Botones finales con más jerarquía visual */}
+      <div className="flex flex-col gap-3 pt-6 border-t border-slate-200">
+        <button type="submit" className="w-full bg-orange-500 text-white font-bold px-6 py-3 rounded-lg shadow-md hover:bg-orange-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+          CREAR MI ITINERARIO
+        </button>
+        <button type="button" onClick={onRegresar} className="w-full bg-transparent text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors">
+          Regresar al mapa
+        </button>
+      </div>
+    </form>
+  );
+};
 
 
 return (
   <>
-
-
     {/* Toggle móvil: Mapa / Itinerario */}
-<div className="md:hidden px-6 py-2">
-  <div className="flex gap-2 rounded-full bg-white/80 p-1 shadow border">
-    <button
-      onClick={() => setVistaMovil('mapa')}
-      className={`flex-1 px-3 py-2 rounded-full ${vistaMovil === 'mapa' ? 'bg-yellow-400 font-bold' : ''}`}
-      aria-pressed={vistaMovil === 'mapa'}
-    >
-      🗺️ Mapa
-    </button>
-    <button
-      onClick={() => setVistaMovil('itinerario')}
-      className={`flex-1 px-3 py-2 rounded-full ${vistaMovil === 'itinerario' ? 'bg-yellow-400 font-bold' : ''}`}
-      aria-pressed={vistaMovil === 'itinerario'}
-    >
-      📋 Itinerario
-    </button>
-  </div>
-</div>
-    {/* CONTENIDO PRINCIPAL */}
-<div className="relative min-h-[100dvh] p-6 overflow-hidden text-gray-800 bg-[#EAEAEA]">
-{/* Contenedor del mapa + formulario a la derecha */}
-<div className={`${vistaMovil !== 'mapa' ? 'hidden md:block' : ''}`}>
-  <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 xl:px-8">
-<div
-  className={[
-    'relative rounded-xl shadow-lg overflow-hidden',
-    'h-[80vh] sm:h-[85vh] md:h-[90vh] lg:h-[100vh]',
-    (mapboxFull && mostrarMapaMapbox && vistaMovil === 'mapa')
-      ? 'fixed inset-0 z-[60] rounded-none shadow-none h-[100dvh]'
-      : '',
-  ].join(' ')}
->
-
-      {/* Layout: mapa (izquierda) + panel derecho (formulario) */}
-      <div className="flex flex-col lg:flex-row h-full">
-        {/* MAPA (NUEVO DISEÑO) */}
-        <div className="relative flex-1 p-6"> {/* Agregamos padding al contenedor principal */}
-          {/* 1. Forma de color desfasada (fondo) */}
-          <div className="absolute inset-0 bg-[#F39106] rounded-3xl"></div>
-          
-          {/* 2. Contenedor principal del mapa con fondo blanco y detalles */}
-          <div className="relative z-10 w-full h-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            {/* Encabezado del mapa con el selector SVG/Mapbox */}
-            <div className="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-800">
-                Mapa de <span className="text-[#F39106]">Tabasco</span>
-              </h2>
-              <button
-                onClick={() => setMostrarMapaMapbox(v => !v)}
-                className="bg-white border border-gray-300 px-4 py-2 rounded-lg shadow-sm hover:bg-gray-100 transition text-sm font-medium"
-              >
-                {mostrarMapaMapbox ? '🗺️ Ver SVG' : '🌐 Ver Mapbox'}
-              </button>
-            </div>
-
-            {/* Contenido del mapa (SVG o Mapbox) */}
-            <div className="relative flex-1 overflow-hidden"> {/* Este div ahora contiene el mapa */}
-              {mostrarMapaMapbox ? (
-                <>
-                  <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
-                  {clickCoords && (
-                    <div className="absolute bottom-3 left-3 z-40 bg-white/85 p-2 rounded shadow text-xs">
-                      <div className="font-medium">📍 Coordenadas</div>
-                      <div>Lat: {clickCoords.lat.toFixed(5)}</div>
-                      <div>Lng: {clickCoords.lng.toFixed(5)}</div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div
-                  ref={containerRef}
-                  className="absolute inset-0 w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
-                >
-                  {tooltipSeleccion && (
-                    <div className="absolute top-3 right-3 z-40 bg-white text-zinc-800 text-sm font-medium px-4 py-2 rounded-lg shadow-xl border border-gray-200">
-                      {tooltipSeleccion}
-                    </div>
-                  )}
-                  {tooltip.visible && (
-                    <div
-                      className="absolute z-40 bg-white text-zinc-800 text-sm p-2.5 rounded-lg shadow-xl border border-gray-200 pointer-events-none flex items-center gap-2"
-                      style={{
-                        top: Math.min(tooltip.y + 24, window.innerHeight - 56),
-                        left: Math.min(tooltip.x + 24, window.innerWidth - 160),
-                      }}
-                    >
-                      <span className="text-lg leading-none" aria-hidden="true">📍</span> {/* Usamos un emoji de pin */}
-                      <span className="font-semibold">{tooltip.name}</span>
-                    </div>
-                  )}
-                  {gifVisible && (
-                    <img
-                      src={gifVillahermosa}
-                      alt="Villahermosa"
-                      className="absolute z-30 w-40 sm:w-52 rounded-xl shadow-lg border-4 border-white"
-                      style={{ top: gifPosition.y + 40, left: gifPosition.x + 40 }}
-                    />
-                  )}
-                </div>
-              )}
-            </div> {/* Fin del div que contiene el mapa */}
-          </div> {/* Fin del contenedor principal del mapa con fondo blanco */}
-        </div> {/* Fin del contenedor principal con padding y efecto desfasado */}
-
-        {/* PANEL DERECHO: formulario (solo en escritorio/tablet) */}
-        <aside
-          className={`hidden md:block md:w-[420px] h-full bg-white/90 backdrop-blur p-6 
-                      border-t lg:border-t-0 lg:border-l border-gray-200 overflow-y-auto 
-                      ${mostrarZonas ? 'border-yellow-300' : 'border-teal-300'}`}
+    <div className="md:hidden px-6 py-2">
+      <div className="flex gap-2 rounded-full bg-white/80 p-1 shadow border">
+        <button
+          onClick={() => setVistaMovil('mapa')}
+          className={`flex-1 px-3 py-2 rounded-full ${vistaMovil === 'mapa' ? 'bg-yellow-400 font-bold' : ''}`}
+          aria-pressed={vistaMovil === 'mapa'}
         >
-          <ItinerarioForm />
-        </aside>
-
+          🗺️ Mapa
+        </button>
+        <button
+          onClick={() => setVistaMovil('itinerario')}
+          className={`flex-1 px-3 py-2 rounded-full ${vistaMovil === 'itinerario' ? 'bg-yellow-400 font-bold' : ''}`}
+          aria-pressed={vistaMovil === 'itinerario'}
+        >
+          📋 Itinerario
+        </button>
       </div>
     </div>
-  </div>
-</div>
-{/* Vista móvil de Itinerario: formulario a pantalla completa */}
-{vistaMovil === 'itinerario' && (
-  <div className="md:hidden w-full max-w-screen-xl mx-auto px-4 sm:px-6 xl:px-8">
-    <aside className="w-full bg-white/90 backdrop-blur p-6 border-t border-gray-200 overflow-y-auto rounded-xl shadow-lg">
-      <ItinerarioForm />
-    </aside>
-  </div>
-)}
+    {/* CONTENIDO PRINCIPAL */}
+    <div className="relative min-h-[100dvh] p-6 overflow-hidden text-gray-800 bg-[#EAEAEA]">
+    {/* Contenedor del mapa + formulario a la derecha */}
+    <div className={`${vistaMovil !== 'mapa' ? 'hidden md:block' : ''}`}>
+      <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 xl:px-8">
+        <div
+          className={[
+            'relative rounded-xl shadow-lg overflow-hidden',
+            'h-[80vh] sm:h-[85vh] md:h-[90vh] lg:h-[100vh]',
+            (mapboxFull && mostrarMapaMapbox && vistaMovil === 'mapa')
+              ? 'fixed inset-0 z-[60] rounded-none shadow-none h-[100dvh]'
+              : '',
+          ].join(' ')}
+        >
+          {/* Layout: mapa (izquierda) + panel derecho (formulario) */}
+          <div className="flex flex-col lg:flex-row h-full">
+            {/* MAPA (NUEVO DISEÑO) */}
+            <div className="relative flex-1 p-6"> {/* Agregamos padding al contenedor principal */}
+              {/* 1. Forma de color desfasada (fondo) */}
+              <div className="absolute inset-0 bg-[#F39106] rounded-3xl"></div>
+
+              {/* 2. Contenedor principal del mapa con fondo blanco y detalles */}
+              <div className="relative z-10 w-full h-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
+                {/* Encabezado del mapa con el selector SVG/Mapbox */}
+                <div className="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Mapa de <span className="text-[#F39106]">Tabasco</span>
+                  </h2>
+                  <button
+                    onClick={() => setMostrarMapaMapbox(v => !v)}
+                    className="bg-white border border-gray-300 px-4 py-2 rounded-lg shadow-sm hover:bg-gray-100 transition text-sm font-medium"
+                  >
+                    {mostrarMapaMapbox ? '🗺️ Ver SVG' : '🌐 Ver Mapbox'}
+                  </button>
+                </div>
+
+                {/* Contenido del mapa (SVG o Mapbox) */}
+                <div className="relative flex-1 overflow-hidden"> {/* Este div ahora contiene el mapa */}
+                  {mostrarMapaMapbox ? (
+                    <>
+                      <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
+                      {clickCoords && (
+                        <div className="absolute bottom-3 left-3 z-40 bg-white/85 p-2 rounded shadow text-xs">
+                          <div className="font-medium">📍 Coordenadas</div>
+                          <div>Lat: {clickCoords.lat.toFixed(5)}</div>
+                          <div>Lng: {clickCoords.lng.toFixed(5)}</div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div
+                      ref={containerRef}
+                      className="absolute inset-0 w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
+                    >
+                      {tooltipSeleccion && (
+                        <div className="absolute top-3 right-3 z-40 bg-white text-zinc-800 text-sm font-medium px-4 py-2 rounded-lg shadow-xl border border-gray-200">
+                          {tooltipSeleccion}
+                        </div>
+                      )}
+                      {tooltip.visible && (
+                        <div
+                          className="absolute z-40 bg-white text-zinc-800 text-sm p-2.5 rounded-lg shadow-xl border border-gray-200 pointer-events-none flex items-center gap-2"
+                          style={{
+                            top: Math.min(tooltip.y + 24, window.innerHeight - 56),
+                            left: Math.min(tooltip.x + 24, window.innerWidth - 160),
+                          }}
+                        >
+                          <span className="text-lg leading-none" aria-hidden="true">📍</span> {/* Usamos un emoji de pin */}
+                          <span className="font-semibold">{tooltip.name}</span>
+                        </div>
+                      )}
+                      {gifVisible && (
+                        <img
+                          src={gifVillahermosa}
+                          alt="Villahermosa"
+                          className="absolute z-30 w-40 sm:w-52 rounded-xl shadow-lg border-4 border-white"
+                          style={{ top: gifPosition.y + 40, left: gifPosition.x + 40 }}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div> {/* Fin del div que contiene el mapa */}
+              </div> {/* Fin del contenedor principal del mapa con fondo blanco */}
+            </div> {/* Fin del contenedor principal con padding y efecto desfasado */}
+
+            {/* --- CAMBIO DE DISEÑO ---: Contenedor del panel derecho con nuevos estilos */}
+            <aside
+              className={`hidden md:block md:w-[420px] h-full bg-slate-50 p-6 lg:p-8 
+                          border-t lg:border-t-0 lg:border-l border-slate-200 overflow-y-auto`}
+            >
+              <ItinerarioForm />
+            </aside>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    {/* Vista móvil de Itinerario: formulario a pantalla completa */}
+    {vistaMovil === 'itinerario' && (
+      <div className="md:hidden w-full max-w-screen-xl mx-auto px-4 sm:px-6 xl:px-8">
+        <aside className="w-full bg-white/90 backdrop-blur p-6 border-t border-gray-200 overflow-y-auto rounded-xl shadow-lg">
+          <ItinerarioForm />
+        </aside>
+      </div>
+    )}
 
       </div>
       {showODPicker && (
@@ -1163,3 +1076,4 @@ function getCoordenadasZona(nombre) {
   };
   return coords[nombre] || [-92.9, 17.9];
 }
+
