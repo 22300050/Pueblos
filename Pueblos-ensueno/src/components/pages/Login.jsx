@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import logo from '../../assets/Logos/Logo.png';
 import googleIcon from '../../assets/Logos/google-icon.png';
 
 export default function Login() {
