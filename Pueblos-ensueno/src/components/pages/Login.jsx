@@ -27,15 +27,6 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-amber-100 p-4 font-sans">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-            <Link to="/" className="inline-block">
-                <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-16 w-auto mx-auto" />
-            </Link>
-            <h1 className="text-4xl font-extrabold tracking-tight text-zinc-800 mt-4">
-                Pueblos de Ensueño
-            </h1>
-        </div>
-
         <div className="bg-white shadow-2xl rounded-2xl p-8 border border-gray-200">
           <h2 className="text-3xl font-bold text-center mb-2 text-zinc-800">
             Bienvenido de Nuevo
