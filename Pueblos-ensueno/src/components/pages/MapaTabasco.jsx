@@ -16,6 +16,47 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 function MapaTabasco({ onRegresar, estado, eventos }) {
   const containerRef = useRef(null);
   const [tooltip, setTooltip] = useState({ visible: false, name: '', x: 0, y: 0 });
+  
+  // --- LÓGICA PARA MÚSICA DE FONDO ---
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const toggleAudio = () => {
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  // --- LÓGICA AÑADIDA PARA AUTOPLAY ---
+  useEffect(() => {
+    // Intenta reproducir la música automáticamente
+    const playPromise = audioRef.current.play();
+    if (playPromise !== undefined) {
+      playPromise.then(_ => {
+        // El autoplay funcionó
+        setIsPlaying(true);
+      }).catch(error => {
+        // El autoplay fue bloqueado por el navegador.
+        console.log("El autoplay de la música fue bloqueado. El usuario debe iniciarla manualmente.");
+        setIsPlaying(false);
+      });
+    }
+  }, []); // El array vacío asegura que esto solo se ejecute una vez
+
+  useEffect(() => {
+    // Pausar la música cuando el componente se desmonte (al navegar a otra página)
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
+  // --- FIN LÓGICA PARA MÚSICA DE FONDO ---
+
+
 // Leer mes guardado en localStorage al iniciar
 const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
 
@@ -60,7 +101,7 @@ useEffect(() => {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
 
-  // --- LÓGICA CORREGIDA ---: Sincroniza el mes del dropdown con la fecha de inicio seleccionada
+  // Sincroniza el mes del dropdown con la fecha de inicio seleccionada
   useEffect(() => {
     if (fechaInicio) {
         const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -73,14 +114,12 @@ useEffect(() => {
     }
   }, [fechaInicio]);
 
-  // --- LÓGICA CORREGIDA ---: Calcula la fecha final automáticamente basado en la fecha de inicio y el número de días
+  // Calcula la fecha final automáticamente basado en la fecha de inicio y el número de días
   useEffect(() => {
     if (fechaInicio && formData.dias) {
       const [year, month, day] = fechaInicio.split('-').map(Number);
       const startDate = new Date(year, month - 1, day);
-      
       startDate.setDate(startDate.getDate() + parseInt(formData.dias, 10) - 1);
-      
       const newEndDate = startDate.toISOString().split('T')[0];
       setFechaFin(newEndDate);
     } else {
@@ -182,22 +221,22 @@ const saveIntereses = () => {
     }
   ];
 const municipiosTabasco = [
-  { nombre: 'Balancán',      coords: [-91.5394, 17.7994] },
-  { nombre: 'Cardenas',      coords: [-93.6700, 17.9894] },
-  { nombre: 'Centla',        coords: [-92.6283, 18.4083] },
+  { nombre: 'Balancán',      coords: [-91.53461, 17.79953] },
+  { nombre: 'Cardenas',      coords: [-93.37498, 17.99024] },
+  { nombre: 'Centla',        coords: [-92.64063, 18.53639] },
   { nombre: 'Centro',        coords: [-92.9199, 17.9895] },
-  { nombre: 'Comalcalco',    coords: [-93.0446, 18.2603] },
-  { nombre: 'Cunduacán',     coords: [-93.1715, 18.0707] },
-  { nombre: 'Emiliano Zapata', coords: [-91.8272, 17.7415] },
-  { nombre: 'Huimanguillo',  coords: [-93.3796, 17.8476] },
-  { nombre: 'Jalapa',        coords: [-92.7982, 17.7105] },
+  { nombre: 'Comalcalco',    coords: [-93.22458, 18.25434] },
+  { nombre: 'Cunduacán',     coords: [-93.17529, 18.06490] },
+  { nombre: 'Emiliano Zapata', coords: [-91.77324, 17.73491] },
+  { nombre: 'Huimanguillo',  coords: [-93.39110, 17.83520] },
+  { nombre: 'Jalapa',        coords: [-92.81256, 17.72047] },
   { nombre: 'Jalpa de Méndez', coords: [-93.0675, 18.1754] },
-  { nombre: 'Jonuta',        coords: [-91.9984, 18.0000] },
+  { nombre: 'Jonuta',        coords: [-92.13646, 18.08910] },
   { nombre: 'Macuspana',     coords: [-92.5973, 17.7579] },
   { nombre: 'Nacajuca',      coords: [-92.9834, 18.1694] },
   { nombre: 'Paraíso',       coords: [-93.2170, 18.4086] },
-  { nombre: 'Tacotalpa',     coords: [-92.9401, 17.4612] },
-  { nombre: 'Teapa',         coords: [-92.9494, 17.5478] },
+  { nombre: 'Tacotalpa',     coords: [-92.82570, 17.59481] },
+  { nombre: 'Teapa',         coords: [-92.94880, 17.55858] },
   { nombre: 'Tenosique',     coords: [-91.4225, 17.4694] }
 ];
 // ⬇️ Picker de Origen/Destino
@@ -414,7 +453,7 @@ map.on('click', (e) => {
   // 1) Guardamos en estado
   setClickCoords({ lng, lat });
   // 2) (Opcional) mostramos el popup como antes
-  new mapboxgl.Popup({ closeOnClick: true, offset: 10 })
+  new mapboxgl.Popup({ closeOnClick: true, offset: 10, className: 'custom-popup' })
     .setLngLat([lng, lat])
     .setHTML(`
       <strong>📍 Coordenadas</strong><br>
@@ -423,27 +462,27 @@ map.on('click', (e) => {
     `)
     .addTo(map);
 });
-  // 🔸 Marcadores de zonas de interés
+  // Marcadores de zonas de interés personalizados
   zonasVillahermosa.forEach((zona) => {
-    new mapboxgl.Marker({ color: "#FF5733" })
+    const el = document.createElement('div');
+    el.className = 'custom-marker-zona';
+    el.innerHTML = `<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="map-marker-alt" class="svg-inline--fa fa-map-marker-alt fa-w-12" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67a24 24 0 0 1-35.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z"></path></svg>`;
+
+    new mapboxgl.Marker(el)
       .setLngLat(getCoordenadasZona(zona.nombre))
-      .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${zona.nombre}</strong><br>${zona.descripcion}`))
+      .setPopup(new mapboxgl.Popup({ offset: 35, className: 'custom-popup' }).setHTML(`<h3>${zona.nombre}</h3><p>${zona.descripcion}</p>`))
       .addTo(map);
   });
-  // 🔹 Marcadores de municipios
+  // Marcadores de municipios personalizados
 municipiosTabasco.forEach((municipio) => {
   const el = document.createElement('div');
-  el.className = 'marker';
-  el.style.width = '18px';
-  el.style.height = '18px';
-  el.style.borderRadius = '50%';
-  el.style.backgroundColor = '#1E90FF';
-  el.style.cursor = 'pointer';
+  el.className = 'custom-marker-municipio';
+
   const marker = new mapboxgl.Marker(el)
     .setLngLat(municipio.coords)
     .setPopup(
-      new mapboxgl.Popup({ offset: 25 }).setHTML(
-        `<strong>${municipio.nombre}</strong><br>Municipio de Tabasco`
+      new mapboxgl.Popup({ offset: 25, className: 'custom-popup' }).setHTML(
+        `<h3>${municipio.nombre}</h3><p>Municipio de Tabasco</p>`
       )
     )
     .addTo(map);
@@ -844,6 +883,80 @@ const ItinerarioForm = () => {
 
 return (
   <>
+    <audio ref={audioRef} src={popurriTabasco} loop />
+
+    <style>{`
+      .custom-marker-municipio {
+        width: 18px;
+        height: 18px;
+        background-color: #1E90FF;
+        border: 2px solid white;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 0 0 2px rgba(30, 144, 255, 0.5);
+        transition: transform 0.1s ease-in-out;
+      }
+      .custom-marker-municipio:hover {
+        transform: scale(1.2);
+      }
+      .custom-marker-zona {
+        width: 28px;
+        height: 28px;
+        color: #FF5733;
+        cursor: pointer;
+        filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+        transition: transform 0.1s ease-in-out;
+      }
+      .custom-marker-zona:hover {
+        transform: scale(1.2);
+      }
+      .custom-popup .mapboxgl-popup-content {
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        background-color: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border: none;
+      }
+      .custom-popup .mapboxgl-popup-tip {
+        display: none;
+      }
+      .custom-popup h3 {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+        margin-top: 0;
+      }
+       .custom-popup p {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0;
+       }
+       .custom-popup .mapboxgl-popup-close-button {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border: none;
+          border-radius: 50%;
+          background-color: transparent;
+          cursor: pointer;
+          font-size: 20px;
+          line-height: 1;
+          color: #9ca3af; /* gris-400 */
+          transition: background-color 0.2s, color 0.2s;
+       }
+       .custom-popup .mapboxgl-popup-close-button:hover {
+          background-color: #f3f4f6; /* gris-100 */
+          color: #1f2937; /* gris-800 */
+       }
+    `}</style>
+
     {/* Toggle móvil: Mapa / Itinerario */}
     <div className="md:hidden px-6 py-2">
       <div className="flex gap-2 rounded-full bg-white/80 p-1 shadow border">
@@ -969,6 +1082,24 @@ return (
       </div>
     )}
 
+      {/* --- BOTÓN DE MÚSICA (UBICACIÓN CORREGIDA) --- */}
+      <button
+        onClick={toggleAudio}
+        className="fixed bottom-6 left-6 z-50 w-14 h-14 bg-orange-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+        aria-label={isPlaying ? "Pausar música" : "Reproducir música"}
+      >
+        {isPlaying ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        )}
+      </button>
+
       </div>
       {showODPicker && (
   <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40">
@@ -1078,5 +1209,4 @@ function getCoordenadasZona(nombre) {
   };
   return coords[nombre] || [-92.9, 17.9];
 }
-
 
