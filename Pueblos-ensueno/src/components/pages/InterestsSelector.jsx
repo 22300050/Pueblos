@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Palette, Landmark, Utensils, Music, Drama, Brush, Mountain, School, Map, Check } from 'lucide-react';
 
+// --- CAMBIO DE DISEÑO: Se reestructuran los datos para incluir iconos ---
 const culturalEvents = [
   { name: "Ferias Tradicionales", Icon: Palette },
   { name: "Carnavales", Icon: Drama },
@@ -43,6 +44,7 @@ export default function InterestsSelector() {
     setTimeout(() => navigate('/mapa'), 2000);
   };
 
+  // --- CAMBIO DE DISEÑO: Componente de tarjeta reutilizable ---
   const InterestCard = ({ item, isSelected, onSelect }) => {
     const { name, Icon } = item;
     return (
@@ -66,7 +68,8 @@ export default function InterestsSelector() {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-slate-50 flex flex-col items-center p-4 pb-28 text-gray-800">
+    // --- CAMBIO DE DISEÑO: Padding superior aumentado ---
+    <div className="min-h-screen w-screen bg-slate-50 flex flex-col items-center px-4 pt-16 pb-28 text-gray-800">
       {mensajeVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <div className="bg-white py-5 px-8 rounded-2xl shadow-2xl border-2 border-green-300 text-green-800 text-lg font-semibold text-center flex items-center gap-3">
@@ -77,6 +80,7 @@ export default function InterestsSelector() {
       )}
 
       <div className="w-full max-w-4xl mx-auto">
+        {/* --- CAMBIO DE DISEÑO: Encabezado --- */}
         <div className="text-center mb-10">
             <h1 className="text-4xl md:text-5xl font-black text-zinc-800">¿Qué te apasiona?</h1>
             <p className="text-slate-600 mt-2 text-lg">Selecciona tus intereses para personalizar tu aventura.</p>
@@ -113,6 +117,7 @@ export default function InterestsSelector() {
         </div>
       </div>
 
+      {/* --- CAMBIO DE DISEÑO: Botón de guardar fijo en la parte inferior --- */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-gray-200">
         <div className="max-w-4xl mx-auto">
             <button
