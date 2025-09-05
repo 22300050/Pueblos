@@ -25,7 +25,7 @@ import MapaMexico from './components/maps/MapaMexico';
 import MapaTabasco from './components/maps/MapaTabasco';
 import MapaChiapas from './components/maps/MapaChiapas';
 
-import Register from './components/Register';
+import Register from './components/pages/Register';
 import Login from './components/pages/Login';
 import InterestsSelector from './components/InterestsSelector';
 
