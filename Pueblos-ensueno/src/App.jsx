@@ -27,7 +27,7 @@ import MapaChiapas from './components/maps/MapaChiapas';
 
 import Register from './components/pages/Register';
 import Login from './components/pages/Login';
-import InterestsSelector from './components/InterestsSelector';
+import InterestsSelector from './components/pages/InterestsSelector';
 
 import PuntosCercanos from './components/PuntosCercanos';
 import ProductosTabasco from './components/ProductosTabasco';

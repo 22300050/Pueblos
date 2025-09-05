@@ -1,28 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Palette, Landmark, Utensils, Music, Drama, Brush, Mountain, School, Map, Check } from 'lucide-react';
 
 const culturalEvents = [
-  "🪅 Ferias Tradicionales",
-  "🎉 Carnavales",
-  "🍫 Festivales Gastronómicos",
-  "🎶 Música y Danza",
-  "🖼️ Exposiciones y Arte",
-  "🎭 Teatro y Performance",
-  "🐾 Cultura y Naturaleza",
-  "👨‍🏫 Talleres y Cursos",
-  "🧭 Rutas Turístico-Culturales"
+  { name: "Ferias Tradicionales", Icon: Palette },
+  { name: "Carnavales", Icon: Drama },
+  { name: "Festivales Gastronómicos", Icon: Utensils },
+  { name: "Música y Danza", Icon: Music },
+  { name: "Exposiciones y Arte", Icon: Brush },
 ];
 
 const staticZones = [
-  "🏺 Zonas Arqueológicas",
-  "🏞️ Parques Naturales",
-  "🐅 Museos de Historia y Cultura",
-  "🖼️ Centros Culturales",
-  "🐒 Parques Zoológicos",
-  "🏡 Haciendas Cacaoteras",
-  "⛪ Iglesias y Edificaciones Históricas",
-  "🎨 Galerías y Espacios de Arte",
-  "⛲ Plazas y Monumentos"
+  { name: "Zonas Arqueológicas", Icon: Landmark },
+  { name: "Parques Naturales", Icon: Mountain },
+  { name: "Museos de Historia", Icon: Landmark },
+  { name: "Centros Culturales", Icon: School },
+  { name: "Rutas Turísticas", Icon: Map },
 ];
 
 export default function InterestsSelector() {
@@ -30,23 +23,17 @@ export default function InterestsSelector() {
   const [mensajeVisible, setMensajeVisible] = useState(false);
   const navigate = useNavigate();
 
-  const toggleInterest = interest => {
+  const toggleInterest = interestName => {
     setSelectedInterests(prev =>
-      prev.includes(interest)
-        ? prev.filter(i => i !== interest)
-        : [...prev, interest]
+      prev.includes(interestName)
+        ? prev.filter(i => i !== interestName)
+        : [...prev, interestName]
     );
   };
 
-  const cleanName = interest => interest.replace(/^[^a-zA-Z0-9]+/, '').trim();
-
   const handleGuardar = () => {
-    const culturales = selectedInterests
-      .filter(item => culturalEvents.includes(item))
-      .map(cleanName);
-    const estaticos = selectedInterests
-      .filter(item => staticZones.includes(item))
-      .map(cleanName);
+    const culturales = selectedInterests.filter(item => culturalEvents.some(e => e.name === item));
+    const estaticos = selectedInterests.filter(item => staticZones.some(z => z.name === item));
 
     localStorage.setItem(
       'interesesSeleccionados',
@@ -56,59 +43,88 @@ export default function InterestsSelector() {
     setTimeout(() => navigate('/mapa'), 2000);
   };
 
-  const renderOptions = (list, category) => (
-    <div className="mb-6 w-full">
-      <h3 className="text-xl font-bold text-pink-600 mb-3 text-center">
-        {category}
-      </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {list.map(item => (
-          <label
-            key={item}
-            className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all w-full ${
-              selectedInterests.includes(item)
-                ? 'bg-pink-200 border-pink-400 text-pink-800 font-semibold'
-                : 'bg-white hover:bg-pink-50 border-gray-300 text-gray-800'
-            }`}
-          >
-            <input
-              type="checkbox"
-              checked={selectedInterests.includes(item)}
-              onChange={() => toggleInterest(item)}
-              className="mr-2 w-5 h-5 text-pink-600 focus:ring-pink-400 border-gray-300 rounded"
-            />
-            <span className="text-sm sm:text-base break-words">{item}</span>
-          </label>
-        ))}
+  const InterestCard = ({ item, isSelected, onSelect }) => {
+    const { name, Icon } = item;
+    return (
+      <div
+        onClick={() => onSelect(name)}
+        className={`relative flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 transform ${
+          isSelected
+            ? 'bg-orange-500 border-orange-600 text-white shadow-lg scale-105'
+            : 'bg-white hover:bg-orange-50 border-gray-200 text-gray-800 hover:shadow-md'
+        }`}
+      >
+        {isSelected && (
+          <div className="absolute top-2 right-2 bg-white text-orange-500 rounded-full p-1">
+            <Check size={16} strokeWidth={3} />
+          </div>
+        )}
+        <Icon className={`w-10 h-10 mb-2 transition-colors ${isSelected ? 'text-white' : 'text-orange-500'}`} />
+        <span className="text-center font-semibold text-sm">{name}</span>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="min-h-screen w-screen bg-gradient-to-br from-rose-200 via-amber-200 to-lime-200 flex flex-col items-center p-4 text-gray-800">
+    <div className="min-h-screen w-screen bg-slate-50 flex flex-col items-center p-4 pb-28 text-gray-800">
       {mensajeVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-          <div className="bg-white py-5 px-8 rounded-2xl shadow-2xl border-2 border-pink-300 text-pink-800 text-lg font-semibold text-center">
-            🎯 Intereses seleccionados correctamente
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white py-5 px-8 rounded-2xl shadow-2xl border-2 border-green-300 text-green-800 text-lg font-semibold text-center flex items-center gap-3">
+            <Check size={24} />
+            <span>Intereses guardados con éxito</span>
           </div>
         </div>
       )}
 
-      <div className="w-full max-w-2xl bg-white/90 p-6 rounded-2xl shadow-xl border-2 border-pink-200">
-        <h2 className="text-3xl font-extrabold text-center text-pink-600 mb-6 tracking-wide">
-          Selecciona tus intereses
-        </h2>
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="text-center mb-10">
+            <h1 className="text-4xl md:text-5xl font-black text-zinc-800">¿Qué te apasiona?</h1>
+            <p className="text-slate-600 mt-2 text-lg">Selecciona tus intereses para personalizar tu aventura.</p>
+        </div>
+        
+        <div className="space-y-10">
+            <div>
+                <h3 className="text-2xl font-bold text-zinc-700 mb-4 flex items-center gap-3"><Palette /> Eventos Culturales</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {culturalEvents.map(item => (
+                    <InterestCard
+                        key={item.name}
+                        item={item}
+                        isSelected={selectedInterests.includes(item.name)}
+                        onSelect={toggleInterest}
+                    />
+                    ))}
+                </div>
+            </div>
 
-        {renderOptions(culturalEvents, '🪅 Eventos Culturales')}
-        {renderOptions(staticZones, '🏛️ Zonas Culturales')}
+            <div>
+                <h3 className="text-2xl font-bold text-zinc-700 mb-4 flex items-center gap-3"><Landmark /> Zonas y Lugares</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {staticZones.map(item => (
+                    <InterestCard
+                        key={item.name}
+                        item={item}
+                        isSelected={selectedInterests.includes(item.name)}
+                        onSelect={toggleInterest}
+                    />
+                    ))}
+                </div>
+            </div>
+        </div>
+      </div>
 
-        <div className="mt-4 text-center">
-          <button
-            onClick={handleGuardar}
-            className="w-full sm:w-auto bg-pink-400 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-500 transition shadow-md"
-          >
-            Guardar intereses
-          </button>
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+            <button
+                onClick={handleGuardar}
+                disabled={selectedInterests.length === 0}
+                className="w-full bg-orange-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-orange-600 transition-all shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed transform hover:-translate-y-1 disabled:transform-none"
+            >
+                {selectedInterests.length === 0 
+                ? "Selecciona al menos un interés"
+                : `Guardar ${selectedInterests.length} ${selectedInterests.length === 1 ? 'interés' : 'intereses'}`
+                }
+            </button>
         </div>
       </div>
     </div>
