@@ -30,7 +30,30 @@ const modoEdicion = editDiaIdx !== null;
   const pdfRef = useRef(null);
   const [diasData, setDiasData] = useState([]);
   const [selecciones, setSelecciones] = useState([]);
-  const PRESENTACION_PURA = true;
+const PRESENTACION_PURA = false;
+// Datos actuales del itinerario (state o localStorage)
+const datosRef = React.useMemo(
+  () => (state || JSON.parse(localStorage.getItem("itinerario") || "{}")),
+  [state]
+);
+const estadoActual = (datosRef?.estado || "Tabasco").trim();
+
+// Municipios activos (1 ó 2) según modo y payload
+const municipiosActivos = React.useMemo(() => {
+  const { origen, destino, modoDestino, lugarInicio } = datosRef || {};
+  // Manual: dos municipios si están
+  if (modoDestino === "manual" && origen && destino) {
+    return [origen.trim(), destino.trim()];
+  }
+  // Automático: si vienen origen y destino distintos, usar ambos
+  if (origen && destino && origen.trim() && destino.trim() && origen.trim() !== destino.trim()) {
+    return [origen.trim(), destino.trim()];
+  }
+  // Si no, caer a uno (lugarInicio u origen)
+  const uno = (lugarInicio || origen || "").trim();
+  return uno ? [uno] : [];
+}, [datosRef]);
+
   const etiquetaPorTipo = (t = "") => {
   switch (t) {
     case "lugar_destacado":
@@ -67,16 +90,25 @@ useEffect(() => {
   const mesViaje = (state || JSON.parse(localStorage.getItem("itinerario")) || {}).mes || "";
 
   // 1) Orden: primero eventos que coinciden con el mes, luego el resto
-  const esEventoMes = (s) =>
-    (s.tipo === 'evento' || s.tipo === 'eventoCultural') &&
-    mesViaje &&
-    String(s.meta?.fecha || "").toLowerCase().includes(String(mesViaje).toLowerCase());
+const esEventoMes = (s) =>
+  (s.tipo === 'evento' || s.tipo === 'eventoCultural') &&
+  mesViaje &&
+  String(s.meta?.mes ?? s.meta?.fecha ?? "")
+    .toLowerCase()
+    .includes(String(mesViaje).toLowerCase());
 
-const d = state || JSON.parse(localStorage.getItem("itinerario"));
-const municipioActual = d?.origen || d?.lugarInicio || "";
+
 const ordenadas = [...selecciones]
-  .filter(s => s.municipio === municipioActual)   // ← solo ese municipio
-  .sort((a, b) => { /* ... */ });
+  .filter(s => s.estado === estadoActual && municipiosActivos.includes(s.municipio))
+  .sort((a, b) => {
+    // prioriza eventos que coinciden con el mes, luego alfabético
+    const aMes = esEventoMes(a);
+    const bMes = esEventoMes(b);
+    if (aMes !== bMes) return aMes ? -1 : 1;
+    return (a.nombre || "").localeCompare(b.nombre || "", "es");
+  });
+
+
 
 
   // 2) Reparto round-robin (manteniendo la prioridad arriba)
@@ -84,6 +116,7 @@ const ordenadas = [...selecciones]
     const dIdx = idx % clon.length;
 clon[dIdx].actividades.push({
   titulo: it.nombre,
+   tipo: it.tipo,
   icono: it.icono || iconoPorTipo(it.tipo),
   meta: { ...(it.meta || {}), source: (it.meta && it.meta.source) || 'MunicipioDetalle' }
   });
@@ -91,16 +124,23 @@ clon[dIdx].actividades.push({
 
   setDiasData(clon);
   // opcional: clearSelecciones();
-}, [selecciones, diasData.length, state]);
+}, [selecciones, diasData.length, state, municipiosActivos.length]);
+
 
 
 useEffect(() => {
   // lee el municipio elegido desde el payload
-  const d = state || JSON.parse(localStorage.getItem("itinerario"));
-  const municipioActual = d?.origen || d?.lugarInicio || "";
-  const todas = getSelecciones() || [];
-  setSelecciones(municipioActual ? todas.filter(s => s.municipio === municipioActual) : todas);
-}, [state]);
+const todas = getSelecciones() || [];
+const propias = todas.filter(s => s.estado === estadoActual);
+setSelecciones(
+  municipiosActivos.length > 0
+    ? propias.filter(s => municipiosActivos.includes(s.municipio))
+    : propias
+);
+
+
+
+}, [state, municipiosActivos.length]);
 
   const [intereses, setIntereses] = useState([]);
   useEffect(() => {
@@ -147,8 +187,12 @@ const purgados = originales.map(d => ({
 setDiasData(purgados);
 
   // intereses
-  const interesesGuardados = JSON.parse(localStorage.getItem("interesesMunicipios")) || [];
-  setIntereses(interesesGuardados);
+const keyIntereses = estadoActual === "Chiapas"
+  ? "interesesMunicipios_Chiapas"
+  : "interesesMunicipios_Tabasco";
+const interesesGuardados = JSON.parse(localStorage.getItem(keyIntereses) || "[]");
+setIntereses(interesesGuardados);
+
 }, [state, navigate]);
 
 useEffect(() => {
@@ -340,7 +384,6 @@ if (!state && !persistido) {
 }
 
 const datos = state || persistido || {};
-const municipioActual = datos?.origen || datos?.lugarInicio || "";
 const { estado, dias, presupuesto, eventosSeleccionados } = datos;
 const estadoTitulo = estado || "Tabasco";
 const evento = (eventosSeleccionados && eventosSeleccionados[0]) || null;
@@ -354,11 +397,12 @@ const coincideMes = (s, mes) => {
 // Eventos del mes según lo que el usuario agregó manualmente desde MunicipioDetalle
 const eventosDeMesUsuario = selecciones
   .filter(s =>
-    s.municipio === municipioActual &&
-    (s.tipo === 'evento' || s.tipo === 'eventoCultural') &&
-    coincideMes(s, datos?.mes)
+    municipiosActivos.includes(s.municipio) &&
+    (s.tipo === "evento" || s.tipo === "eventoCultural") &&
+    coincideMes(s, datosRef?.mes)
   )
   .map(s => s.nombre);
+
 
 
 
@@ -373,11 +417,12 @@ const coincideMesAct = (a) => {
 };
 
  // Opciones permitidas para el modal: SOLO lo ya seleccionado
- const opcionesModal = Array.from(
-   new Set(
-     (datos.diasData || []).flatMap(d => (d.actividades || []).map(a => a.titulo))
-   )
- );
+const opcionesModal = Array.from(
+  new Set(
+    (diasData || []).flatMap(d => (d.actividades || []).map(a => a.titulo))
+  )
+);
+ 
 
   return (
     <>
@@ -547,9 +592,12 @@ className="absolute md:right-[-14px] right-2 top-1/2 -translate-y-1/2
 
 
     {/* Título */}
-    <h1 className="text-2xl sm:text-3xl font-extrabold mb-1 text-gray-900">
-      {datos?.origen || datos?.lugarInicio || "Villahermosa"}
-    </h1>
+<h1 className="text-2xl sm:text-3xl font-extrabold mb-1 text-gray-900">
+  {municipiosActivos.length === 2
+    ? `${municipiosActivos[0]} → ${municipiosActivos[1]}`
+    : (municipiosActivos[0] || "Villahermosa")}
+</h1>
+
 
     {/* Intro breve (puedes ajustar el texto a tu gusto) */}
     <p className="text-gray-700 mb-5">
@@ -592,8 +640,14 @@ className="absolute md:right-[-14px] right-2 top-1/2 -translate-y-1/2
           <span className="font-semibold">Presupuesto/día:</span> ${datos?.monedas?.MXN ?? presupuesto} MXN
           {datos?.monedas ? <> · ${datos.monedas.USD} USD · €{datos.monedas.EUR} EUR</> : null}
         </div>
-        <div><span className="font-semibold">Mes:</span> {datos?.mes || "—"}</div>
-        <div><span className="font-semibold">Ruta:</span> {datos?.origen} → {datos?.destino}</div>
+<div><span className="font-semibold">Mes:</span> {datos?.mes || "—"}</div>
+<div>
+  <span className="font-semibold">Ruta:</span>{" "}
+  {municipiosActivos.length === 2
+    ? `${municipiosActivos[0]} → ${municipiosActivos[1]}`
+    : (municipiosActivos[0] || "—")}
+</div>
+
         <div className="col-span-2">
           <span className="font-semibold">Intereses:</span> {(datos?.interesesSeleccionados || []).join(", ") || "—"}
         </div>
@@ -611,7 +665,7 @@ className="absolute md:right-[-14px] right-2 top-1/2 -translate-y-1/2
           {eventosMesTotales.map((e, i) => <li key={i}>{e}</li>)}
         </ul>
         <p className="text-sm mt-2 text-indigo-700">
-          * Coinciden con <strong>{datos?.mes}</strong>.
+* Coinciden con <strong>{datosRef?.mes}</strong>.
         </p>
       </div>
     )}

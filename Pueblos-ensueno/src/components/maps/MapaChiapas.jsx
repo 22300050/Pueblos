@@ -163,6 +163,51 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
     const actividades = ["Cañón del Sumidero", "Andador Eclesiástico", "Museo del Ámbar"];
     return { inicio, fin, actividades, eventosMes: [] };
   };
+  // Construye diasData con lo que el usuario agregó en UN municipio
+const buildDiasDataDesdeSelecciones = ({ municipio, dias, mes }) => {
+  const todas = (getSelecciones() || []).filter(s => s.municipio === municipio);
+  const esDelMes = (s) =>
+    s.tipo === 'evento' &&
+    mes &&
+    String(s.meta?.mes || s.meta?.fecha || '').toLowerCase().includes(String(mes).toLowerCase());
+  const ordenadas = [...todas].sort((a,b) => (esDelMes(b) ? 1 : 0) - (esDelMes(a) ? 1 : 0));
+  const n = Math.max(1, parseInt(dias || '1', 10));
+  const diasData = Array.from({ length: n }, (_, i) => ({ dia: i + 1, actividades: [] }));
+  ordenadas.forEach((s, idx) => {
+    const d = idx % n;
+    diasData[d].actividades.push({
+      titulo: s.nombre,
+      icono: s.icono || '📍',
+      tipo: s.tipo,
+      meta: s.meta || {},
+    });
+  });
+  return diasData;
+};
+
+// Construye diasData mezclando lo que el usuario agregó en VARIOS municipios
+const buildDiasDataDesdeMultiplesSelecciones = ({ municipios = [], dias, mes }) => {
+  if (!Array.isArray(municipios) || municipios.length === 0) return [];
+  const todas = (getSelecciones() || []).filter(s => municipios.includes(s.municipio));
+  const esDelMes = (s) =>
+    s.tipo === 'evento' &&
+    mes &&
+    String(s.meta?.mes || s.meta?.fecha || '').toLowerCase().includes(String(mes).toLowerCase());
+  const ordenadas = [...todas].sort((a,b) => (esDelMes(b) ? 1 : 0) - (esDelMes(a) ? 1 : 0));
+  const n = Math.max(1, parseInt(dias || '1', 10));
+  const diasData = Array.from({ length: n }, (_, i) => ({ dia: i + 1, actividades: [] }));
+  ordenadas.forEach((s, idx) => {
+    const d = idx % n;
+    diasData[d].actividades.push({
+      titulo: s.nombre,
+      icono: s.icono || '📍',
+      tipo: s.tipo,
+      meta: s.meta || {},
+    });
+  });
+  return diasData;
+};
+
 
   useEffect(() => {
     if (vistaMovil !== 'mapa' || mostrarMapaMapbox || !containerRef.current) return;
@@ -260,6 +305,43 @@ if (formData.modoDestino !== 'manual') {
 }
 
 
+const diasNum = Math.max(1, parseInt(formData.dias, 10) || 1);
+let diasData = [];
+let actividadesSugeridas = [];
+let eventosMes = [];
+
+let municipiosInteres = [];
+try {
+  municipiosInteres = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas")) || [];
+} catch { municipiosInteres = []; }
+
+if (formData.modoDestino === "auto" && municipiosInteres.length >= 2) {
+  // ruta automática con varios municipios marcados
+  diasData = buildDiasDataDesdeMultiplesSelecciones({
+    municipios: municipiosInteres,
+    dias: diasNum,
+    mes: formData.mes
+  });
+  if (!lugarInicio) lugarInicio = municipiosInteres[0];
+  if (!ultimoLugar) ultimoLugar = municipiosInteres[1];
+} else if (formData.modoDestino === "auto" && lugarInicio) {
+  // automática con un solo municipio marcado/definido
+  diasData = buildDiasDataDesdeSelecciones({
+    municipio: lugarInicio,
+    dias: diasNum,
+    mes: formData.mes
+  });
+  if (!ultimoLugar) ultimoLugar = lugarInicio;
+} else if (!lugarInicio || !ultimoLugar) {
+  // fallback a sugerencia
+  const sugerencia = sugerirRuta({ mes: formData.mes, intereses: interesesArr, tipo: formData.tipo });
+  lugarInicio = lugarInicio || sugerencia.inicio;
+  ultimoLugar = ultimoLugar || sugerencia.fin;
+  actividadesSugeridas = sugerencia.actividades;
+  eventosMes = sugerencia.eventosMes;
+}
+
+
 const payload = {
   estado,
   dias: `${fechaInicio} a ${fechaFin}`,
@@ -269,11 +351,13 @@ const payload = {
   mes: formData.mes,
   interesesSeleccionados: interesesArr,
 
-  // 👇 estas dos son las claves que Itinerario usa en modo manual
   origen: lugarInicio,
   destino: ultimoLugar,
 
-  // puedes mantener eventosSeleccionados si lo usas en otro lado
+  // NUEVO: estas claves son las que Itinerario.jsx espera
+  diasNum,
+  diasData,
+
   eventosSeleccionados: [
     {
       nombre: formData.tipo,
@@ -281,6 +365,7 @@ const payload = {
     },
   ],
 };
+
 
           localStorage.setItem("itinerario", JSON.stringify(payload));
           navigate("/itinerario", { state: payload });
@@ -647,6 +732,17 @@ const payload = {
               <button onClick={() => setShowODPicker(false)} className="px-3 py-2 rounded-lg border hover:bg-neutral-50">Cancelar</button>
               <button
                 onClick={() => {
+// ✅ Validar que ambos estén en "Me interesa" (Chiapas)
+const intereses = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas") || "[]");
+if (!origenSel || !destinoSel) {
+  alert("Elige origen y destino.");
+  return;
+}
+if (!intereses.includes(origenSel) || !intereses.includes(destinoSel)) {
+  alert('Debes marcar "Me interesa" en ambos municipios antes de elegirlos.');
+  return;
+}
+
                   if (!origenSel || !destinoSel) return;
                   setFormData(prev => ({ ...prev, modoDestino: "manual", lugarInicio: origenSel, ultimoLugar: destinoSel }));
                   try {

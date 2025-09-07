@@ -365,7 +365,7 @@ function MunicipioDetalle() {
 const agregar = (payload) => {
   const id = `${nombre}-${payload.tipo}-${payload.nombre}`;
   const enriched = { ...payload, meta: { ...(payload.meta || {}), source: 'MunicipioDetalle' } };
-  const ok = addSeleccion({ id, municipio: nombre, ...enriched });
+  const ok = addSeleccion({ id, municipio: nombre, estado: "Tabasco", ...enriched });
   alert(`✅ ${payload.nombre} (${payload.tipo}) se registró en tu itinerario${ok ? '' : ' (ya estaba antes)'}`);
   setUltimoIdAgregado(id);
 };
@@ -378,7 +378,7 @@ const getMedia = (categoria, itemNombre) => {
 
   const [interesado, setInteresado] = useState(false);
   useEffect(() => {
-  const interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios")) || [];
+  const interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
   if (interesesActuales.includes(nombre)) {
     setInteresado(true);
   }
@@ -545,21 +545,21 @@ const getEventosDelMes = (mes) => {
 
 const manejarInteres = () => {
   setInteresado(true);
-  localStorage.setItem("modoDestino", "automatico");
+  localStorage.setItem("modoDestino", "auto");
   alert(`¡Gracias! Has marcado interés en visitar ${nombre}`);
 
   // Guardar en localStorage
-  const interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios")) || [];
+  const interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
   if (!interesesActuales.includes(nombre)) {
     interesesActuales.push(nombre);
-    localStorage.setItem("interesesMunicipios", JSON.stringify(interesesActuales));
+    localStorage.setItem("interesesMunicipios_Tabasco", JSON.stringify(interesesActuales))
   }
  //  Guardar como destino en modo automático
 const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
 localStorage.setItem("itinerario", JSON.stringify({
   ...itinerarioPersistido,
   lugarInicio: nombre,
-  modoDestino: "automatico"
+  modoDestino: "auto"
 }));
 };
 const idDe = (payload) => `${nombre}-${payload.tipo}-${payload.nombre}`;
@@ -577,7 +577,7 @@ const toggleSeleccion = (payload) => {
     alert(`❌ ${payload.nombre} (${payload.tipo}) se quitó de tu itinerario`);
   } else {
     const enriched = { ...payload, meta: { ...(payload.meta || {}), source: 'MunicipioDetalle' } };
-    const ok = addSeleccion({ id, municipio: nombre, ...enriched });
+    const ok = addSeleccion({ id, municipio: nombre, estado: "Tabasco", ...enriched });
     const next = new Set(seleccionesIds);
     next.add(id);
     setSeleccionesIds(next);

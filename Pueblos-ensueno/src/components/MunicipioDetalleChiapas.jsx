@@ -111,6 +111,59 @@ const datosMunicipiosChiapas = {
     gastronomia: ['Tamales de chipilín', 'Pozol']
   }
 };
+// === Catálogo mensual por MUNICIPIO (Chiapas) ===
+// === Catálogo mensual por MUNICIPIO (Chiapas) ===
+const eventosChiapasPorMunicipio = {
+  "Tuxtla Gutiérrez": {
+    Enero: [], Febrero: [], Marzo: [], Abril: [], Mayo: [], Junio: [],
+    Julio: [], Agosto: [], Septiembre: [], Octubre: [], Noviembre: [],
+    Diciembre: ["Festejos a la Virgen de Guadalupe (12 dic)"],
+  },
+  "San Cristóbal de las Casas": {
+    Enero: [], Febrero: [], Marzo: [], Abril: ["Feria de la Primavera y de la Paz"],
+    Mayo: [], Junio: [], Julio: ["Fiesta de San Cristóbal Mártir (25 jul)"],
+    Agosto: ["Expo Internacional del Ámbar"], Septiembre: [],
+    Octubre: ["Festival Cervantino Barroco"], Noviembre: ["Día de Muertos"],
+    Diciembre: ["Virgen de Guadalupe (12 dic)"],
+  },
+  "Palenque": {
+    Enero: [], Febrero: [], Marzo: ["Equinoccio de Primavera (20–21)"],
+    Abril: [], Mayo: [], Junio: [], Julio: [], Agosto: [],
+    Septiembre: ["Equinoccio de Otoño (22–23)"], Octubre: [], Noviembre: [], Diciembre: [],
+  },
+  "Comitán de Domínguez": {
+    Enero: [], Febrero: ["Fiesta de San Caralampio"], Marzo: [], Abril: [],
+    Mayo: [], Junio: [], Julio: [], Agosto: [], Septiembre: [],
+    Octubre: [], Noviembre: [], Diciembre: [],
+  },
+  "Chiapa de Corzo": {
+    Enero: ["Fiesta Grande (Parachicos, 4–23)"], Febrero: [], Marzo: [], Abril: [],
+    Mayo: [], Junio: [], Julio: [], Agosto: [], Septiembre: [],
+    Octubre: [], Noviembre: [], Diciembre: [],
+  },
+  "Tapachula": {
+    Enero: [], Febrero: [], Marzo: ["Expo Feria Tapachula (variable)"],
+    Abril: ["Expo Feria Tapachula (algunas ediciones)"],
+    Mayo: ["Expo Feria Tapachula (algunas ediciones)"], Junio: [], Julio: [],
+    Agosto: [], Septiembre: [], Octubre: [], Noviembre: ["Festival Fray Matías"],
+    Diciembre: [],
+  },
+  "Ocosingo": {
+    Enero: [], Febrero: [], Marzo: [], Abril: [], Mayo: [], Junio: [],
+    Julio: [], Agosto: [], Septiembre: [], Octubre: [], Noviembre: [], Diciembre: [],
+  },
+};
+
+// helper: SOLO del mes y del municipio actual (usa catálogo + eventos propios que coincidan)
+const getEventosDelMesMunicipio = (municipio, mes, datosMunicipio) => {
+  if (!mes) return (datosMunicipio?.eventos || []);
+  const cat = (eventosChiapasPorMunicipio[municipio] && eventosChiapasPorMunicipio[municipio][mes]) || [];
+  const propios = (datosMunicipio?.eventos || [])
+    .filter(ev => String(ev.fecha || "").toLowerCase().includes(mes.toLowerCase()))
+    .map(ev => ev.nombre);
+  const unicos = Array.from(new Set([...cat, ...propios]));
+  return unicos.map(nombre => ({ nombre, fecha: mes }));
+};
 
 
 // -----------------------------------------------------------------------------
@@ -239,10 +292,16 @@ export default function MunicipioDetalleChiapas() {
   const { nombre } = useParams();
   const navigate = useNavigate();
 
- const datos = Object.entries(datosMunicipiosChiapas).find(
-   ([key]) => normalizar(key) === normalizar(nombre)
- )?.[1];
- const theme = THEME_BY_MUNICIPIO[nombre] || THEME_BY_MUNICIPIO._default;
+  // Usar clave canónica para que siempre coincida con datos y catálogo
+  const municipioKey = useMemo(() => {
+    return Object.keys(datosMunicipiosChiapas).find(
+      (k) => normalizar(k) === normalizar(nombre)
+    ) || nombre;
+  }, [nombre]);
+
+  const datos = datosMunicipiosChiapas[municipioKey] || {};
+  const theme = THEME_BY_MUNICIPIO[municipioKey] || THEME_BY_MUNICIPIO._default;
+
 
   // Estado de intereses y selecciones
   const [interesado, setInteresado] = useState(false);
@@ -255,11 +314,11 @@ export default function MunicipioDetalleChiapas() {
   }, []);
   const [mesSeleccionado, setMesSeleccionado] = useState(itPersist?.mes || '');
 
-  useEffect(() => {
-    // cargar interés previo
-    try {
-      const intereses = JSON.parse(localStorage.getItem('interesesMunicipios') || '[]');
-      if (intereses.includes(nombre)) setInteresado(true);
+useEffect(() => {
+  // cargar interés previo
+  try {
+const intereses = JSON.parse(localStorage.getItem('interesesMunicipios_Chiapas') || '[]');
+if (intereses.includes(municipioKey)) setInteresado(true);
     } catch {}
 
     // cargar selecciones previas
@@ -267,7 +326,7 @@ export default function MunicipioDetalleChiapas() {
       const actuales = (getSelecciones?.() || []).map(s => s.id);
       setSeleccionesIds(new Set(actuales));
     } catch {}
-  }, [nombre]);
+  }, [municipioKey]);
 
   useEffect(() => {
     const onStorage = () => {
@@ -302,8 +361,9 @@ if (!datos) {
 }
 
 
-  const idDe = (payload) => `${nombre}-${payload.tipo}-${payload.nombre}`;
-  const estaAgregado = (payload) => seleccionesIds.has(idDe(payload));
+const idDe = (payload) => `${municipioKey}-${payload.tipo}-${payload.nombre}`;
+const estaAgregado = (payload) => seleccionesIds.has(idDe(payload));
+  
 
   const toggleSeleccion = (payload) => {
     const id = idDe(payload);
@@ -314,7 +374,7 @@ if (!datos) {
       alert(`❌ ${payload.nombre} (${payload.tipo}) se quitó de tu itinerario`);
     } else {
       const enriched = { ...payload, meta: { ...(payload.meta || {}), source: 'MunicipioDetalleChiapas' } };
-      const ok = addSeleccion({ id, municipio: nombre, ...enriched });
+      const ok = addSeleccion({ id, municipio: municipioKey, estado: "Chiapas", ...enriched });
       const next = new Set(seleccionesIds); next.add(id); setSeleccionesIds(next);
       setUltimoIdAgregado(id);
       alert(`✅ ${payload.nombre} (${payload.tipo}) se agregó a tu itinerario${ok ? '' : ' (ya estaba antes)'}`);
@@ -324,11 +384,11 @@ if (!datos) {
 const manejarInteres = () => {
   setInteresado(true);
   try {
-    const intereses = JSON.parse(localStorage.getItem("interesesMunicipios") || "[]");
-    if (!intereses.includes(nombre)) {
-      intereses.push(nombre);
-      localStorage.setItem("interesesMunicipios", JSON.stringify(intereses));
-    }
+    const intereses = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas")|| "[]");
+if (!intereses.includes(municipioKey)) {
+  intereses.push(municipioKey);
+  localStorage.setItem("interesesMunicipios_Chiapas", JSON.stringify(intereses));
+}
 
     const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
 
@@ -336,8 +396,8 @@ const manejarInteres = () => {
      "itinerario",
      JSON.stringify({
        ...it,
-       modoDestino: "automatico",
-       lugarInicio: nombre
+       modoDestino: "auto",
+       lugarInicio: municipioKey
      })
    );
   } catch {}
@@ -347,7 +407,7 @@ const manejarInteres = () => {
 
 
   const getMedia = (categoria, itemNombre) => {
-    const m = MEDIA_BY_MUNICIPIO[nombre] || {};
+    const m = MEDIA_BY_MUNICIPIO[municipioKey] || {};
     return (m[categoria] && m[categoria][itemNombre]) || theme.header; // nunca null
   };
 
@@ -357,19 +417,22 @@ const manejarInteres = () => {
     return MEDIA_EVENTOS[evento] || MEDIA_EVENTOS[base] || theme.header;
   };
 
-  const eventosFiltrados = (datos.eventos || []).filter(ev =>
-    !mesSeleccionado || (ev.fecha || '').toLowerCase().includes(mesSeleccionado.toLowerCase())
-  );
+const eventosFiltrados = mesSeleccionado
+  ? getEventosDelMesMunicipio(municipioKey, mesSeleccionado, datos)
+  : (datos.eventos || []);
+
+
 
   return (
     <div className={`${theme.bg} min-h-[100dvh]`}> 
       {/* Header */}
       <header className="relative h-[220px] md:h-[280px] w-full overflow-hidden">
-        <img src={theme.header} alt={nombre} className="absolute inset-0 w-full h-full object-cover" />
+        <img src={theme.header} alt={municipioKey} className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/40" />
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-end pb-6">
           <div>
-            <h1 className={`text-3xl md:text-4xl font-extrabold drop-shadow ${theme.title}`}>{nombre}</h1>
+            <h1 className={`text-3xl md:text-4xl font-extrabold drop-shadow ${theme.title}`}>{municipioKey}</h1>
+            
             <p className="text-white/90 max-w-3xl mt-1">{datos.descripcion}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button onClick={manejarInteres} className={`px-3 py-1.5 rounded-lg ${theme.btnPrimary}`}>{interesado ? '★ Me interesa (marcado)' : '☆ Me interesa'}</button>

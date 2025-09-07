@@ -146,7 +146,7 @@ const [mapboxFull, setMapboxFull] = useState(false);
 const [selecting, setSelecting] = useState(false);
 const [selectedMunicipios, setSelectedMunicipios] = useState(() => {
   try {
-    return JSON.parse(localStorage.getItem("interesesMunicipios")) ?? [];
+    return JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) ?? [];
   } catch { return []; }
 });
 
@@ -166,7 +166,7 @@ const exitSelecting = () => {
 };
 
 const saveIntereses = () => {
-  localStorage.setItem("interesesMunicipios", JSON.stringify(selectedMunicipios));
+  localStorage.setItem("interesesMunicipios_Tabasco", JSON.stringify(selectedMunicipios));
   // Opcional: sincroniza con el borrador del itinerario
   try {
     const it = JSON.parse(localStorage.getItem("itinerario")) || {};
@@ -601,7 +601,7 @@ const ItinerarioForm = () => {
   // lee la lista que se guarda cuando el usuario da "Me interesa"
   let municipiosInteres = [];
   try {
-    municipiosInteres = JSON.parse(localStorage.getItem("interesesMunicipios")) || [];
+    municipiosInteres = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
   } catch { municipiosInteres = []; }
 
   // Si el usuario tiene 2+ municipios marcados, construye el plan con AMBOS/VARIOS
@@ -1164,6 +1164,16 @@ return (
         </button>
         <button
           onClick={() => {
+// ✅ Validar que ambos estén en "Me interesa" (Tabasco)
+const intereses = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco") || "[]");
+if (!origenSel || !destinoSel) {
+  alert("Elige origen y destino.");
+  return;
+}
+if (!intereses.includes(origenSel) || !intereses.includes(destinoSel)) {
+  alert('Debes marcar "Me interesa" en ambos municipios antes de elegirlos.');
+  return;
+}
             if (!origenSel || !destinoSel) return;
 
             // fija en el formulario
