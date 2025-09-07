@@ -32,10 +32,10 @@ import InterestsSelector from './components/pages/InterestsSelector';
 import PuntosCercanos from './components/PuntosCercanos';
 import ProductosTabasco from './components/ProductosTabasco';
 import PerfilUsuario from './components/PerfilUsuario';
-import RealTimeMap from './components/RealTimeMap';
 import HomeLogin from './components/HomeLogin';
 import Itinerario from './components/Itinerario';
 import MunicipioDetalle from './components/MunicipioDetalle';
+import MunicipioDetalleChiapas from './components/MunicipioDetalleChiapas';
 import './locales/i18n';
 
 import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
@@ -102,10 +102,10 @@ function App() {
             <Route path="/puntos-cercanos" element={<PuntosCercanos />} />
             <Route path="/productos-tabasco" element={<ProductosTabasco />} />
             <Route path="/perfil" element={<PerfilUsuario />} />
-            <Route path="/real-time-map" element={<RealTimeMap />} />
             <Route path="/homelogin" element={<HomeLogin />} />
             <Route path="/itinerario" element={<Itinerario />} />
             <Route path="/municipio/:nombre" element={<MunicipioDetalle />} />
+            <Route path="/chiapas/municipio/:nombre" element={<MunicipioDetalleChiapas />} />
 
 
             <Route path="/monumento/cabeza-olmeca" element={<MonumentoCabezaOlmeca />} />

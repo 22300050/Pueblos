@@ -3,6 +3,33 @@ import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import mapboxgl from 'mapbox-gl';
 
+// Fallback seguro si no hay datos del municipio
+const makeEmptyMunicipio = (nombre) => ({
+  descripcion: `Aún no tenemos información detallada de ${nombre}.`,
+  lugares: [],
+  sitiosTop: [],
+  sitiosOcultos: [],
+  eventos: [],
+  artesanias: [],
+  talleres: [],
+  gastronomia: []
+});
+
+const getDatosMunicipio = (nombre, base) => {
+  const datos = base[nombre];
+  if (!datos) return makeEmptyMunicipio(nombre);
+  // Garantiza que existan las llaves aunque vengan incompletas
+  return {
+    ...makeEmptyMunicipio(nombre),
+    ...datos,
+    lugares: datos.lugares ?? [],
+    eventos: datos.eventos ?? [],
+    artesanias: datos.artesanias ?? [],
+    talleres: datos.talleres ?? [],
+    gastronomia: datos.gastronomia ?? [],
+  };
+};
+
 // --- RUTAS DE ASSETS ---
 import chiapasSvg from '../../assets/svg/Chiapas.svg?raw';
 // Se asume que tendrás un archivo de audio para Chiapas, puedes cambiar la ruta
@@ -160,9 +187,8 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
         const r = containerRef.current.getBoundingClientRect();
         setTooltip(prev => ({...prev, x: e.clientX - r.left, y: e.clientY - r.top }));
       });
-      //SE EDITO LA RUTA PARA QUE EL USUARIO NO VAYA A UNA PÁGINA EN BLANCO
-      //path.addEventListener('click', () => navigate(`/municipio/${name}`));
-      path.addEventListener('click', () => navigate(`/Mantenimiento`));
+path.addEventListener('click', () => navigate(`/chiapas/municipio/${encodeURIComponent(name)}`));
+
     });
   }, [vistaMovil, mostrarMapaMapbox]);
 
@@ -189,10 +215,11 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
     municipiosChiapas.forEach((municipio) => {
         const el = document.createElement('div');
         el.className = 'custom-marker-municipio';
-        new mapboxgl.Marker(el)
+        const marker = new mapboxgl.Marker(el)
             .setLngLat(municipio.coords)
             .setPopup(new mapboxgl.Popup({ offset: 25, className: 'custom-popup' }).setHTML(`<h3>${municipio.nombre}</h3><p>Municipio de Chiapas</p>`))
             .addTo(map);
+            el.addEventListener('click', () => navigate(`/chiapas/municipio/${municipio.nombre}`));
     });
 
     return () => map.remove();
@@ -220,27 +247,41 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
           const presupuestoMXN = tipoPresupuestoADinero(formData.tipo);
           
           let { lugarInicio, ultimoLugar } = formData;
-          if (formData.modoDestino !== 'manual') {
-              const sugerencia = sugerirRuta({});
-              lugarInicio = lugarInicio || sugerencia.inicio;
-              ultimoLugar = ultimoLugar || sugerencia.fin;
-          }
+if (formData.modoDestino !== 'manual') {
+    const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
+    if (it?.destino) {
+        lugarInicio = it.lugarInicio || it.destino;
+        ultimoLugar = it.destino;
+    } else {
+        const sugerencia = sugerirRuta({});
+        lugarInicio = lugarInicio || sugerencia.inicio;
+        ultimoLugar = ultimoLugar || sugerencia.fin;
+    }
+}
 
-          const payload = {
-            estado,
-            dias: `${fechaInicio} a ${fechaFin}`,
-            presupuesto: presupuestoMXN,
-            monedas: convertirMonedas(presupuestoMXN),
-            email: formData.email || "",
-            mes: formData.mes,
-            interesesSeleccionados: interesesArr,
-            origen: lugarInicio,
-            destino: ultimoLugar,
-            eventosSeleccionados: [{
-              nombre: formData.tipo,
-              actividades: sugerirRuta({}).actividades.join(', ')
-            }],
-          };
+
+const payload = {
+  estado,
+  dias: `${fechaInicio} a ${fechaFin}`,
+  presupuesto: presupuestoMXN,
+  monedas: convertirMonedas(presupuestoMXN),
+  email: formData.email || "",
+  mes: formData.mes,
+  interesesSeleccionados: interesesArr,
+
+  // 👇 estas dos son las claves que Itinerario usa en modo manual
+  origen: lugarInicio,
+  destino: ultimoLugar,
+
+  // puedes mantener eventosSeleccionados si lo usas en otro lado
+  eventosSeleccionados: [
+    {
+      nombre: formData.tipo,
+      actividades: sugerirRuta({}).actividades.join(", "),
+    },
+  ],
+};
+
           localStorage.setItem("itinerario", JSON.stringify(payload));
           navigate("/itinerario", { state: payload });
         }}

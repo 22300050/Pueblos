@@ -9,7 +9,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { getSelecciones } from '../utils/itinerarioStore';
 import popurriTabasco from '../assets/Popurri Tabasco.mp3';
-
+const RUTA_MAPA_MEXICO = '/mapa'; // coincide con tu App.jsx
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 function MapaTabasco({ onRegresar, estado, eventos }) {
   const containerRef = useRef(null);
@@ -128,6 +128,10 @@ const saveIntereses = () => {
    useEffect(() => {
     if (eventsRef.current) { const { width, height } = eventsRef.current.getBoundingClientRect(); setEventsSize({ width, height });}}, [mostrarZonas, eventoIndex]);
   const navigate = useNavigate();
+const doRegresar = () => {
+  navigate(RUTA_MAPA_MEXICO, { replace: false }); 
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
   // Variants para slide + fade-in del mapa
   const mapVariants = { hidden: { opacity: 0, y: 20 },visible: {opacity: 1,y: 0,transition: { duration: 0.8, ease: 'easeOut' } }};
   const { scrollY } = useScroll();
@@ -903,8 +907,8 @@ if (actividadesSugeridas.length === 0 && (!diasData || diasData.length === 0)) {
 
     {/* Botones finales */}
     <div className="flex justify-between items-center mt-4">
-      <button type="button" onClick={onRegresar} className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-200">
-        Regresar
+ <button type="button" onClick={doRegresar} className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-200">
+   Regresar al mapa
       </button>
       <button type="submit" className="bg-yellow-400 text-black font-bold px-6 py-2 rounded-full hover:bg-yellow-500">
         CREAR

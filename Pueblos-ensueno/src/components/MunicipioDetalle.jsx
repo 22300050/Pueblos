@@ -169,7 +169,7 @@ const THEME_BY_MUNICIPIO = {
     badge: 'bg-sky-100 text-sky-800'
   },
   "Centro": {
-    header: new URL('../assets/villahermosa.jpg', import.meta.url).href,
+    header: new URL('../assets/img/tabasco/Villahermosa.jpg', import.meta.url).href,
     bg: 'bg-emerald-50', title: 'text-emerald-800', card: 'bg-white/80',
     btnPrimary: 'bg-emerald-600 hover:bg-emerald-700 text-white',
     btnSecondary: 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800',
@@ -306,11 +306,15 @@ const MEDIA_BY_MUNICIPIO = {
       "Máscaras chontales": new URL('../assets/artesano.gif', import.meta.url).href,
       "Cacao artesanal": new URL('../assets/artesano.gif', import.meta.url).href,
     },
+    
   },
 };
-
-
-
+const MEDIA_EVENTOS = {
+  "Feria Tabasco": new URL('../assets/evento-feria-tabasco.jpg', import.meta.url).href,
+  "Festival del Chocolate": new URL('../assets/evento-chocolate.jpg', import.meta.url).href,
+  "Celebrando la Eternidad":  new URL('../assets/evento-dia-muertos.jpg', import.meta.url).href,
+  // agrega aquí las que vayas teniendo
+};
 
 const eventosCentroPorMes = {
   Enero: [
@@ -385,6 +389,13 @@ const getMedia = (categoria, itemNombre) => {
   const datos = datosMunicipios[nombre];
   // 🎨 Tema activo
 const theme = THEME_BY_MUNICIPIO[nombre] || THEME_BY_MUNICIPIO._default;
+// Imagen del evento aunque el título venga con detalles entre paréntesis o guiones
+const getEventoImg = (evento) => {
+  if (!evento) return theme.header;
+  const base = evento.split(' (')[0].split(' –')[0].trim(); // corta "(...)" o "– ..."
+  return MEDIA_EVENTOS[evento] || MEDIA_EVENTOS[base] || theme.header;
+};
+
 // Leer mes guardado en localStorage al iniciar
 const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
 const [mesSeleccionado, setMesSeleccionado] = useState(itinerarioPersistido?.mes || '');
@@ -515,6 +526,19 @@ const eventosFiltrados = (datos.eventos || []).filter(ev => {
   if (!mesSeleccionado) return true; // si aún no eligió mes, muestra todos
   return (ev.fecha || "").toLowerCase().includes(mesSeleccionado.toLowerCase());
 });
+// --- Normaliza eventos del mes para cualquier municipio ---
+const getEventosDelMes = (mes) => {
+  if (!mes) return [];
+  if (nombre === "Centro") {
+    return eventosCentroPorMes[mes] || [];
+  }
+  // Otros municipios: usan datos.eventos = [{nombre, fecha}]
+  const lista = (datos.eventos || []).filter(ev =>
+    (ev.fecha || "").toLowerCase().includes(mes.toLowerCase())
+  );
+  // devolvemos solo los nombres (mismo formato que Centro)
+  return lista.map(ev => (typeof ev === 'string' ? ev : ev.nombre));
+};
 
 
   if (!datos) return <h2 className="p-10">Municipio no encontrado</h2>;
@@ -598,7 +622,7 @@ const CategoryCard = ({ title, subtitle, onClick, bgImg }) => (
 const HeroCard = ({ title, img, onAdd, className = "" }) => (
   <div
     data-hero-card
-    className={`relative rounded-[22px] overflow-hidden snap-center min-w-[260px] w-[280px] sm:w-[320px] aspect-[3/4] ${className}`}
+    className={`relative rounded-[22px] overflow-hidden snap-center w-full sm:w-[640px] aspect-[16/9] ${className}`}
   >
     <div
       className="absolute inset-0 bg-center bg-cover"
@@ -655,6 +679,74 @@ const onGastroMouseDown = (e) => {
   scrollLeftRef.current = el.scrollLeft;
   lastXRef.current = e.pageX;
   lastTRef.current = performance.now();
+};
+// ==== Drag + Momentum + Snap para carrusel de EVENTOS ====
+const eventosScrollRef = useRef(null);
+const isDraggingEventosRef = useRef(false);
+const startXEventosRef = useRef(0);
+const scrollLeftEventosRef = useRef(0);
+const lastXEventosRef = useRef(0);
+const lastTEventosRef = useRef(0);
+let rafIdEventosRef = null;
+
+const getEventosCardWidthWithGap = (el) => {
+  const firstCard = el.querySelector('[data-hero-card]');
+  if (!firstCard) return 300;
+  const cardRect = firstCard.getBoundingClientRect();
+  const styles = getComputedStyle(firstCard.parentElement);
+  const gap = parseFloat(styles.columnGap || styles.gap || '0');
+  return cardRect.width + gap;
+};
+
+const snapEventosToNearest = (el) => {
+  const step = getEventosCardWidthWithGap(el);
+  const targetIndex = Math.round(el.scrollLeft / step);
+  const targetLeft = targetIndex * step;
+  el.scrollTo({ left: targetLeft, behavior: 'smooth' });
+};
+
+const onEventosMouseDown = (e) => {
+  const el = eventosScrollRef.current;
+  if (!el) return;
+  cancelAnimationFrame(rafIdEventosRef);
+  isDraggingEventosRef.current = true;
+  el.classList.add('dragging');
+  startXEventosRef.current = e.pageX - el.getBoundingClientRect().left;
+  scrollLeftEventosRef.current = el.scrollLeft;
+  lastXEventosRef.current = e.pageX;
+  lastTEventosRef.current = performance.now();
+};
+
+const onEventosMouseLeaveOrUp = () => {
+  const el = eventosScrollRef.current;
+  if (!el) return;
+  if (!isDraggingEventosRef.current) return;
+  isDraggingEventosRef.current = false;
+  el.classList.remove('dragging');
+
+  let v = (lastXEventosRef.current - startXEventosRef.current) / (performance.now() - lastTEventosRef.current || 1);
+  v = Math.max(Math.min(v, 1.2), -1.2);
+  const decay = 0.95;
+  const minV = 0.08;
+
+  const step = () => {
+    el.scrollLeft -= v * 40;
+    v *= decay;
+    if (Math.abs(v) > minV) requestAnimationFrame(step);
+    else snapEventosToNearest(el);
+  };
+  rafIdEventosRef = requestAnimationFrame(step);
+};
+
+const onEventosMouseMove = (e) => {
+  const el = eventosScrollRef.current;
+  if (!el || !isDraggingEventosRef.current) return;
+  e.preventDefault();
+  const x = e.pageX - el.getBoundingClientRect().left;
+  const walk = (x - startXEventosRef.current);
+  el.scrollLeft = scrollLeftEventosRef.current - walk;
+  lastXEventosRef.current = e.pageX;
+  lastTEventosRef.current = performance.now();
 };
 
 const onGastroMouseLeaveOrUp = () => {
@@ -907,125 +999,98 @@ const onGastroMouseMove = (e) => {
     bgImg={theme.header}
   />
 </div>
+<div id="eventos-culturales" className="mt-2"></div>
 <div className="flex items-center justify-between">
   <h2 className="text-2xl font-semibold">Eventos culturales</h2>
-  <select
-  ref={mesSelectRef}
-    value={mesSeleccionado}
-    onChange={(e) => {
-      const nuevoMes = e.target.value;
-      setMesSeleccionado(nuevoMes);
 
-      // 🔹 Guardar el mes en localStorage igual que en MapaTabasco
-      const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
-      localStorage.setItem(
-        "itinerario",
-        JSON.stringify({
-          ...itinerarioPersistido,
-          mes: nuevoMes
-        })
-      );
+  <div className="flex items-center">
+    <button
+      onClick={() => alert("Vista de mapa en desarrollo")}
+      className="mr-3 px-3 py-1.5 bg-emerald-500 text-white text-sm rounded-full"
+    >
+      Ver en mapa
+    </button>
 
-      //  Notificar a otras pestañas/componentes que cambió
-      window.dispatchEvent(new Event("storage"));
-    }}
-    className="ml-4 border border-gray-300 rounded px-3 py-1 text-sm"
-  >
-    <option value="">Selecciona un mes</option>
-    {Object.keys(eventosCentroPorMes).map((mes) => (
-      <option key={mes} value={mes}>{mes}</option>
-    ))}
-  </select>
+    <select
+      aria-label="Selecciona el mes de eventos"
+      ref={mesSelectRef}
+      value={mesSeleccionado}
+      onChange={(e) => {
+        const nuevoMes = e.target.value;
+        setMesSeleccionado(nuevoMes);
+
+        const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
+        localStorage.setItem("itinerario", JSON.stringify({ ...itinerarioPersistido, mes: nuevoMes }));
+        window.dispatchEvent(new Event("storage"));
+      }}
+      className="ml-0 border border-gray-300 rounded px-3 py-1 text-sm"
+    >
+      <option value="">Selecciona un mes</option>
+      {Object.keys(eventosCentroPorMes).map((mes) => (
+        <option key={mes} value={mes}>{mes}</option>
+      ))}
+    </select>
+  </div>
 </div>
 
-
-
-{nombre === "Centro" ? (
-  !mesSeleccionado ? (
-    <div className="p-4 bg-yellow-100 text-yellow-800 rounded-md">
-      <p>Para ver los eventos culturales de cada mes tienes que escoger un mes. ¿Quieres hacerlo ahora?</p>
-      <button
-   onClick={() => {
-     mesSelectRef.current?.focus();
-     mesSelectRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-     // pequeño “flash”:
-     mesSelectRef.current?.classList.add('ring-2','ring-blue-400');
-     setTimeout(() => mesSelectRef.current?.classList.remove('ring-2','ring-blue-400'), 1000);
-   }}
-        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Seleccionar mes
-      </button>
-    </div>
-  ) : (
-    <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-6">
-      {(eventosCentroPorMes[mesSeleccionado] && eventosCentroPorMes[mesSeleccionado].length > 0
-        ? eventosCentroPorMes[mesSeleccionado]
-        : ["No hay eventos este mes"]
-      ).map((nombreEvento, i) => (
-        <li key={`ev-${i}`} className="flex items-center justify-between py-1">
-          <span>🎭 {nombreEvento} · {mesSeleccionado}</span>
-          {nombreEvento !== "No hay eventos este mes" && (
-            <button
-              onClick={() => toggleSeleccion({
-                tipo: 'evento',
-                nombre: nombreEvento,
-                meta: { mes: mesSeleccionado }
-              })}
-              className="text-sm bg-indigo-500 text-white px-2 py-1 rounded"
-            >
-              {estaAgregado({ tipo:'evento', nombre: nombreEvento /* o ev.nombre */ }) ? 'Quitar' : 'Agendar en mi viaje'}
-
-            </button>
-          )}
-        </li>
-      ))}
-    </ul>
-  )
+{!mesSeleccionado ? (
+  <div className="p-4 bg-yellow-100 text-yellow-800 rounded-md">
+    <p>Para ver los eventos culturales de cada mes, selecciona un mes.</p>
+    <button
+      onClick={() => {
+        mesSelectRef.current?.focus();
+        mesSelectRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        mesSelectRef.current?.classList.add('ring-2','ring-blue-400');
+        setTimeout(() => mesSelectRef.current?.classList.remove('ring-2','ring-blue-400'), 1000);
+      }}
+      className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+    >
+      Seleccionar mes
+    </button>
+  </div>
 ) : (
-  !mesSeleccionado ? (
-    <div className="p-4 bg-yellow-100 text-yellow-800 rounded-md">
-      <p>Para conocer los eventos primero selecciona un mes.</p>
-<button
-   onClick={() => {
-     mesSelectRef.current?.focus();
-     mesSelectRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-     // pequeño “flash” visual opcional:
-     mesSelectRef.current?.classList.add('ring-2','ring-blue-400');
-     setTimeout(() => mesSelectRef.current?.classList.remove('ring-2','ring-blue-400'), 1000);
-   }}
-        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Seleccionar mes
-      </button>
+  // Carrusel con TODOS los eventos del mes (cualquier municipio)
+  <div className="relative -mx-4 px-4 mb-8">
+    <div
+      ref={eventosScrollRef}
+      className="overflow-x-auto no-scrollbar snap-x snap-mandatory select-none cursor-grab active:cursor-grabbing scroll-smooth"
+      onMouseDown={onEventosMouseDown}
+      onMouseLeave={onEventosMouseLeaveOrUp}
+      onMouseUp={onEventosMouseLeaveOrUp}
+      onMouseMove={onEventosMouseMove}
+    >
+      <div className="flex gap-4 sm:gap-5 pb-2">
+{(() => {
+  const eventos = getEventosDelMes(mesSeleccionado);
+  if (!eventos.length) {
+    return (
+      <div className="p-4 bg-gray-100 text-gray-700 rounded-md">
+        No hay eventos para {mesSeleccionado} en {nombre}.
+      </div>
+    );
+  }
+  return eventos.map((nombreEvento, i) => (
+    <HeroCard
+      key={`ev-${nombre}-${i}`}
+      title={nombreEvento}
+      img={getEventoImg(nombreEvento)}
+      onAdd={() =>
+        toggleSeleccion({
+          tipo: 'evento',
+          nombre: nombreEvento,
+          meta: { mes: mesSeleccionado }
+        })
+      }
+    />
+  ));
+})()}
+
+      </div>
     </div>
-  ) : (
-    <ul className="mb-4">
-      {(datos.eventos || [])
-        .filter(ev =>
-          (ev.fecha || "").toLowerCase().includes(mesSeleccionado.toLowerCase())
-        )
-        .map((ev, i) => (
-          <li key={`ev-${i}`} className="flex items-center justify-between p-3 bg-white rounded-xl shadow">
-            <span>🎭 {ev.nombre} · {ev.fecha}</span>
-<button
-  onClick={() => toggleSeleccion({
-    tipo: 'evento',
-    nombre: ev.nombre,
-    meta: { fecha: ev.fecha, mes: mesSeleccionado }
-  })}
-  className="text-sm bg-indigo-500 text-white px-2 py-1 rounded"
->
-  {estaAgregado({ tipo: 'evento', nombre: ev.nombre }) ? 'Quitar' : 'Agregar'}
-</button>
-          </li>
-        ))}
-    </ul>
-  )
+  </div>
 )}
 
 
-<h2 className="text-2xl font-semibold mb-4">🧺 Artesanías</h2>
 
 <div className="relative rounded-[22px] overflow-hidden mb-8">
   <img

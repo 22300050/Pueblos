@@ -186,6 +186,10 @@ const saveIntereses = () => {
    useEffect(() => {
     if (eventsRef.current) { const { width, height } = eventsRef.current.getBoundingClientRect(); setEventsSize({ width, height });}}, [mostrarZonas, eventoIndex]);
   const navigate = useNavigate();
+  const doRegresar = () => {
+  navigate('/mapa', { replace: false });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
   // Variants para slide + fade-in del mapa
   const mapVariants = { hidden: { opacity: 0, y: 20 },visible: {opacity: 1,y: 0,transition: { duration: 0.8, ease: 'easeOut' } }};
   const { scrollY } = useScroll();
@@ -872,7 +876,7 @@ const ItinerarioForm = () => {
         <button type="submit" className="w-full bg-orange-500 text-white font-bold px-6 py-3 rounded-lg shadow-md hover:bg-orange-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
           CREAR MI ITINERARIO
         </button>
-        <button type="button" onClick={onRegresar} className="w-full bg-transparent text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors">
+        <button type="button" onClick={doRegresar} className="w-full bg-transparent text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors">
           Regresar al mapa
         </button>
       </div>

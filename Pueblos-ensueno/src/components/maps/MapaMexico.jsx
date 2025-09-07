@@ -6,6 +6,7 @@ import svgUrl from '../../assets/svg/Mexico.svg?url';
 import MapaTabasco from './MapaTabasco';
 import MapaChiapas from './MapaChiapas';
 
+
 function MapaMexico() {
   const containerRef = useRef(null);
   const [tooltip, setTooltip] = useState({ visible: false, name: '' });
