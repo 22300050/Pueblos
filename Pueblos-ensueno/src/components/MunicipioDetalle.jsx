@@ -17,7 +17,11 @@ const datosMunicipios = {
   },
   "Centla": {
     descripcion: "Centla alberga la Reserva de la Biosfera Pantanos de Centla, un importante humedal del sur de México.",
-    lugares: ["Reserva de Pantanos de Centla", "Frontera"]
+    lugares: ["Reserva de Pantanos de Centla", "Frontera"],
+    rutasComunitarias: [
+      "Corredor Turístico de los Pantanos: Recorridos en lancha guiados por cooperativas locales a través de los manglares de la Reserva de la Biosfera Pantanos de Centla.",
+      "Ruta de Observación de Aves en Comunidades Ribereñas: Experiencias guiadas por pescadores locales para avistar fauna nativa y migratoria."
+    ]
   },
   "Centro": {
     descripcion: "Centro es el municipio donde se ubica Villahermosa, capital de Tabasco, y concentra la mayor actividad económica y cultural.",
@@ -52,12 +56,48 @@ const datosMunicipios = {
     "Pozol y chorote",
     "Tamales de chipilín",
     "Chocolate/cacao local (marcas como CACEP)"
-  ]
-    
+  ],
+    transportePublico: [
+  {
+    nombre: "Combis / Transbus (Rutas Urbanas)",
+    tarifa: "Aprox. $10.50 MXN (público general)",
+    contacto: "N/A",
+    // Asegúrate que esta línea apunte a la imagen de tarifas de combi
+    imagen: new URL('../assets/transporte/tarifas_combi.jpg', import.meta.url).href
+  },
+  {
+    nombre: "Radio Taxis",
+    tarifa: "Tarifa mínima aprox. $35 - $45 MXN",
+    contacto: "Radio Taxi Gaviota: 993 354 0000",
+    // Esta debe apuntar a la imagen de tarifas de taxi
+    imagen: new URL('../assets/transporte/tarifas_taxi_colectivo.jpg', import.meta.url).href
+  },
+  {
+    nombre: "Taxis Colectivos (a otros municipios)",
+    tarifa: "Desde $30 MXN (depende del destino)",
+    contacto: "Salidas desde la terminal de autobuses",
+    // Y esta TAMBIÉN debe apuntar a la misma imagen de tarifas de taxi
+    imagen: new URL('../assets/transporte/tarifas_taxi_colectivo.jpg', import.meta.url).href
+  }
+]
   },
   "Comalcalco": {
     descripcion: "Comalcalco destaca por su zona arqueológica de origen maya construida con ladrillos de barro.",
-    lugares: ["Zona Arqueológica de Comalcalco", "Fábricas de chocolate"]
+    lugares: ["Zona Arqueológica de Comalcalco", "Fábricas de chocolate"],
+transportePublico: [
+      {
+        nombre: "Pochimóvil (Moto-taxis)",
+        tarifa: "Aprox. $10 - $25 MXN (rutas cortas dentro de la ciudad)",
+        contacto: "Disponibles en toda la ciudad",
+        imagen: new URL('../assets/transporte/pochimovil.jpg', import.meta.url).href
+      },
+      {
+        nombre: "Taxis Locales y Colectivos",
+        tarifa: "Desde $30 MXN (local) / Tarifas variables a rancherías",
+        contacto: "Base en el parque central y mercado",
+        imagen: new URL('../assets/transporte/taxi.jpg', import.meta.url).href
+      }
+    ]
   },
   "Cunduacán": {
     descripcion: "Municipio conocido por su agricultura y cercanía a Villahermosa.",
@@ -81,7 +121,10 @@ const datosMunicipios = {
   },
   "Jonuta": {
     descripcion: "Municipio tranquilo con actividad pesquera.",
-    lugares: ["Río Usumacinta", "Zona de pesca"]
+    lugares: ["Río Usumacinta", "Zona de pesca"],
+    rutasComunitarias: [
+      "Encuentro con Manatíes en Jonuteek: Un proyecto de turismo comunitario dedicado a la conservación y avistamiento respetuoso del manatí en su hábitat natural."
+    ]
   },
   "Macuspana": {
     descripcion: "Municipio natal de importantes figuras políticas, con selvas y ríos.",
@@ -90,6 +133,10 @@ const datosMunicipios = {
 "Nacajuca": {
   descripcion: "Zona chontal con rica cultura, tradiciones y artesanías.",
   lugares: ["Poblados chontales", "Artesanías típicas"],
+  rutasComunitarias: [
+      "Ruta Biji Yokot'an (Corredor del Pejelagarto): Un recorrido por comunidades chontales para descubrir la gastronomía ancestral, talleres de artesanías y la vida local.",
+      "Recorrido por los Camellones Chontales: Explora el sistema agrícola prehispánico y aprende sobre la cultura viva de la mano de guías comunitarios."
+    ],
 
   sitiosTop: [
     "Poblado Mazateupa – conocido por sus artesanías en palma y bordados.",
@@ -130,11 +177,43 @@ const datosMunicipios = {
 
   "Paraíso": {
     descripcion: "Puerto y municipio costero, con playas y desarrollo petrolero.",
-    lugares: ["Puerto Dos Bocas", "Playa Paraíso"]
+    lugares: ["Puerto Dos Bocas", "Playa Paraíso"],
+    transportePublico: [
+      {
+        nombre: "Taxis Locales",
+        tarifa: "Aprox. $30 - $50 MXN dentro de la ciudad",
+        contacto: "Base principal cerca del parque central",
+        imagen: new URL('../assets/transporte/taxi.jpg', import.meta.url).href
+      },
+      {
+        nombre: "Transporte Suburbano (Vans)",
+        tarifa: "Aprox. $25 - $40 MXN (rutas a Comalcalco y Villahermosa)",
+        contacto: "Salidas desde la terminal local",
+        imagen: new URL('../assets/transporte/combi.jpg', import.meta.url).href
+      }
+    ]
   },
   "Tacotalpa": {
     descripcion: "Ubicado en la sierra, con atractivos naturales y cafetales.",
-    lugares: ["Villa Tapijulapa", "Grutas de Coconá"]
+    lugares: ["Villa Tapijulapa", "Grutas de Coconá"],
+    rutasComunitarias: [
+      "Ruta Ecoturística Agua Selva: Un desarrollo comunitario que ofrece senderismo, cañonismo y rappel en un área con más de 50 cascadas.",
+      "Experiencia Eco Aventura en Tapijulapa: Visita guiada por locales a la Cueva de la Sardina Ciega y al santuario de murciélagos al atardecer."
+    ],
+    transportePublico: [
+      {
+        nombre: "Taxis Colectivos (Desde Teapa)",
+        tarifa: "Aprox. $20 - $30 MXN por persona",
+        contacto: "Base de salida en el mercado de Teapa",
+        imagen: new URL('../assets/transporte/colectivo.jpg', import.meta.url).href
+      },
+      {
+        nombre: "Transporte Local (Taxis)",
+        tarifa: "Tarifas variables para moverse entre Tapijulapa y la cabecera",
+        contacto: "Disponibles en el parque principal de Tapijulapa",
+        imagen: new URL('../assets/transporte/taxi.jpg', import.meta.url).href
+      }
+    ]
   },
   "Teapa": {
     descripcion: "Conocido por su café, montañas y paisajes.",
@@ -142,8 +221,12 @@ const datosMunicipios = {
   },
   "Tenosique": {
     descripcion: "Municipio fronterizo con Chiapas y Guatemala, con historia y zonas naturales.",
-    lugares: ["Cueva del Tigre", "Zona arqueológica de Pomoná"]
-  }
+    lugares: ["Cueva del Tigre", "Zona arqueológica de Pomoná"],
+    rutasComunitarias: [
+      "Aventura en el Cañón del Usumacinta con Wayak Xuul: Cooperativa local que ofrece tours de aventura y naturaleza en el río Usumacinta.",
+      "Ruta a los Manantiales de Santa Margarita: Paseo en lancha para flotar en las aguas cristalinas de este manantial, una experiencia ofrecida por guías locales."
+    ]
+  },
 };
 // 🎨 Tema por municipio (colores, clases y medios)
 const THEME_BY_MUNICIPIO = {
@@ -433,7 +516,8 @@ const navigate = useNavigate();
 const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 // ==== Modal estilo Meta ====
 const [modalOpen, setModalOpen] = useState(false);
-const [modalSection, setModalSection] = useState(null); // 'lugares' | 'imperdibles' | 'joyitas' | 'talleres'
+// Cerca de la definición de useState
+const [modalSection, setModalSection] = useState(null); // 'lugares' | 'imperdibles' | 'joyitas' | 'talleres' | 'rutasComunitarias'
 
 const openSection = (section) => {
   setModalSection(section);
@@ -545,22 +629,29 @@ const getEventosDelMes = (mes) => {
 
 const manejarInteres = () => {
   setInteresado(true);
-  localStorage.setItem("modoDestino", "auto");
   alert(`¡Gracias! Has marcado interés en visitar ${nombre}`);
 
-  // Guardar en localStorage
-  const interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
-  if (!interesesActuales.includes(nombre)) {
-    interesesActuales.push(nombre);
-    localStorage.setItem("interesesMunicipios_Tabasco", JSON.stringify(interesesActuales))
-  }
- //  Guardar como destino en modo automático
-const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
-localStorage.setItem("itinerario", JSON.stringify({
-  ...itinerarioPersistido,
-  lugarInicio: nombre,
-  modoDestino: "auto"
-}));
+  // --- NUEVA LÓGICA DE REORDENAMIENTO ---
+
+  // 1. Leemos la lista completa de intereses.
+  let interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
+
+  // 2. Quitamos el municipio actual si ya estaba en la lista para evitar duplicados y poder moverlo al frente.
+  interesesActuales = interesesActuales.filter(m => m !== nombre);
+
+  // 3. Añadimos el municipio actual AL PRINCIPIO de la lista.
+  interesesActuales.unshift(nombre);
+
+  // 4. Guardamos la lista reordenada en localStorage.
+  localStorage.setItem("interesesMunicipios_Tabasco", JSON.stringify(interesesActuales));
+
+  // 5. Actualizamos el borrador del itinerario para activar el modo de "Enfoque Local".
+  const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
+  localStorage.setItem("itinerario", JSON.stringify({
+    ...itinerarioPersistido,
+    lugarInicio: nombre, // Se asegura de que el punto de partida sea este municipio.
+    modoDestino: "auto"
+  }));
 };
 const idDe = (payload) => `${nombre}-${payload.tipo}-${payload.nombre}`;
 
@@ -641,7 +732,6 @@ const HeroCard = ({ title, img, onAdd, className = "" }) => (
     </button>
   </div>
 );
-// ==== Drag scroll para el carrusel de gastronomía ====
 // ==== Drag + Momentum + Snap para carrusel de gastronomía ====
 const gastroScrollRef = useRef(null);
 const isDraggingRef = useRef(false);
@@ -799,6 +889,9 @@ const onGastroMouseMove = (e) => {
       modalSection === 'lugares' ? 'Lugares destacados' :
       modalSection === 'imperdibles' ? 'Sitios imperdibles' :
       modalSection === 'joyitas' ? 'Joyitas poco conocidas' :
+      // ---- INICIO DE LA MODIFICACIÓN ----
+      modalSection === 'rutasComunitarias' ? 'Rutas de Turismo Comunitario' :
+      // ---- FIN DE LA MODIFICACIÓN ----
       modalSection === 'talleres' ? 'Talleres y espacios' : ''
     }
   >
@@ -904,6 +997,24 @@ const onGastroMouseMove = (e) => {
     ))}
   </div>
 )}
+   {modalSection === 'rutasComunitarias' && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {(datos.rutasComunitarias || []).map((ruta, i) => (
+          <div key={`m-ruta-${i}`} className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm p-4 sm:p-5">
+            <p className="text-[12px] font-semibold text-teal-700">Experiencia Local</p>
+            <p className="text-[14px] text-gray-800 mt-1">{ruta}</p>
+            <div className="mt-3">
+              <button
+                onClick={() => toggleSeleccion({ tipo: 'rutaComunitaria', nombre: ruta })}
+                className="px-3 py-1.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-[13px] font-medium"
+              >
+                {estaAgregado({ tipo:'rutaComunitaria', nombre:ruta }) ? 'Quitar' : 'Agregar a mi ruta'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
   </ModalShell>
 )}
 
@@ -977,6 +1088,7 @@ const onGastroMouseMove = (e) => {
   <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-3 ${theme.title}`}>{nombre}</h1>
   <p className="mb-4 text-base sm:text-lg lg:text-xl">{datos.descripcion}</p>
 {/* ---- Grid estilo Meta Quest 3 ---- */}
+{/* ---- Grid estilo Meta Quest 3 (CORREGIDO) ---- */}
 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
   <CategoryCard
     title="Lugares destacados"
@@ -993,11 +1105,24 @@ const onGastroMouseMove = (e) => {
     onClick={() => openSection('joyitas')}
     bgImg={theme.header}
   />
-  <CategoryCard
-    title="Talleres y espacios"
-    onClick={() => openSection('talleres')}
-    bgImg={theme.header}
-  />
+
+  {/* Tarjeta de Rutas Comunitarias (aparece solo si hay datos) */}
+  {datos.rutasComunitarias && datos.rutasComunitarias.length > 0 && (
+    <CategoryCard
+      title="Rutas de Turismo Comunitario"
+      onClick={() => openSection('rutasComunitarias')}
+      bgImg={theme.header}
+    />
+  )}
+
+  {/* Tarjeta de Talleres (aparece solo si hay datos, independientemente de las rutas) */}
+  {datos.talleres && datos.talleres.length > 0 && (
+    <CategoryCard
+      title="Talleres y espacios"
+      onClick={() => openSection('talleres')}
+      bgImg={theme.header}
+    />
+  )}
 </div>
 <div id="eventos-culturales" className="mt-2"></div>
 <div className="flex items-center justify-between">
@@ -1137,11 +1262,65 @@ const onGastroMouseMove = (e) => {
       })}
     </div>
   </div>
+{/* ===== SECCIÓN DE TRANSPORTE PÚBLICO (SIEMPRE VISIBLE) ===== */}
+<div className="mt-10">
+  <h2 className="text-2xl font-semibold mb-4">🚐 Transporte Público</h2>
+
+  {/* Condición interna para mostrar tarjetas o un mensaje */}
+  {datos.transportePublico && datos.transportePublico.length > 0 ? (
+    
+    // Si SÍ hay datos, muestra las tarjetas que ya tenías
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+      {datos.transportePublico.map((transporte) => (
+        <div key={transporte.nombre} className="bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden flex flex-col">
+          <img
+            src={transporte.imagen}
+            alt={transporte.nombre}
+            className="w-full h-40 object-cover"
+          />
+          <div className="p-5 flex flex-col flex-grow">
+            <h3 className="text-base font-bold text-gray-800">{transporte.nombre}</h3>
+            <div className="mt-3 flex-grow space-y-2 text-sm">
+              <p>
+                <span className="font-semibold">Tarifa: </span>
+                <span className="text-gray-700">{transporte.tarifa}</span>
+              </p>
+              {transporte.contacto && transporte.contacto !== "N/A" && (
+                <p>
+                  <span className="font-semibold">Contacto: </span>
+                  <a href={`tel:${transporte.contacto.replace(/\s/g, '')}`} className="text-emerald-600 hover:underline">
+                    {transporte.contacto}
+                  </a>
+                </p>
+              )}
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={() => toggleSeleccion({ tipo: 'transporte', nombre: transporte.nombre, icono: 'ℹ️', imagen: transporte.imagen })}
+                className={`w-full px-3 py-1.5 rounded-full text-[13px] font-medium transition ${
+                  estaAgregado({ tipo: 'transporte', nombre: transporte.nombre })
+                    ? 'bg-red-100 text-red-800 hover:bg-red-200'
+                    : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                }`}
+              >
+                {estaAgregado({ tipo: 'transporte', nombre: transporte.nombre }) ? 'Quitar Info' : 'Guardar Info'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+  ) : (
+
+    // Si NO hay datos, muestra este mensaje
+    <div className="p-4 bg-gray-100 text-gray-700 rounded-md">
+      <p>No hay información de transporte público disponible para este municipio por el momento.</p>
+    </div>
+    
+  )}
 </div>
-
-
-
-
+</div>
       <div className="flex flex-wrap gap-3 sm:gap-4 mt-8">
         
 <Link to="/mapa-tabasco">

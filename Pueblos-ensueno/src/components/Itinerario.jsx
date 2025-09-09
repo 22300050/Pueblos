@@ -30,6 +30,8 @@ const modoEdicion = editDiaIdx !== null;
   const pdfRef = useRef(null);
   const [diasData, setDiasData] = useState([]);
   const [selecciones, setSelecciones] = useState([]);
+  const [imagenModalTransporte, setImagenModalTransporte] = useState(null);
+  const transportesSeleccionados = React.useMemo(() => selecciones.filter(s => s.tipo === 'transporte'), [selecciones]);
 const PRESENTACION_PURA = false;
 // Datos actuales del itinerario (state o localStorage)
 const datosRef = React.useMemo(
@@ -99,7 +101,7 @@ const esEventoMes = (s) =>
 
 
 const ordenadas = [...selecciones]
-  .filter(s => s.estado === estadoActual && municipiosActivos.includes(s.municipio))
+.filter(s => s.estado === estadoActual && municipiosActivos.includes(s.municipio) && s.tipo !== 'transporte')
   .sort((a, b) => {
     // prioriza eventos que coinciden con el mes, luego alfabético
     const aMes = esEventoMes(a);
@@ -181,7 +183,7 @@ const coincideMesAct = (a) => {
 const originales = Array.isArray(datos.diasData) ? datos.diasData : [];
 const purgados = originales.map(d => ({
   ...d,
-  actividades: (d.actividades || []).filter(a => !esEvento(a) || coincideMesAct(a))
+  actividades: (d.actividades || []).filter(a => a.tipo !== 'transporte' && (!esEvento(a) || coincideMesAct(a)))
 }));
 
 setDiasData(purgados);
@@ -651,6 +653,23 @@ className="absolute md:right-[-14px] right-2 top-1/2 -translate-y-1/2
         <div className="col-span-2">
           <span className="font-semibold">Intereses:</span> {(datos?.interesesSeleccionados || []).join(", ") || "—"}
         </div>
+        {transportesSeleccionados.length > 0 && (
+      <div className="col-span-2">
+        <span className="font-semibold">Transporte:</span>
+        <div className="flex flex-wrap gap-2 mt-1">
+
+{transportesSeleccionados.map((transporte, idx) => (
+    <button
+      key={idx}
+      onClick={() => setImagenModalTransporte(transporte.imagen)}
+      className="text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-full px-3 py-1 text-xs font-medium border border-emerald-200 transition cursor-pointer"
+    >
+      {transporte.nombre} ℹ️
+    </button>
+))}
+        </div>
+      </div>
+    )}
       </div>
       {evento && (
         <p className="mt-2"><strong>Evento:</strong> {evento.icono} {evento.nombre}</p>
@@ -678,16 +697,20 @@ className="absolute md:right-[-14px] right-2 top-1/2 -translate-y-1/2
           {intereses.map((nombre, idx) => (
             <li key={idx} className="flex items-center gap-2">
               {nombre}
-              <button
-                onClick={() => {
-                  const nuevos = intereses.filter((item) => item !== nombre);
-                  setIntereses(nuevos);
-                  localStorage.setItem("interesesMunicipios", JSON.stringify(nuevos));
-                }}
-                className="text-red-500 hover:text-red-700 text-sm"
-              >
-                ❌ Quitar
-              </button>
+<button
+  onClick={() => {
+    const nuevos = intereses.filter((item) => item !== nombre);
+    setIntereses(nuevos);
+    // ✅ CORRECCIÓN: Usar la clave dinámica correcta según el estado.
+    const keyIntereses = estadoActual === "Chiapas"
+      ? "interesesMunicipios_Chiapas"
+      : "interesesMunicipios_Tabasco";
+    localStorage.setItem(keyIntereses, JSON.stringify(nuevos));
+  }}
+  className="text-red-500 hover:text-red-700 text-sm"
+>
+  ❌ Quitar
+</button>
             </li>
           ))}
         </ul>
@@ -697,14 +720,23 @@ className="absolute md:right-[-14px] right-2 top-1/2 -translate-y-1/2
     {/* Botón reset */}
     <div className="mb-8">
       <button
-        onClick={() => {
-          if (confirm("¿Estás seguro de reiniciar tu itinerario y borrar todos los municipios marcados?")) {
-            localStorage.removeItem("itinerario");
-            localStorage.removeItem("interesesMunicipios");
-            localStorage.removeItem("marcadores");
-            navigate("/mapa");
-          }
-        }}
+// DESPUÉS (Correcto)
+onClick={() => {
+  if (confirm("¿Estás seguro de reiniciar tu itinerario y borrar todos los municipios marcados?")) {
+    // 1. Determina la clave correcta según el estado actual
+    const keyIntereses = estadoActual === "Chiapas"
+      ? "interesesMunicipios_Chiapas"
+      : "interesesMunicipios_Tabasco";
+
+    // 2. Borra todo usando la clave correcta
+    localStorage.removeItem("itinerario");
+    localStorage.removeItem(keyIntereses); // <-- Corrección aplicada
+    localStorage.removeItem("marcadores");
+    
+    // 3. Navega al mapa general
+    navigate("/mapa");
+  }
+}}
         className="bg-red-500 text-white px-6 py-3 rounded-full font-semibold shadow-sm hover:bg-red-600 transition"
       >
         🗑 Reiniciar itinerario completo
@@ -959,7 +991,30 @@ className={`${mapColapsado ? "hidden" : "block"} w-full md:w-[55%] h-[250px] md:
           </div>
         </div>
       )}
-
+{imagenModalTransporte && (
+  <div 
+    className="fixed inset-0 bg-black/70 z-[10001] flex justify-center items-center p-4"
+    onClick={() => setImagenModalTransporte(null)}
+  >
+    <div 
+      className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-auto p-2 relative"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        onClick={() => setImagenModalTransporte(null)}
+        className="absolute top-2 right-2 bg-white/80 rounded-full w-8 h-8 text-lg font-bold hover:bg-gray-200 z-10"
+        aria-label="Cerrar"
+      >
+        &times;
+      </button>
+      <img 
+        src={imagenModalTransporte} 
+        alt="Tarifas de Transporte" 
+        className="w-full h-auto rounded-md"
+      />
+    </div>
+  </div>
+)}
     </>
   );
 }

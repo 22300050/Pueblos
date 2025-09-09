@@ -3,115 +3,169 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { addSeleccion, getSelecciones, removeSeleccion } from "../utils/itinerarioStore";
 const normalizar = (txt = "") =>
   txt.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
+// Función para crear una plantilla segura si un municipio no tiene datos
+const makeEmptyMunicipio = (nombre) => ({
+  descripcion: `Estamos trabajando para agregar la información detallada de ${nombre}. ¡Vuelve pronto!`,
+  lugares: [],
+  sitiosTop: [],
+  sitiosOcultos: [],
+  eventos: [],
+  artesanias: [],
+  talleres: [],
+  gastronomia: []
+});
 // -----------------------------------------------------------------------------
 // DATOS BÁSICOS DE CHIAPAS (puedes ampliar libremente)
 // -----------------------------------------------------------------------------
 const datosMunicipiosChiapas = {
   'Tuxtla Gutiérrez': {
     descripcion:
-      'Capital del estado; base perfecta para Cañón del Sumidero, Parque de la Marimba y ZOOMAT.',
+      'Capital del estado; centro de conexión ideal para explorar el Cañón del Sumidero, el Parque de la Marimba y el zoológico regional.',
     lugares: [
       'Parque de la Marimba',
       'Miradores del Cañón del Sumidero',
-      'ZOOMAT (Zoológico Miguel Álvarez del Toro)'
+      'ZOOMAT (Zoológico Miguel Álvarez del Toro)',
+      'Jardín Botánico Faustino Miranda'
     ],
-    sitiosTop: [
-      'Parque de la Marimba',
-      'Cañón del Sumidero (embarcadero Chiapa de Corzo)',
-      'ZOOMAT'
+    eventos: [
+      { nombre: 'Feria de San Marcos', fecha: 'Abril' },
+      { nombre: 'Festival del Tamal Tuxtleco', fecha: 'Diciembre' }
     ],
-    sitiosOcultos: [
-      'Mirador Los Chiapa',
-      'Senderos interpretativos del Zapotal',
-      'Mercado 5 de Mayo (antojitos)'
-    ],
-    eventos: [{ nombre: 'Fiesta Grande de Chiapa de Corzo', fecha: 'Enero' }],
     artesanias: [
       { nombre: 'Laca chiapaneca', precio: 'desde $150' },
       { nombre: 'Marimbas en miniatura', precio: 'desde $250' }
     ],
-    talleres: ['Taller de marimba', 'Taller de laca tradicional'],
-    gastronomia: ['Cochito horneado', 'Tamales chiapanecos', 'Sopa de pan']
+    gastronomia: ['Cochito horneado', 'Tamales de chipilín con bola', 'Tascalate frío']
   },
   'San Cristóbal de las Casas': {
     descripcion:
-      'Ciudad colonial en los Altos, epicentro cultural, artesanal y cafetero de Chiapas.',
+      'Pueblo Mágico en los Altos de Chiapas, epicentro cultural, artesanal y cafetero del estado.',
     lugares: [
-      'Andador Eclesiástico',
-      'Iglesia y Exconvento de Santo Domingo (artesanías)',
-      'Museo del Ámbar'
+      'Andador Eclesiástico y Catedral de San Cristóbal',
+      'Iglesia y Ex-convento de Santo Domingo (mercado de artesanías)',
+      'Museo del Ámbar de Chiapas',
+      'Barrio de Guadalupe y su iglesia'
     ],
-    sitiosTop: ['Andador Eclesiástico', 'Templo de Santo Domingo', 'Museo del Ámbar'],
-    sitiosOcultos: ['Barrio del Cerrillo', 'La Merced y andadores secundarios', 'Museo Kakaw (chocolate)'],
-    eventos: [{ nombre: 'Festival Cervantino Barroco', fecha: 'Octubre' }],
+    eventos: [
+      { nombre: 'Feria de la Primavera y de la Paz', fecha: 'Abril' },
+      { nombre: 'Festival Internacional Cervantino Barroco', fecha: 'Octubre' }
+    ],
     artesanias: [
-      { nombre: 'Textiles tzotziles', precio: 'desde $100' },
-      { nombre: 'Joyería en ámbar', precio: 'desde $120' }
+      { nombre: 'Textiles tzotziles y tzeltales', precio: 'desde $100' },
+      { nombre: 'Joyería en ámbar certificado', precio: 'desde $120' }
     ],
-    talleres: ['Taller de telar de cintura', 'Catación de café de altura'],
-    gastronomia: ['Tascalate', 'Pan coleto', 'Café de altura']
+    gastronomia: ['Sopa de pan', 'Asado coleto', 'Café de altura orgánico'],
+    rutasComunitarias: [
+        "Ruta de los Textiles Tzotziles: Visita a cooperativas en San Juan Chamula y Zinacantán para aprender sobre el telar de cintura con mujeres artesanas.",
+        "Medicina Tradicional en los Altos: Recorrido guiado por médicos tradicionales en comunidades para conocer el uso de plantas curativas locales."
+    ]
   },
-  Palenque: {
+  'Palenque': {
     descripcion:
-      'Zona arqueológica maya en la selva; base para cascadas como Misol-Ha y Agua Azul.',
-    lugares: ['Zona Arqueológica de Palenque', 'Cascadas de Misol-Ha', 'Cascadas de Agua Azul'],
-    sitiosTop: ['Zona Arqueológica de Palenque', 'Misol-Ha', 'Agua Azul'],
-    sitiosOcultos: ['Cascada de Roberto Barrios', 'Laguna Azul (comunidades)'],
-    eventos: [{ nombre: 'Equinoccio en Palenque', fecha: 'Marzo' }],
-    artesanias: [
-      { nombre: 'Tallado en madera', precio: 'desde $120' },
-      { nombre: 'Máscaras y réplicas mayas', precio: 'desde $180' }
+      'Impresionante zona arqueológica maya inmersa en la selva; base para cascadas como Misol-Ha y Agua Azul.',
+    lugares: [
+      'Zona Arqueológica de Palenque',
+      'Cascadas de Misol-Ha',
+      'Cascadas de Agua Azul',
+      'Ecoparque Aluxes (rescate de fauna)'
     ],
-    talleres: ['Guiado arqueológico', 'Senderismo interpretativo'],
-    gastronomia: ['Mole chiapaneco', 'Pozol con cacao']
+    eventos: [
+      { nombre: 'Equinoccio de Primavera (en la zona arqueológica)', fecha: 'Marzo' },
+      { nombre: 'Fiesta de Santo Domingo de Guzmán', fecha: 'Agosto' }
+    ],
+    artesanias: [
+      { nombre: 'Tallado en madera con motivos mayas', precio: 'desde $120' },
+      { nombre: 'Réplicas de máscaras y estelas mayas', precio: 'desde $180' }
+    ],
+    gastronomia: ['Pescado shote con momo', 'Mole chiapaneco', 'Pozol con cacao'],
+    rutasComunitarias: [
+        "Ecoturismo Comunitario en la Selva: Visita al centro ecoturístico 'Las Guacamayas', gestionado por la comunidad para la conservación de la guacamaya roja."
+    ]
   },
   'Comitán de Domínguez': {
     descripcion:
-      'Ciudad colonial cercana a Lagos de Montebello; ambiente tranquilo y cultural.',
-    lugares: ['Centro histórico', 'Museo Rosario Castellanos', 'Lagos de Montebello (cercanías)'],
-    sitiosTop: ['Centro histórico', 'Teatro Junchavín', 'Lagos de Montebello (ruta)'],
-    sitiosOcultos: ['Cenotes y lagunas menos concurridas', 'Museos locales poco visitados'],
-    eventos: [],
-    artesanias: [{ nombre: 'Madera tallada', precio: 'desde $90' }],
-    talleres: ['Talleres literarios / culturales (temporales)'],
-    gastronomia: ['Chinculguaje', 'Longaniza de Comitán']
+      'Pueblo Mágico de ambiente colonial y cuna de Rosario Castellanos. Cercano a los Lagos de Montebello.',
+    lugares: [
+      'Centro Histórico y Parque Central',
+      'Zona Arqueológica de Tenam Puente',
+      'Cascadas El Chiflón',
+      'Parque Nacional Lagos de Montebello'
+    ],
+    eventos: [
+        { nombre: 'Fiesta de San Caralampio', fecha: 'Febrero' },
+        { nombre: 'Festival Internacional Rosario Castellanos', fecha: 'Octubre' }
+    ],
+    artesanias: [
+      { nombre: 'Juguetes de madera tallada', precio: 'desde $90' },
+      { nombre: 'Textiles de lana de la región', precio: 'desde $200' }
+    ],
+    gastronomia: ['Chinculguaje (gordita de frijol)', 'Butifarra y longaniza de Comitán', 'Bebida "Comiteco"'],
+     rutasComunitarias: [
+        "Experiencia en los Lagos de Montebello: Paseos en balsa de troncos guiados por locales y visita a cooperativas de café orgánico en las comunidades aledañas al parque nacional."
+    ]
   },
   'Chiapa de Corzo': {
     descripcion:
-      'Pueblo Mágico a minutos de Tuxtla; embarcadero al Cañón del Sumidero.',
-    lugares: ['Embarcadero al Cañón del Sumidero', 'La Pila (kiosco mudéjar)', 'Museo de la Laca'],
-    sitiosTop: ['Embarcadero', 'La Pila', 'Museo de la Laca'],
-    sitiosOcultos: ['Talleres familiares de laca', 'Mercado y dulces tradicionales'],
-    eventos: [{ nombre: 'Fiesta Grande de Enero', fecha: 'Enero' }],
-    artesanias: [{ nombre: 'Laca', precio: 'desde $150' }],
-    talleres: ['Taller de laca tradicional'],
-    gastronomia: ['Pepita con tasajo', 'Sopa de chipilín']
+      'Pueblo Mágico a orillas del Grijalva y principal embarcadero para el Cañón del Sumidero. Famoso por su Fiesta Grande.',
+    lugares: [
+      'Embarcadero al Cañón del Sumidero',
+      'La Pila (fuente estilo mudéjar en la plaza)',
+      'Ex-convento de Santo Domingo (Museo de la Laca)',
+      'Ruinas de la Iglesia de San Sebastián'
+    ],
+    eventos: [
+        { nombre: 'Fiesta Grande de Enero (Parachicos, Patrimonio de la Humanidad)', fecha: 'Enero' }
+    ],
+    artesanias: [
+      { nombre: 'Artesanía en laca (jícaras, máscaras)', precio: 'desde $150' },
+      { nombre: 'Bordados de contado', precio: 'desde $250' }
+    ],
+    gastronomia: ['Pepita con tasajo', 'Cochito horneado', 'Dulces típicos (suspiros, chimbos)']
   },
-  Tapachula: {
+  'Tapachula': {
     descripcion:
-      'Ciudad cafetalera y puerta al Pacífico; cercana a volcanes y fincas.',
-    lugares: ['Centro histórico', 'Museo del Café', 'Volcán Tacaná (región)'],
-    sitiosTop: ['Museo del Café', 'Parque Hidalgo', 'Ruta del café'],
-    sitiosOcultos: ['Fincas cafetaleras boutique', 'Mercados con chocolate artesanal'],
-    eventos: [],
-    artesanias: [{ nombre: 'Café y cacao', precio: 'desde $80' }],
-    talleres: ['Catas de café'],
-    gastronomia: ['Mariscos y cocina costeña', 'Tamales de chipilín']
+      'La "Perla del Soconusco". Ciudad cafetalera y puerta al Pacífico; cercana a volcanes, fincas y manglares.',
+    lugares: [
+      'Ruta del Café (Fincas cafetaleras como Argovia o Hamburgo)',
+      'Zona Arqueológica de Izapa',
+      'Volcán Tacaná (senderismo)',
+      'Puerto Chiapas (terminal de cruceros y mariscos)'
+    ],
+    eventos: [
+      { nombre: 'Expo Feria Tapachula Internacional', fecha: 'Marzo' },
+      { nombre: 'Festival Internacional Fray Matías de Córdova', fecha: 'Noviembre' }
+    ],
+    artesanias: [
+      { nombre: 'Café de altura en grano o molido', precio: 'desde $100' },
+      { nombre: 'Chocolate artesanal de la región', precio: 'desde $80' }
+    ],
+    gastronomia: ['Mariscos frescos del Pacífico', 'Tamales de iguana', 'Plátano frito relleno'],
+     rutasComunitarias: [
+        "Ruta del Café del Soconusco: Recorridos por fincas sociales (cooperativas) para conocer el proceso del café de altura, desde la siembra hasta la taza, guiados por los propios productores."
+    ]
   },
-  Ocosingo: {
+  'Ocosingo': {
     descripcion:
-      'Municipio extenso con vestigios mayas y naturaleza serrana.',
-    lugares: ['Toniná (zona arqueológica)', 'Cascadas de las Golondrinas'],
-    sitiosTop: ['Toniná', 'Cascadas cercanas'],
-    sitiosOcultos: ['Comunidades tseltales con talleres'],
-    eventos: [],
-    artesanias: [{ nombre: 'Textiles tseltales', precio: 'desde $90' }],
-    talleres: ['Talleres comunitarios (textil, madera)'],
-    gastronomia: ['Tamales de chipilín', 'Pozol']
+      'Municipio extenso en el corazón de la Selva Lacandona, con imponentes vestigios mayas y naturaleza exuberante.',
+    lugares: [
+      'Zona Arqueológica de Toniná (pirámide más alta de Mesoamérica)',
+      'Cascadas Las Golondrinas',
+      'Reserva de la Biósfera Montes Azules (acceso)',
+      'Laguna Miramar'
+    ],
+    eventos: [
+      { nombre: 'Feria de la Candelaria', fecha: 'Febrero' }
+    ],
+    artesanias: [
+      { nombre: 'Textiles tseltales y lacandones', precio: 'desde $90' },
+      { nombre: 'Queso de bola de Ocosingo', precio: 'desde $150' }
+    ],
+    gastronomia: ['Queso de bola relleno de carne', 'Tamales de azafrán', 'Caldo de shuti (caracol de río)'],
+    rutasComunitarias: [
+        "Inmersión en la Selva Lacandona: Estancia en el campamento 'Lacanjá Chansayab', gestionado por familias lacandonas, con caminatas interpretativas y recorridos por ríos."
+    ]
   }
 };
-// === Catálogo mensual por MUNICIPIO (Chiapas) ===
 // === Catálogo mensual por MUNICIPIO (Chiapas) ===
 const eventosChiapasPorMunicipio = {
   "Tuxtla Gutiérrez": {
@@ -299,7 +353,19 @@ export default function MunicipioDetalleChiapas() {
     ) || nombre;
   }, [nombre]);
 
-  const datos = datosMunicipiosChiapas[municipioKey] || {};
+  const getDatosCompletos = (key) => {
+  const datosBase = datosMunicipiosChiapas[key];
+  if (!datosBase) {
+    return makeEmptyMunicipio(key); // Si no existe, devuelve la plantilla vacía
+  }
+  // Si existe, se asegura de que todas las propiedades (lugares, eventos, etc.) sean arrays
+  return {
+    ...makeEmptyMunicipio(key),
+    ...datosBase,
+  };
+};
+
+const datos = getDatosCompletos(municipioKey);
   const theme = THEME_BY_MUNICIPIO[municipioKey] || THEME_BY_MUNICIPIO._default;
 
 
@@ -383,25 +449,33 @@ const estaAgregado = (payload) => seleccionesIds.has(idDe(payload));
 
 const manejarInteres = () => {
   setInteresado(true);
+  alert(`🌟 Marcaste interés por visitar ${municipioKey}`);
+
   try {
-    const intereses = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas")|| "[]");
-if (!intereses.includes(municipioKey)) {
-  intereses.push(municipioKey);
-  localStorage.setItem("interesesMunicipios_Chiapas", JSON.stringify(intereses));
-}
+    // 1. Leemos la lista completa de intereses de Chiapas.
+    let interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas") || "[]");
 
+    // 2. Quitamos el municipio actual si ya estaba para evitar duplicados y poder moverlo al frente.
+    interesesActuales = interesesActuales.filter(m => m !== municipioKey);
+
+    // 3. Añadimos el municipio actual AL PRINCIPIO de la lista.
+    interesesActuales.unshift(municipioKey);
+
+    // 4. Guardamos la lista reordenada.
+    localStorage.setItem("interesesMunicipios_Chiapas", JSON.stringify(interesesActuales));
+
+    // 5. Actualizamos el borrador del itinerario para activar el modo de "Enfoque Local".
     const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
-
-   localStorage.setItem(
-     "itinerario",
-     JSON.stringify({
-       ...it,
-       modoDestino: "auto",
-       lugarInicio: municipioKey
-     })
-   );
-  } catch {}
-  alert(`🌟 Marcaste interés por visitar ${nombre}`);
+    localStorage.setItem("itinerario", JSON.stringify({
+      ...it,
+      modoDestino: "auto",
+      lugarInicio: municipioKey,
+      // Aseguramos que el estado sea el correcto en el borrador
+      estado: "Chiapas" 
+    }));
+  } catch (e) {
+    console.error("Error al manejar el interés:", e);
+  }
 };
 
 
@@ -520,7 +594,27 @@ const eventosFiltrados = mesSeleccionado
               </div>
             )}
           </div>
-
+{Array.isArray(datos.rutasComunitarias) && datos.rutasComunitarias.length > 0 && (
+            <div className={`${theme.card} rounded-2xl p-5 shadow border border-black/5`}>
+              <h2 className="text-xl font-bold mb-3">Rutas de turismo comunitario</h2>
+              <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4">
+                {datos.rutasComunitarias.map((ruta) => (
+                  <article key={ruta} className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-teal-700">EXPERIENCIA LOCAL</p>
+                      <p className="text-sm font-medium text-slate-800 mt-1">{ruta}</p>
+                    </div>
+                    <button
+                      onClick={() => toggleSeleccion({ tipo: 'rutaComunitaria', nombre: ruta, icono: '🤝' })}
+                      className={`mt-3 w-full px-2 py-1 rounded-md text-xs font-medium border ${estaAgregado({ tipo: 'rutaComunitaria', nombre: ruta }) ? 'bg-teal-600 text-white border-teal-600' : 'bg-white hover:bg-teal-50 border-teal-300 text-teal-700'}`}
+                    >
+                      {estaAgregado({ tipo: 'rutaComunitaria', nombre: ruta }) ? 'Agregado a mi ruta' : 'Agregar a mi ruta'}
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
           {/* Talleres */}
           {Array.isArray(datos.talleres) && datos.talleres.length > 0 && (
             <div className={`${theme.card} rounded-2xl p-5 shadow border border-black/5`}>

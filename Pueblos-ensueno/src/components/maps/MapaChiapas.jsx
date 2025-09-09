@@ -76,18 +76,34 @@ export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
   // --- FIN LÓGICA PARA MÚSICA DE FONDO ---
 
 
-  const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
+const getInitialFormDataChiapas = () => {
+  try {
+    const draft = JSON.parse(localStorage.getItem("itinerario") || "{}");
+    // Solo usar el borrador si pertenece a Chiapas.
+    if (draft.estado === "Chiapas") {
+      return {
+        dias: '',
+        tipo: '',
+        lugarInicio: draft.lugarInicio || '',
+        ultimoLugar: '',
+        intereses: '',
+        mes: draft.mes || '',
+        email: '',
+        modoDestino: (draft.modoDestino === 'automatico' ? 'auto' : (draft.modoDestino || ''))
+      };
+    }
+  } catch (e) {
+    console.error("Error al leer el borrador del itinerario:", e);
+  }
 
-  const [formData, setFormData] = useState({
-    dias: '',
-    tipo: '',
-    lugarInicio: itinerarioPersistido?.lugarInicio || '',
-    ultimoLugar: '',
-    intereses: '',
-    mes: itinerarioPersistido?.mes || '',
-    email: '',
-    modoDestino: (itinerarioPersistido?.modoDestino === 'automatico' ? 'auto' : (itinerarioPersistido?.modoDestino || ''))
-  });
+  // Si el borrador es de otro estado o hay un error, empezar de cero.
+  return {
+    dias: '', tipo: '', lugarInicio: '', ultimoLugar: '',
+    intereses: '', mes: '', email: '', modoDestino: ''
+  };
+};
+
+const [formData, setFormData] = useState(getInitialFormDataChiapas);
 
 
   const [errorEvento, setErrorEvento] = useState([]);
@@ -292,17 +308,7 @@ path.addEventListener('click', () => navigate(`/chiapas/municipio/${encodeURICom
           const presupuestoMXN = tipoPresupuestoADinero(formData.tipo);
           
           let { lugarInicio, ultimoLugar } = formData;
-if (formData.modoDestino !== 'manual') {
-    const it = JSON.parse(localStorage.getItem("itinerario") || "{}");
-    if (it?.destino) {
-        lugarInicio = it.lugarInicio || it.destino;
-        ultimoLugar = it.destino;
-    } else {
-        const sugerencia = sugerirRuta({});
-        lugarInicio = lugarInicio || sugerencia.inicio;
-        ultimoLugar = ultimoLugar || sugerencia.fin;
-    }
-}
+
 
 
 const diasNum = Math.max(1, parseInt(formData.dias, 10) || 1);
@@ -315,35 +321,36 @@ try {
   municipiosInteres = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas")) || [];
 } catch { municipiosInteres = []; }
 
-if (formData.modoDestino === "auto" && municipiosInteres.length >= 2) {
-  // ruta automática con varios municipios marcados
-  diasData = buildDiasDataDesdeMultiplesSelecciones({
-    municipios: municipiosInteres,
-    dias: diasNum,
-    mes: formData.mes
-  });
-  if (!lugarInicio) lugarInicio = municipiosInteres[0];
-  if (!ultimoLugar) ultimoLugar = municipiosInteres[1];
-} else if (formData.modoDestino === "auto" && lugarInicio) {
-  // automática con un solo municipio marcado/definido
+// ✅ LÓGICA CORREGIDA Y PRIORIZADA
+if ((formData.modoDestino === "auto") && lugarInicio) {
+  // Prioridad 1: El usuario viene de "Me interesa", quiere un enfoque local.
   diasData = buildDiasDataDesdeSelecciones({
     municipio: lugarInicio,
-    dias: diasNum,
+    dias: formData.dias,
     mes: formData.mes
   });
   if (!ultimoLugar) ultimoLugar = lugarInicio;
+
+} else if (municipiosInteres.length >= 2) {
+  // Prioridad 2: Si no es modo auto, pero hay varios intereses, se crea una ruta multi-destino.
+  diasData = buildDiasDataDesdeMultiplesSelecciones({
+    municipios: municipiosInteres,
+    dias: formData.dias,
+    mes: formData.mes
+  });
+  if (!lugarInicio) lugarInicio = municipiosInteres[0];
+  if (!ultimoLugar) ultimoLugar = municipiosInteres[municipiosInteres.length - 1];
+
 } else if (!lugarInicio || !ultimoLugar) {
-  // fallback a sugerencia
+  // Prioridad 3: Fallback a sugerencia si no hay nada definido.
   const sugerencia = sugerirRuta({ mes: formData.mes, intereses: interesesArr, tipo: formData.tipo });
   lugarInicio = lugarInicio || sugerencia.inicio;
   ultimoLugar = ultimoLugar || sugerencia.fin;
   actividadesSugeridas = sugerencia.actividades;
   eventosMes = sugerencia.eventosMes;
 }
-
-
 const payload = {
-  estado,
+  estado, // 'Chiapas'
   dias: `${fechaInicio} a ${fechaFin}`,
   presupuesto: presupuestoMXN,
   monedas: convertirMonedas(presupuestoMXN),

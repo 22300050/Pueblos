@@ -58,18 +58,34 @@ function MapaTabasco({ onRegresar, estado, eventos }) {
 
 
 // Leer mes guardado en localStorage al iniciar
-const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
+const getInitialFormDataTabasco = () => {
+  try {
+    const draft = JSON.parse(localStorage.getItem("itinerario") || "{}");
+    // Solo usar el borrador si pertenece a Tabasco o si no tiene estado definido.
+    if (draft.estado === "Tabasco" || !draft.estado) {
+      return {
+        dias: '',
+        tipo: '',
+        lugarInicio: draft.lugarInicio || '',
+        ultimoLugar: '',
+        intereses: '',
+        mes: draft.mes || '',
+        email: '',
+        modoDestino: (draft.modoDestino === 'automatico' ? 'auto' : (draft.modoDestino || ''))
+      };
+    }
+  } catch (e) {
+    console.error("Error al leer el borrador del itinerario:", e);
+  }
 
-const [formData, setFormData] = useState({
-  dias: '',
-  tipo: '',
-  lugarInicio: itinerarioPersistido?.lugarInicio || '',
-  ultimoLugar: '',
-  intereses: '',
-  mes: itinerarioPersistido?.mes || '',
-  email: '',
- modoDestino: (itinerarioPersistido?.modoDestino === 'automatico' ? 'auto': (itinerarioPersistido?.modoDestino || ''))
-});
+  // Si el borrador es de otro estado o hay un error, empezar de cero.
+  return {
+    dias: '', tipo: '', lugarInicio: '', ultimoLugar: '',
+    intereses: '', mes: '', email: '', modoDestino: ''
+  };
+};
+
+const [formData, setFormData] = useState(getInitialFormDataTabasco);
 
 
   const [eventoIndex, setEventoIndex] = useState(0);
@@ -605,8 +621,19 @@ const ItinerarioForm = () => {
   } catch { municipiosInteres = []; }
 
   // Si el usuario tiene 2+ municipios marcados, construye el plan con AMBOS/VARIOS
-  if (municipiosInteres.length >= 2) {
-    // fija origen/destino razonables si faltan
+//...
+  // ✅ CORRECCIÓN: Primero revisamos si la intención es un viaje de enfoque local.
+  if ((formData.modoDestino === "auto") && lugarInicio) {
+    // Esta condición ahora tiene prioridad y se ejecutará correctamente.
+    diasData = buildDiasDataDesdeSelecciones({
+      municipio: lugarInicio,
+      dias: formData.dias,
+      mes: formData.mes
+    });
+    ultimoLugar = ultimoLugar || lugarInicio;
+
+  } else if (municipiosInteres.length >= 2) {
+    // Esta lógica solo se ejecutará si el modo NO es "auto", es decir, un viaje multi-destino intencional.
     if (!lugarInicio)  lugarInicio  = municipiosInteres[0];
     if (!ultimoLugar)  ultimoLugar  = municipiosInteres[municipiosInteres.length - 1];
 
@@ -615,16 +642,9 @@ const ItinerarioForm = () => {
       dias: formData.dias,
       mes: formData.mes
     });
-  } else if ((formData.modoDestino === "auto") && lugarInicio) {
-    // caso tradicional: solo 1 municipio
-    diasData = buildDiasDataDesdeSelecciones({
-      municipio: lugarInicio,
-      dias: formData.dias,
-      mes: formData.mes
-    });
-    ultimoLugar = ultimoLugar || lugarInicio;
+    
   } else if (!lugarInicio || !ultimoLugar) {
-    // sugerencia fallback
+    // La sugerencia fallback sigue funcionando igual.
     const sugerencia = sugerirRuta({
       mes: formData.mes,
       intereses: interesesArr,
@@ -635,6 +655,7 @@ const ItinerarioForm = () => {
     actividadesSugeridas = sugerencia.actividades;
     eventosMes = sugerencia.eventosMes;
   }
+//...
 
   if (actividadesSugeridas.length === 0 && (!diasData || diasData.length === 0)) {
     // al menos una actividad descriptiva
