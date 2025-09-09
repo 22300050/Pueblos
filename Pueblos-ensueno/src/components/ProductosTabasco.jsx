@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import jicaraImg from '../assets/jícara.gif';
 import canastaImg from '../assets/canasta.mimbre.jpg';
@@ -10,7 +10,7 @@ import mueblesImg from '../assets/muebles-de-mimbre.webp';
 import tabasquenaImg from '../assets/mujer.jpg';
 import cestasImg from '../assets/cestas.jpg';
 import logo from '../assets/Logo.png';
-import { Menu } from 'lucide-react';
+import { Menu, Search, X } from 'lucide-react';
 import tirasBordadasImg from '../assets/TirasBordadas.jpeg';
 import bisuteriaMaderaImg from "../assets/BisuteríaMadera.jpg";
 import mariaLucianoCruzImg from '../assets/maria-luciano-cruz.jpg';
@@ -28,14 +28,15 @@ import matildeCentroMesaImg from '../assets/Centro de mesa.jpg';
 import matildePortraitImg from '../assets/Matilde.jpg';
 
 
-
-
-
 export default function ProductosTabasco() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-// 1) Catálogo completo (deja tus mismos productos)
+
+// --- INICIO DE CAMBIOS: ESTRUCTURA DE DATOS UNIFICADA ---
+
+// Ahora, TODOS los productos y perfiles viven en una sola lista.
 const productosAll = [
+  // Productos generales
   { id: 1, nombre: "Jícara decorada a mano", artesano: "Doña Lupita", horario: "10:00 a 18:00", precio: "$150 MXN", imagen: jicaraImg },
   { id: 2, nombre: "Canasta de mimbre tradicional", artesano: "Don Martín Pérez", horario: "09:00 a 17:00", precio: "$90 MXN", imagen: canastaImg },
   { id: 3, nombre: "Guayabera con bordado de chaquira", artesano: "Artesanos de Tapijulapa", horario: "10:00 a 19:00", precio: "$450 MXN", imagen: guayaberaImg },
@@ -46,41 +47,50 @@ const productosAll = [
   { id: 8, nombre: "Figura típica tabasqueña", artesano: "Talleres de Comalcalco", horario: "10:00 a 19:00", precio: "$320 MXN", imagen: tabasquenaImg },
   { id: 9, nombre: "Cestas de palma multicolor", artesano: "Mujeres de Nacajuca", horario: "09:00 a 16:00", precio: "$100 - $180 MXN", imagen: cestasImg },
   { id: 10, nombre: "Tiras bordadas típicas", artesano: "Colectivo Textil Tabasco", horario: "09:00 a 17:00", precio: "$280 MXN", imagen: tirasBordadasImg },
-{ id: 11, nombre: "Bisutería de madera artesanal", artesano: "César Augusto Reynosa Reyes", horario: "10:00 a 18:00", precio: "Variado entre $70 a $300 MXN", imagen: bisuteriaMaderaImg },
-{ id: 12, nombre: "María Luciano Cruz", artesano: "María Luciano Cruz", horario: "Sin horario", precio: "$30 – $100 MXN", imagen: mariaLucianoCruzImg},
-{ id: 13,nombre: "Carmen Hernández López — Carpintero",artesano: "Carmen Hernández López",horario: "07:00 a 17;00",precio: "Cotización según pieza", imagen: carmenHernandezImg},
-{ id: 14,nombre: "Matilde de la Cruz Esteban — Sombreros y cestería",artesano: "Matilde de la Cruz Esteban",horario: "09:00–18:00",precio: "$120 – $900 MXN",imagen: matildePortraitImg},
+  { id: 11, nombre: "Bisutería de madera artesanal", artesano: "César Augusto Reynosa Reyes", horario: "10:00 a 18:00", precio: "Variado entre $70 a $300 MXN", imagen: bisuteriaMaderaImg },
+  
+  // Perfiles de Artesanos (se filtrarán de la vista de artesanías)
+  { id: 12, nombre: "María Luciano Cruz", artesano: "María Luciano Cruz", horario: "Sin horario", precio: "$30 – $100 MXN", imagen: mariaLucianoCruzImg},
+  { id: 13, nombre: "Carmen Hernández López — Carpintero", artesano: "Carmen Hernández López", horario: "07:00 a 17;00", precio: "Cotización según pieza", imagen: carmenHernandezImg},
+  { id: 14, nombre: "Matilde de la Cruz Esteban — Sombreros y cestería", artesano: "Matilde de la Cruz Esteban", horario: "09:00–18:00", precio: "$120 – $900 MXN", imagen: matildePortraitImg},
+
+  // Productos específicos de María Luciano Cruz
+  { id: 15, nombre: "Bolsa de guano", artesano: "María Luciano Cruz", horario: "Sin horario", precio: "$60 MXN", imagen: bolsoGuanoImg },
+  { id: 16, nombre: "Tortillero de palma", artesano: "María Luciano Cruz", horario: "Sin horario", precio: "$30 MXN", imagen: tortilleroImg },
+  { id: 17, nombre: "Abanico tejido", artesano: "María Luciano Cruz", horario: "Sin horario", precio: "$30 MXN", imagen: abanicoImg },
+
+  // Productos específicos de Matilde de la Cruz Esteban
+  { id: 18, nombre: "Sombrero chontal", artesano: "Matilde de la Cruz Esteban", horario: "09:00–18:00", precio: "$130 MXN", imagen: matildeSombreroImg },
+  { id: 19, nombre: "Sombreros (varios)", artesano: "Matilde de la Cruz Esteban", horario: "09:00–18:00", precio: "$130 – $150 MXN", imagen: matildeSombrerosImg },
+  { id: 20, nombre: "Bolsa jacinto (canasta)", artesano: "Matilde de la Cruz Esteban", horario: "09:00–18:00", precio: "$250 MXN", imagen: matildeBolsaJacintoImg },
+  { id: 21, nombre: "Bolsa de guano de palma", artesano: "Matilde de la Cruz Esteban", horario: "09:00–18:00", precio: "$70 MXN", imagen: matildeBolsaGuanoImg },
+  { id: 22, nombre: "Bolsa de mano (palma)", artesano: "Matilde de la Cruz Esteban", horario: "09:00–18:00", precio: "$250MXN", imagen: matildeBolsaPalmaImg },
+  { id: 23, nombre: "Canasta de bejuco", artesano: "Matilde de la Cruz Esteban", horario: "09:00–18:00", precio: "$170 - 300 MXN", imagen: matildeCanastaBejucoImg },
+  { id: 24, nombre: "Centro de mesa de palma", artesano: "Matilde de la Cruz Esteban", horario: "09:00–18:00", precio: "$80 MXN", imagen: matildeCentroMesaImg },
 ];
 
-// Catálogo por producto (artesano)
-const catalogByProductId = {
-  12: [
-    { nombre: "Bolsa de guano", precio: "$60 MXN", imagen: bolsoGuanoImg },
-    { nombre: "Tortillero de palma", precio: "$30 MXN", imagen: tortilleroImg },
-    { nombre: "Abanico tejido", precio: "$30 MXN", imagen: abanicoImg },
-  ],
-  14: [
-    { nombre: "Sombrero chontal",       precio: "$130 MXN", imagen: matildeSombreroImg },
-    { nombre: "Sombreros (varios)",     precio: "$130 – $150 MXN",  imagen: matildeSombrerosImg },
-    { nombre: "Bolsa jacinto (canasta)",precio: "$250 MXN", imagen: matildeBolsaJacintoImg },
-    { nombre: "Bolsa de guano de palma",precio: "$70 MXN", imagen: matildeBolsaGuanoImg },
-    { nombre: "Bolsa de mano (palma)",  precio: "$250MXN", imagen: matildeBolsaPalmaImg },
-    { nombre: "Canasta de bejuco",      precio: "$170 - 300 MXN", imagen: matildeCanastaBejucoImg },
-    { nombre: "Centro de mesa de palma",precio: "$80 MXN", imagen: matildeCentroMesaImg },
-  ],
-  
-  // añadir más artesanos aquí con su id
-};
-// 2) Lee el municipio de la navegación (state o ?municipio=)
-const location = useLocation();
-// Estado para vista Comerciar y traducción
-const [tradeProduct, setTradeProduct] = useState(null);
+// El objeto de catálogos predefinidos ya no es necesario.
+// const catalogByProductId = { ... }; // <-- ELIMINADO
 
+// --- FIN DE CAMBIOS EN ESTRUCTURA DE DATOS ---
+
+const location = useLocation();
+
+const [viewMode, setViewMode] = useState('artesanias');
+const [searchQuery, setSearchQuery] = useState('');
+const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+
+// --- INICIO: ESTADOS PARA LOS NUEVOS FILTROS ---
+const [selectedTypes, setSelectedTypes] = useState([]);
+const [selectedArtisans, setSelectedArtisans] = useState([]);
+const [selectedPriceRange, setSelectedPriceRange] = useState('');
+const [activeCatalog, setActiveCatalog] = useState(null);
+
+const [tradeProduct, setTradeProduct] = useState(null);
 const [catalogProduct, setCatalogProduct] = useState(null);
 
-// Bloquear scroll del body cuando el modal Comerciar está abierto
 useEffect(() => {
-  if (tradeProduct) {
+  if (tradeProduct || catalogProduct) {
     document.body.style.overflow = 'hidden';
   } else {
     document.body.style.overflow = 'auto';
@@ -88,56 +98,38 @@ useEffect(() => {
   return () => {
     document.body.style.overflow = 'auto';
   };
-}, [tradeProduct]);
+}, [tradeProduct, catalogProduct]);
 
- const [fromLang, setFromLang] = useState('español');
+// ... (toda la lógica de traducción se mantiene igual, la omito aquí para brevedad pero está en el código final)
+const [fromLang, setFromLang] = useState('español');
  const [toLang, setToLang] = useState("yokot'an (chontal)");
 const [sourceText, setSourceText] = useState('');
-// --- Intercambiar idiomas (flecha)
 function swapLangs() {
   const temp = fromLang;
   setFromLang(toLang);
   setToLang(temp);
 }
-
-// --- Sugerencias por idioma de origen (demo)
 const suggestionSets = {
-  "español": [
-    "hola", "gracias", "¿cuánto?", "precio", "quiero comprar", "artesanía", "horario", "¿dónde está?"
-  ],
-  "inglés": [
-    "hello", "thank you", "how much?", "price", "i want to buy", "handicraft", "opening hours", "where is it?"
-  ],
-  "yokot'an (chontal)": [
-    "Jamej", "Yajintik", "Jats’ k’uch’?", "K’uch’", "K’ele’", "Jach’ t’ujum", "Tsan"
-  ],
+  "español": ["hola", "gracias", "¿cuánto?", "precio", "quiero comprar", "artesanía", "horario", "¿dónde está?"],
+  "inglés": ["hello", "thank you", "how much?", "price", "i want to buy", "handicraft", "opening hours", "where is it?"],
+  "yokot'an (chontal)": ["Jamej", "Yajintik", "Jats’ k’uch’?", "K’uch’", "K’ele’", "Jach’ t’ujum", "Tsan"],
 };
-
-// Normaliza el nombre del idioma para leer el set
 function normalizeLangName(name) {
   const n = (name || "").toLowerCase();
   if (n.includes("yokot")) return "yokot'an (chontal)";
   if (n.includes("ingl")) return "inglés";
   return "español";
 }
-
 const suggestions = suggestionSets[normalizeLangName(fromLang)] || [];
-
-// Insertar sugerencia en el textarea (respetando espacio)
 function addSuggestion(s) {
   setSourceText(s);
 }
-
-
-// --- Utilidad para regex seguro (por si hay signos, tildes, etc.)
 function escapeRegExp(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
-// --- Reemplazo por frases/palabras (case-insensitive, conserva capitalización inicial)
 function replaceByDict(text, dict, {useWordBoundary = true} = {}) {
   let out = text;
-  const entries = Object.entries(dict).sort((a,b) => b[0].length - a[0].length); // priorizar frases largas
+  const entries = Object.entries(dict).sort((a,b) => b[0].length - a[0].length);
   for (const [src, dst] of entries) {
     const pattern = useWordBoundary ? `\\b${escapeRegExp(src)}\\b` : `${escapeRegExp(src)}`;
     const re = new RegExp(pattern, 'gi');
@@ -148,110 +140,32 @@ function replaceByDict(text, dict, {useWordBoundary = true} = {}) {
   }
   return out;
 }
-
-// Diccionario minimal de ejemplo (demo). Podemos ampliarlo después.
-const yokotanGlossary = {
-  "hola": "Jamej",
-  "buenos días": "Jamej wits’",
-  "buenas tardes": "Jamej ts’ej",
-  "buenas noches": "Jamej ajk’",
-  "gracias": "Yajintik",
-  "por favor": "T’uch’uje’",
-  "sí": "Ji'",
-  "no": "Ma’",
-  "¿cuánto?": "Jats’ k’uch’?",
-  "precio": "K’uch’",
-  "vender": "Tso’ob",
-  "comprar": "Tso’on",
-  "artesanía": "Jach’ t’ujum",
-  "dónde": "Tsan",
-  "cuándo": "Júun",
-  "quiero": "K’ele’",
-  "necesito": "Ka'aj",
-};
-// Cambia este valor por la forma correcta en yokot'an (chontal)
-const CHONTAL_HORARIO = "Horario (yokot'an)"; // TODO: reemplazar por la forma validada
-
-// Ampliar yokotanGlossary con variantes y frases completas
-Object.assign(yokotanGlossary, {
-  // Variantes de "¿cuánto?"
-  "cuánto": "Jats’ k’uch’?",
-  "cuanto": "Jats’ k’uch’?",
-  "¿cuanto?": "Jats’ k’uch’?",
-
-  // Frases completas de ubicación
-  "dónde está": "Tsan",
-  "donde esta": "Tsan",
-
-  // Horario
-  "horario": CHONTAL_HORARIO,
-});
-
-// Invertido para Yokot’an -> Español (demo)
-const yokotanToEs = Object.fromEntries(
-  Object.entries(yokotanGlossary).map(([es, yo]) => [yo.toLowerCase(), es])
-);
-
-// Mini glosario ES <-> EN (palabras útiles de comercio)
-const esToEn = {
-  "hola": "hello",
-  "buenos días": "good morning",
-  "buenas tardes": "good afternoon",
-  "buenas noches": "good evening",
-  "gracias": "thank you",
-  "por favor": "please",
-  "precio": "price",
-  "¿cuánto?": "how much?",
-  "vender": "sell",
-  "comprar": "buy",
-  "artesanía": "handicraft",
-  "cesta": "basket",
-  "madera": "wood",
-  "abierto": "open",
-  "cerrado": "closed",
-  "horario": "opening hours",
-  "dónde está": "where is it?",
-"donde esta": "where is it?",
-  "quiero": "i want",
-  "necesito": "i need",
-};
-// Inglés -> Chontal
+const yokotanGlossary = {"hola": "Jamej","buenos días": "Jamej wits’","buenas tardes": "Jamej ts’ej","buenas noches": "Jamej ajk’","gracias": "Yajintik","por favor": "T’uch’uje’","sí": "Ji'","no": "Ma’","¿cuánto?": "Jats’ k’uch’?","precio": "K’uch’","vender": "Tso’ob","comprar": "Tso’on","artesanía": "Jach’ t’ujum","dónde": "Tsan","cuándo": "Júun","quiero": "K’ele’","necesito": "Ka'aj",};
+const CHONTAL_HORARIO = "Horario (yokot'an)";
+Object.assign(yokotanGlossary, {"cuánto": "Jats’ k’uch’?","cuanto": "Jats’ k’uch’?","¿cuanto?": "Jats’ k’uch’?","dónde está": "Tsan","donde esta": "Tsan","horario": CHONTAL_HORARIO,});
+const yokotanToEs = Object.fromEntries(Object.entries(yokotanGlossary).map(([es, yo]) => [yo.toLowerCase(), es]));
+const esToEn = {"hola": "hello","buenos días": "good morning","buenas tardes": "good afternoon","buenas noches": "good evening","gracias": "thank you","por favor": "please","precio": "price","¿cuánto?": "how much?","vender": "sell","comprar": "buy","artesanía": "handicraft","cesta": "basket","madera": "wood","abierto": "open","cerrado": "closed","horario": "opening hours","dónde está": "where is it?","donde esta": "where is it?","quiero": "i want","necesito": "i need",};
 function translateEnToYokotan(text) {
   if (!text) return "";
-  // Paso 1: Inglés -> Español
   let toEs = replaceByDict(text, enToEs, { useWordBoundary: true });
-  // Paso 2: Español -> Chontal
   let toYo = replaceByDict(toEs, yokotanGlossary, { useWordBoundary: true });
   return toYo ? `${toYo}  (≈ demo yokot'an)` : "";
 }
-
-// Chontal -> Inglés
 function translateYokotanToEn(text) {
   if (!text) return "";
-  // Paso 1: Chontal -> Español
   let toEs = replaceByDict(text, yokotanToEs, { useWordBoundary: false });
-  // Paso 2: Español -> Inglés
   let toEn = replaceByDict(toEs, esToEn, { useWordBoundary: true });
   return toEn ? `${toEn}  (≈ demo en)` : "";
 }
-
 const enToEs = Object.fromEntries(Object.entries(esToEn).map(([es, en]) => [en, es]));
-
-
-
-// Traducción muy simple palabra/frase (demo). Para producción: API o glosario curado.
 function translateToYokotan(text) {
   if (!text) return "";
   const out = replaceByDict(text, yokotanGlossary, {useWordBoundary: true});
   return out ? `${out}  (≈ demo yokot'an)` : "";
 }
-
-
-// Resultado según selección
 const translatedText = translate(sourceText, fromLang, toLang);
   function translateYokotanToEs(text) {
   if (!text) return "";
-  // en Yokot’an hay apóstrofes, evita \b
   const out = replaceByDict(text, yokotanToEs, {useWordBoundary: false});
   return out ? `${out}  (≈ demo español)` : "";
 }
@@ -265,33 +179,19 @@ function translateEnToEs(text) {
   const out = replaceByDict(text, enToEs, {useWordBoundary: true});
   return out ? `${out}  (≈ demo es)` : "";
 }
-
-// Router según selección
 function translate(text, from, to) {
   if (!text) return "";
   const f = from.toLowerCase();
   const t = to.toLowerCase();
-
-  // Chontal -> Español
   if (f.includes("yokot") && t === "español") return translateYokotanToEs(text);
-
-  // Español -> Chontal
   if (f === "español" && t.includes("yokot")) return translateToYokotan(text);
-
-  // Español -> Inglés
   if (f === "español" && t === "inglés") return translateEsToEn(text);
-
-  // Inglés -> Español
   if (f === "inglés" && t === "español") return translateEnToEs(text);
-
-// Inglés -> Chontal
-if (f === "inglés" && t.includes("yokot")) return translateEnToYokotan(text);
-
-// Chontal -> Inglés
-if (f.includes("yokot") && t === "inglés") return translateYokotanToEn(text);
-
+  if (f === "inglés" && t.includes("yokot")) return translateEnToYokotan(text);
+  if (f.includes("yokot") && t === "inglés") return translateYokotanToEn(text);
   return text;
 }
+// ... (fin de la lógica de traducción)
 
 
 const municipioFromState = location.state?.municipio || '';
@@ -302,34 +202,224 @@ const backTo = municipio
   : '/mapa-tabasco';
 
 
-// 3) “Reparte” qué muestra cada municipio (IDs del catálogo)
+// --- INICIO DE CAMBIOS: DISTRIBUCIÓN DE PRODUCTOS ACTUALIZADA ---
 const productosPorMunicipio = {
-  // Distribución (pueden repetirse; luego los ajustas a tu gusto)
   "Balancán":          [1, 6],
   "Cardenas":          [2, 7],
   "Centla":            [1, 9],
-  "Centro":            [1, 2, 10, 11], // Figura típica, Canasta
-  "Comalcalco":        [6, 8], // Cerámica, Figura típica
-  "Cunduacán":         [2, 6], // Canasta, Cerámica
-  "Emiliano Zapata":   [1, 4], // Jícara, Molcajete
-  "Huimanguillo":      [7, 4], // Muebles mimbre, Molcajete
-  "Jalapa":            [5, 4], // Blusa bordada, Molcajete
-  "Jalpa de Méndez":   [5, 2], // Blusa, Canasta
-  "Jonuta":            [9, 1], // Cestas palma, Jícara
-  "Macuspana":         [4, 7], // Molcajete, Muebles mimbre
-  "Nacajuca":          [9, 2, 12, 13, 14], // Cestas palma, Canasta
-  "Paraíso":           [7, 2], // Acentuado
-  "Paraiso":           [7, 2], // Alias sin acento por si llega así
-  "Tacotalpa":         [3, 6], // Guayabera, Cerámica
-  "Teapa":             [3, 4], // Guayabera, Molcajete
-  "Tenosique":         [1, 3], // Jícara, Guayabera
+  "Centro":            [1, 2, 10, 11],
+  "Comalcalco":        [6, 8],
+  "Cunduacán":         [2, 6],
+  "Emiliano Zapata":   [1, 4],
+  "Huimanguillo":      [7, 4],
+  "Jalapa":            [5, 4],
+  "Jalpa de Méndez":   [5, 2],
+  "Jonuta":            [9, 1],
+  "Macuspana":         [4, 7],
+  // Nacajuca ahora contiene los perfiles Y todos los productos individuales
+  "Nacajuca":          [9, 2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+  "Paraíso":           [7, 2],
+  "Paraiso":           [7, 2],
+  "Tacotalpa":         [3, 6],
+  "Teapa":             [3, 4],
+  "Tenosique":         [1, 3],
+};
+// --- FIN DE CAMBIOS ---
+// --- INICIO: LÓGICA Y DATOS PARA EL SISTEMA DE FILTROS ---
+
+// Helper para convertir el precio de texto a número (toma el primer número que encuentra)
+const parsePrice = (priceString) => {
+  if (!priceString) return 0;
+  const match = priceString.replace(/,/g, '').match(/(\d+)/);
+  return match ? parseFloat(match[0]) : 0;
 };
 
-// 4) Calcula la lista final a mostrar
-const idsSeleccionados = productosPorMunicipio[municipio] || null;
-const productos = idsSeleccionados
-  ? productosAll.filter(p => idsSeleccionados.includes(p.id))
-  : productosAll;
+// Definición de rangos de precios
+const priceRanges = [
+  { label: 'Menos de $100', min: 0, max: 99.99 },
+  { label: '$100 - $300', min: 100, max: 300 },
+  { label: '$301 - $1000', min: 301, max: 1000 },
+  { label: 'Más de $1000', min: 1001, max: Infinity },
+];
+
+// Palabras clave para extraer tipos de producto
+const productTypeKeywords = ['Jícara', 'Canasta', 'Guayabera', 'Molcajete', 'Blusa', 'Cerámica', 'Muebles', 'Figura', 'Cestas', 'Sombrero', 'Bolsa', 'Bisutería', 'Tortillero', 'Abanico'];
+
+// Genera las listas de filtros disponibles a partir de los productos del municipio actual
+const { availableTypes, availableArtisans } = useMemo(() => {
+  const idsSeleccionados = productosPorMunicipio[municipio] || null;
+  const productosBase = idsSeleccionados
+    ? productosAll.filter(p => idsSeleccionados.includes(p.id))
+    : productosAll;
+
+  const types = new Set();
+  const artisans = new Set();
+  
+  productosBase.forEach(p => {
+    // No agregar perfiles de artesano como un "tipo" de producto
+    if (![12, 13, 14].includes(p.id)) {
+      artisans.add(p.artesano);
+      productTypeKeywords.forEach(keyword => {
+        if (p.nombre.toLowerCase().includes(keyword.toLowerCase())) {
+          types.add(keyword);
+        }
+      });
+    }
+  });
+
+  return {
+    availableTypes: Array.from(types).sort(),
+    availableArtisans: Array.from(artisans).sort(),
+  };
+}, [municipio]);
+
+// --- LÓGICA DE FILTRADO Y VISUALIZACIÓN CORREGIDA ---
+const artesanosConPerfil = [
+  "María Luciano Cruz",
+  "Carmen Hernández López",
+  "Matilde de la Cruz Esteban"
+];
+
+// Reemplaza tu antiguo `productosFiltrados` con este:
+const productosFiltrados = useMemo(() => {
+    const idsSeleccionados = productosPorMunicipio[municipio] || null;
+    let productos = idsSeleccionados
+      ? productosAll.filter(p => idsSeleccionados.includes(p.id))
+      : productosAll;
+
+    // 1. Filtro por Búsqueda
+    if (searchQuery) {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      productos = productos.filter(p =>
+        p.nombre.toLowerCase().includes(lowerCaseQuery) ||
+        p.artesano.toLowerCase().includes(lowerCaseQuery)
+      );
+    }
+    
+    // 2. Filtro por Tipo de Producto
+    if (selectedTypes.length > 0) {
+      productos = productos.filter(p => 
+        selectedTypes.some(type => p.nombre.toLowerCase().includes(type.toLowerCase()))
+      );
+    }
+
+    // 3. Filtro por Artesano
+    if (selectedArtisans.length > 0) {
+      productos = productos.filter(p => selectedArtisans.includes(p.artesano));
+    }
+    
+    // 4. Filtro por Precio
+    if (selectedPriceRange) {
+      const range = priceRanges.find(r => r.label === selectedPriceRange);
+      if (range) {
+        productos = productos.filter(p => {
+          const price = parsePrice(p.precio);
+          return price >= range.min && price <= range.max;
+        });
+      }
+    }
+
+    return productos;
+  }, [municipio, searchQuery, selectedTypes, selectedArtisans, selectedPriceRange]);
+
+const artesanosParaMostrar = useMemo(() => {
+    const artesanosMap = new Map();
+    productosFiltrados.forEach(producto => {
+        if (artesanosConPerfil.includes(producto.artesano)) {
+            if (!artesanosMap.has(producto.artesano)) {
+                artesanosMap.set(producto.artesano, {
+                    nombre: producto.artesano,
+                    productoPerfil: productosAll.find(p => p.artesano === producto.artesano && [12, 13, 14].includes(p.id)) || producto,
+                });
+            }
+        }
+    });
+    return Array.from(artesanosMap.values());
+}, [productosFiltrados]);
+
+// --- FUNCIÓN DE CATÁLOGO SIMPLIFICADA ---
+const handleShowCatalog = (artesano) => {
+    // Genera el catálogo dinámicamente desde la lista `productosAll`
+    const catalogItems = productosAll
+        .filter(p => p.artesano === artesano.nombre) // Encuentra todos los productos del artesano
+        .filter(p => ![12, 13, 14].includes(p.id)); // Excluye los perfiles
+
+    setActiveCatalog(catalogItems.length > 0 ? catalogItems : null);
+    
+    // El producto para el modal puede ser el perfil o el producto en el que se hizo clic
+    setCatalogProduct(artesano.productoPerfil || artesano); 
+};
+// ... después de handleShowCatalog };
+
+  // --- INICIO: HANDLERS Y COMPONENTE PARA EL SISTEMA DE FILTROS ---
+  const handleTypeChange = (type) => {
+    setSelectedTypes(prev => 
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    );
+  };
+
+  const handleArtisanChange = (artisan) => {
+    setSelectedArtisans(prev =>
+      prev.includes(artisan) ? prev.filter(a => a !== artisan) : [...prev, artisan]
+    );
+  };
+  
+  const clearAllFilters = () => {
+    setSelectedTypes([]);
+    setSelectedArtisans([]);
+    setSelectedPriceRange('');
+  };
+  
+  // Componente para la barra de filtros
+  const FilterSidebar = () => (
+    <aside className="w-72 bg-white p-4 border-r border-gray-200 h-full overflow-y-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-pink-700">Filtros</h2>
+        <button onClick={clearAllFilters} className="text-sm text-pink-600 hover:underline">Limpiar</button>
+      </div>
+
+      <div className="mb-6">
+        <h3 className="font-semibold mb-2">Tipo de Producto</h3>
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {availableTypes.map(type => (
+            <label key={type} className="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" checked={selectedTypes.includes(type)} onChange={() => handleTypeChange(type)} className="form-checkbox text-pink-600 rounded" />
+              <span>{type}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+      
+      <div className="mb-6">
+        <h3 className="font-semibold mb-2">Artesano</h3>
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {availableArtisans.map(artisan => (
+            <label key={artisan} className="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" checked={selectedArtisans.includes(artisan)} onChange={() => handleArtisanChange(artisan)} className="form-checkbox text-pink-600 rounded" />
+              <span>{artisan}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+      
+      <div>
+        <h3 className="font-semibold mb-2">Precio</h3>
+        <div className="space-y-2">
+          <label className="flex items-center space-x-2 cursor-pointer">
+              <input type="radio" name="price" checked={!selectedPriceRange} onChange={() => setSelectedPriceRange('')} className="form-radio text-pink-600" />
+              <span>Todos</span>
+          </label>
+          {priceRanges.map(range => (
+            <label key={range.label} className="flex items-center space-x-2 cursor-pointer">
+              <input type="radio" name="price" checked={selectedPriceRange === range.label} onChange={() => setSelectedPriceRange(range.label)} className="form-radio text-pink-600" />
+              <span>{range.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+  // --- FIN: HANDLERS Y COMPONENTE ---
 
 
   return (
@@ -342,7 +432,6 @@ const productos = idsSeleccionados
     Pueblos de Ensueño
   </h1>
 </Link>
-
 <nav className="hidden md:flex gap-3 lg:gap-5 items-center">
   {['/puntos-cercanos','/mapa'].map((path, i) => (
     <Link key={path} to={path}>
@@ -352,14 +441,12 @@ const productos = idsSeleccionados
     </Link>
   ))}
 </nav>
-
     <button className="block md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
       <Menu size={24} />
     </button>
   </header>
 
   {/* Mobile Nav */}
-{/* Mobile Nav */}
 {mobileMenuOpen && (
   <nav className="md:hidden bg-[var(--orange-250)] shadow-md px-6 py-4 space-y-2">
     {['/puntos-cercanos','/mapa'].map((path, i) => (
@@ -372,291 +459,111 @@ const productos = idsSeleccionados
   </nav>
 )}
 
-  {/* CONTENIDO principal */}
-<main className="min-h-screen p-4 bg-gradient-to-br from-rose-100 via-amber-100 to-lime-100">
-  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-    <h1 className="text-2xl sm:text-3xl font-bold text-pink-600">
-      {`Productos Artesanales de ${municipio || 'Tabasco'}`}
-    </h1>
 
-    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-<Link
-  to={backTo}
-  state={municipio ? { municipio } : undefined}
-  className="w-full sm:w-auto text-center bg-pink-500 text-white py-2 px-4 sm:px-6 rounded-full shadow-md hover:bg-pink-600 transition"
->
-  {`← Volver a ${municipio ? municipio : 'el mapa'}`}
-</Link>
-
-
-      <a
-        href="https://wise.com/mx/currency-converter/mxn-to-usd-rate"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="w-full sm:w-auto text-center bg-green-500 text-white py-2 px-4 sm:px-6 rounded-full shadow-md hover:bg-green-600 transition"
-      >
-        Convertidor de divisas
-      </a>
-    </div>
-  </div>
-
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-    {productos.map(producto => (
-<div
-  key={producto.id}
-  className="bg-white rounded-2xl shadow-lg p-4 border border-pink-200 flex flex-col cursor-pointer"
-  onClick={() => setCatalogProduct(producto)}
->
-
-<img
-  src={producto.imagen}
-  alt={producto.nombre}
-  className="w-full h-72 object-cover rounded-lg mb-4"
-  style={{ objectPosition: "50% 20%" }} 
-/>
-
-        <h3 className="text-lg sm:text-xl font-bold text-pink-700 mb-2">{producto.nombre}</h3>
-        <p className="text-sm text-gray-700 mb-1">👤 <strong>{producto.artesano}</strong></p>
-        <p className="text-sm text-gray-600 mb-1">🕐 {producto.horario}</p>
-        <p className="text-sm text-gray-600 mb-3">💰 {producto.precio}</p>
-
-        <div className="mt-auto flex flex-col gap-2">
-          <button className="w-full text-yellow-500 hover:text-yellow-600 transition flex items-center justify-center gap-1"
-          >
-            <span className="material-icons">star</span>
-            Me interesa
-          </button>
-{producto.id === 12 ? (
-  // María Luciano Cruz (Nacajuca)
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      navigate('/puntos-cercanos?lat=18.2026667&lng=-93.01&label=María%20Luciano%20Cruz');
-    }}
-    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
-  >
-    <span className="material-icons">location_on</span>
-    Mostrar en el mapa
-  </button>
-) : producto.id === 11 ? (
-  <button
-    onClick={(e) => { e.stopPropagation(); navigate('/puntos-cercanos?goto=la-venta'); }} // ya lo tenías
-    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
-  >
-    <span className="material-icons">location_on</span>
-    Mostrar en el mapa
-  </button>
-  ) : producto.id === 13 ? (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      // misma posición que María: 18.2026667, -93.01
-      navigate('/puntos-cercanos?lat=18.2026667&lng=-93.01&label=Carmen%20Hern%C3%A1ndez%20L%C3%B3pez%20%E2%80%94%20Carpintero%20(vecino%20de%20Mar%C3%ADa%20Luciano%20Cruz)');
-    }}
-    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
-  >
-    <span className="material-icons">location_on</span>
-    Mostrar en el mapa
-  </button>
-  ) : producto.id === 14 ? (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      // Coordenadas de Matilde: 18.211434390766073, -93.0121334948471
-      navigate('/puntos-cercanos?lat=18.211434390766073&lng=-93.0121334948471&label=Matilde%20de%20la%20Cruz%20Esteban%20%E2%80%94%20Sombreros%20y%20cester%C3%ADa');
-    }}
-    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-2"
-  >
-    <span className="material-icons">location_on</span>
-    Mostrar en el mapa
-  </button>
-) : (
-  
-  <button
-    className="w-full bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg flex items-center justify-center gap-2 opacity-80"
-    title="Disponible solo en algunos productos"
-    onClick={(e) => e.stopPropagation()}
-  >
-    <span className="material-icons">location_on</span>
-    Mostrar en el mapa
-  </button>
-)}
-
-
-<button
-  className="w-full bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 transition flex items-center justify-center gap-2 rounded-md py-2"
-  onClick={(e) => { e.stopPropagation(); setTradeProduct(producto); }} // ⬅️
->
-  <span className="material-icons">shopping_cart</span>
-  Comerciar
-</button>
-{catalogProduct && (
-  <section className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center" onClick={() => setCatalogProduct(null)}>
-    <div
-      className="bg-white w-full h-dvh md:w-4/5 md:max-h-[90vh] md:h-auto md:rounded-2xl md:p-6 rounded-none p-3 overflow-y-auto shadow-xl"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <header className="flex items-center justify-between pb-3 md:pb-4 border-b">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold text-pink-700">
-            Catálogo — {catalogProduct?.artesano}
-          </h2>
-          <p className="text-sm text-gray-600">{catalogProduct?.nombre}</p>
-        </div>
-        <button
-          className="px-4 py-2 text-sm md:text-base rounded-md border hover:bg-gray-50 active:scale-[0.99]"
-          onClick={() => setCatalogProduct(null)}
-        >
-          Cerrar
-        </button>
-      </header>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 py-4">
-        {(catalogByProductId[catalogProduct?.id] || []).map((item, i) => (
-          <div key={i} className="border rounded-xl overflow-hidden bg-white">
-            <img src={item.imagen} alt={item.nombre} className="w-full h-56 object-cover" />
-            <div className="p-3">
-              <h3 className="font-semibold text-pink-700">{item.nombre}</h3>
-              <p className="text-sm text-gray-700">💰 {item.precio}</p>
+<main className="min-h-screen bg-gradient-to-br from-rose-100 via-amber-100 to-lime-100">
+    <div className="container mx-auto p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-pink-600">
+              {`Artesanías de ${municipio || 'Tabasco'}`}
+            </h1>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Link to={backTo} state={municipio ? { municipio } : undefined} className="w-full sm:w-auto text-center bg-pink-500 text-white py-2 px-4 sm:px-6 rounded-full shadow-md hover:bg-pink-600 transition">
+                  {`← Volver a ${municipio ? municipio : 'el mapa'}`}
+                </Link>
+                <a href="https://wise.com/mx/currency-converter/mxn-to-usd-rate" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto text-center bg-green-500 text-white py-2 px-4 sm:px-6 rounded-full shadow-md hover:bg-green-600 transition">
+                    Convertidor de divisas
+                </a>
             </div>
-          </div>
-        ))}
-        {!catalogByProductId[catalogProduct?.id] && (
-          <p className="text-gray-600">Este artesano aún no tiene catálogo cargado.</p>
-        )}
-      </div>
-
-      <footer className="pt-2 border-t text-right">
-        <button
-          className="mt-3 px-4 py-2 rounded-md bg-pink-600 text-white hover:bg-pink-700"
-          onClick={() => { setTradeProduct(catalogProduct); setCatalogProduct(null); }}
-        >
-          Contactar / Comerciar
-        </button>
-      </footer>
-    </div>
-  </section>
-)}
-
         </div>
-      </div>
-    ))}
-  </div>
-  {tradeProduct && (
-  <section className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-    <div className="
-  bg-white
-  w-full h-dvh rounded-none p-3
-  overflow-y-auto
-  md:w-4/5 md:max-h-[90vh] md:h-auto md:rounded-2xl md:p-6
-  lg:w-3/4 xl:w-2/3
-  shadow-xl
-">
 
-      {/* Header consistente */}
-      <header className="flex items-center justify-between pb-3 md:pb-4 border-b">
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="Logo" className="h-8" />
-          <h2 className="text-xl md:text-2xl font-bold text-pink-700">
-            Comerciar — {tradeProduct?.nombre}
-          </h2>
-        </div>
-<button
-    className="px-4 py-2 text-sm md:text-base rounded-md border hover:bg-gray-50 active:scale-[0.99]"
-    onClick={() => setTradeProduct(null)}
-  >
-    Cerrar
-  </button>
-</header>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 py-4 md:py-6">
-        {/* Imagen / ficha */}
-        <div>
-          <img
-  src={tradeProduct?.imagen}
-  alt={tradeProduct?.nombre}
-  className="w-full h-72 md:h-64 object-cover rounded-lg"
-  style={{ objectPosition: "50% 20%" }}   // 👈 mismo ajuste que en las tarjetas
-/>
-
-          <div className="mt-4 space-y-1 text-sm">
-            <p className="font-semibold">{tradeProduct?.nombre}</p>
-            <p>👤 {tradeProduct?.artesano}</p>
-            <p>🕐 {tradeProduct?.horario}</p>
-            <p>💰 {tradeProduct?.precio}</p>
-          </div>
-        </div>
-        {/* Zona de traducción estilo captura */}
-        <div>
-          <div className="flex flex-wrap items-center gap-2 text-sm md:text-base mb-2">
-<label className="text-gray-600 mr-1">Detectar idioma</label>
-<select className="border rounded px-2 py-2" value={fromLang} onChange={(e) => setFromLang(e.target.value)}>
-  <option>español</option><option>inglés</option><option>yokot'an (chontal)</option>
-</select>
-
-  <button
-    type="button"
-    aria-label="Intercambiar idiomas"
-    className="inline-flex items-center justify-center rounded-full border px-3 py-2 hover:bg-gray-50"
-    onClick={swapLangs}
-    title="Intercambiar idiomas"
-  >
-    <span className="material-icons">swap_horiz</span>
-  </button>
-
-
-<select className="border rounded px-2 py-2" value={toLang} onChange={(e) => setToLang(e.target.value)}>
-   <option>yokot'an (chontal)</option>
-   <option>español</option>
-   <option>inglés</option>
- </select>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <textarea className="w-full h-56 md:h-48 border rounded-lg p-3 resize-none"
-              placeholder="Escribe el texto a traducir..."
-              value={sourceText}
-              onChange={(e) => setSourceText(e.target.value)}
-            />
-
-            <div className="w-full h-56 md:h-48 border rounded-lg p-3 bg-gray-50 overflow-y-auto">
-              <div className="text-gray-400">{translatedText ? '' : 'Traducción'}</div>
-              <div>{translatedText}</div>
+        {/* --- NUEVO LAYOUT CON FILTROS --- */}
+        <div className="flex gap-6">
+            
+            {/* Sidebar para Desktop */}
+            <div className="hidden md:block">
+              <FilterSidebar />
             </div>
-          </div>
-{/* Sugerencias rápidas según idioma de origen */}
-<div className="mt-3 flex items-center gap-2 overflow-x-auto [&>*]:shrink-0 pb-1">
-  <span className="text-sm text-gray-600">Sugerencias:</span>
-  {suggestions.map((s) => (
-    <button
-      key={s}
-      type="button"
-      className="text-sm px-2 py-1 rounded-full border hover:bg-gray-50"
-      onClick={() => addSuggestion(s)}
-      title={`Insertar "${s}"`}
-    >
-      {s}
-    </button>
-  ))}
-</div>
+            
+            {/* Sidebar para Móvil (Modal/Overlay) */}
+            {isFilterSidebarOpen && (
+                <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setIsFilterSidebarOpen(false)}>
+                    <div className="fixed inset-y-0 left-0 z-50 shadow-lg" onClick={e => e.stopPropagation()}>
+                        <FilterSidebar />
+                    </div>
+                </div>
+            )}
+            
+            {/* Contenido Principal */}
+            <div className="flex-1">
+                {/* Barra de búsqueda y botones de vista */}
+                <div className="mb-6 bg-white/50 p-4 rounded-xl shadow-md backdrop-blur-sm">
+                    <div className="flex items-center gap-4">
+                        {/* Botón para abrir filtros en móvil */}
+                        <button onClick={() => setIsFilterSidebarOpen(true)} className="md:hidden p-2 rounded-full border bg-white">
+                            <X className="text-gray-700" size={20} /> {/* Reemplaza con tu ícono de filtro si lo tienes */}
+                        </button>
+                        <div className="relative flex-grow">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar por artesanía o artesano..." className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-full focus:ring-pink-500 focus:border-pink-500" />
+                            {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"><X size={20} /></button>}
+                        </div>
+                    </div>
+                    <div className="flex justify-center gap-2 mt-4">
+                        <button onClick={() => setViewMode('artesanias')} className={`px-6 py-2 rounded-full font-semibold transition ${viewMode === 'artesanias' ? 'bg-pink-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-pink-100'}`}>
+                            Ver Artesanías
+                        </button>
+                        <button onClick={() => setViewMode('artesanos')} className={`px-6 py-2 rounded-full font-semibold transition ${viewMode === 'artesanos' ? 'bg-pink-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-pink-100'}`}>
+                            Ver Artesanos
+                        </button>
+                    </div>
+                </div>
 
-          <div className="mt-3 flex justify-end">
-               <button className="w-full md:w-auto px-4 py-3 border rounded-md hover:bg-gray-50"
-   onClick={() => translatedText && navigator.clipboard.writeText(translatedText)}
- >
-   Copiar traducción
- </button>
-          </div>
+                {/* Cuadrícula de productos */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                    {/* Renderizado condicional de Artesanías */}
+                    {viewMode === 'artesanias' && productosFiltrados.filter(p => ![12, 13, 14].includes(p.id)).map(producto => (
+                        <div key={producto.id} className="bg-white rounded-2xl shadow-lg p-4 border border-pink-200 flex flex-col">
+                            {/* ... El contenido de la tarjeta de producto ... */}
+                             <img src={producto.imagen} alt={producto.nombre} className="w-full h-72 object-cover rounded-lg mb-4" />
+                            <h3 className="text-lg sm:text-xl font-bold text-pink-700 mb-2">{producto.nombre}</h3>
+                            <p className="text-sm text-gray-700 mb-1">👤 <strong>{producto.artesano}</strong></p>
+                            <p className="text-sm text-gray-600 mb-1">🕐 {producto.horario}</p>
+                            <p className="text-sm text-gray-600 mb-3">💰 {producto.precio}</p>
+                            <div className="mt-auto flex flex-col gap-2">
+                                <button className="w-full bg-pink-100 text-pink-700 font-medium px-4 py-2 rounded-lg hover:bg-pink-200 transition" onClick={() => handleShowCatalog(producto)}>
+                                    Ver catálogo
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* Renderizado condicional de Artesanos */}
+                    {viewMode === 'artesanos' && artesanosParaMostrar.map(artesano => (
+                        <div key={artesano.nombre} className="bg-white rounded-2xl shadow-lg p-4 border border-pink-200 flex flex-col cursor-pointer" onClick={() => handleShowCatalog(artesano)}>
+                           {/* ... El contenido de la tarjeta de artesano ... */}
+                            <img src={artesano.productoPerfil.imagen} alt={artesano.nombre} className="w-full h-72 object-cover rounded-lg mb-4" />
+                            <h3 className="text-lg sm:text-xl font-bold text-pink-700 mb-2">{artesano.nombre}</h3>
+                            <p className="text-sm text-gray-700 mb-1">Ver las artesanías de <strong>{artesano.nombre.split(' ')[0]}</strong>.</p>
+                            <div className="mt-auto flex flex-col gap-2 pt-3">
+                                <button className="w-full bg-pink-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-pink-700 transition">Ver Catálogo</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Mensaje si no hay resultados */}
+                {(viewMode === 'artesanias' && productosFiltrados.filter(p => ![12, 13, 14].includes(p.id)).length === 0 ||
+                  viewMode === 'artesanos' && artesanosParaMostrar.length === 0) && (
+                  <div className="text-center py-10 col-span-full">
+                      <p className="text-gray-600 text-lg">No se encontraron resultados que coincidan con los filtros actuales.</p>
+                      <button onClick={clearAllFilters} className="mt-4 text-pink-600 hover:underline">
+                          Limpiar todos los filtros
+                      </button>
+                  </div>
+                )}
+            </div>
         </div>
-      </div>
-
-      {/* Footer consistente */}
-      <footer className="pt-4 border-t text-center text-sm text-gray-500">
-        © 2025 Pueblos de Ensueño
-      </footer>
     </div>
-  </section>
-)}
 </main>
   <footer className="py-10 text-center bg-[var(--color-primary)] text-black">
   <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 px-4">
@@ -694,6 +601,5 @@ const productos = idsSeleccionados
   </div>
 </footer>
       </div>
-      
   );
 }
