@@ -1,75 +1,56 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Mic, Send, Volume2, VolumeX } from "lucide-react";
 
+// IMPORTANTE: Reemplaza la siguiente línea con tu importación local en tu proyecto:
 import IconoChat from '../../assets/Logos/IconoChat.png';
 
 const IA_ENABLED = true;
 const API_URL = "/api/chat";
 
-// (El resto de la lógica de negocio como NAV_TIPS, KEYWORDS, etc., permanece igual)
-// === Guías de navegación del Home ===
+// === Guías de navegación con redacción mejorada ===
 const NAV_TIPS = [
   {
     id: "mapa",
     label: "Mapa Interactivo",
-    text:
-      "Pulsa **Mapa Interactivo** para ver el mapa de toda la República Mexicana. " +
-      "Pasa el cursor por un estado para ver su nombre y haz clic para entrar. " +
-      "Si eliges **Tabasco**, verás un mapa especial con un panel para armar tu itinerario. " +
-      "En esa vista puedes alternar **SVG/Mapbox** (botón '🗺️ Ver mapa Mapbox') y en móvil alternar **Mapa/Itinerario** o usar **pantalla completa**. " +
-      "Luego, selecciona el estado que te gustaría visitar.",
+    text: "Explora todo México con nuestro **Mapa Interactivo**. Haz clic en cualquier estado para descubrir sus maravillas. ¡Prueba con **Tabasco** para acceder a herramientas especiales y planificar tu ruta perfecta!"
   },
   {
     id: "puntos",
     label: "Puntos cercanos",
-    text:
-      "Pulsa **Puntos cercanos** para ver tu ubicación y recibir avisos cuando estés cerca de puntos de interés o eventos próximos. " +
-      "Desde ahí puedes **probar notificaciones**, **compartir tu ubicación**, o habilitar un **link de ubicación en vivo por 10 minutos** para que te sigan en tiempo real.",
+    text: "Activa **Puntos cercanos** y deja que te avisemos cuando estés cerca de un lugar increíble. También puedes **compartir tu ubicación** o crear un **enlace en vivo** para que tus amigos te sigan durante 10 minutos."
   },
   {
     id: "itinerario",
     label: "Itinerario",
-    text:
-      "Tu **Itinerario** muestra días, presupuesto por día (con conversión a USD/EUR), mes e intereses. " +
-      "Puedes **exportar a PDF**, **guardar el itinerario**, ver **eventos que coinciden con tu mes**, reiniciar todo, y se dibuja la **ruta** en el mapa si marcaste 2+ puntos. " +
-      "Las actividades que agregues desde los municipios se reparten automáticamente entre los días.",
+    text: "Organiza tu viaje soñado con el **Itinerario**. Define tu presupuesto, días y preferencias. Guarda tu plan, **expórtalo a PDF** y mira cómo se traza tu ruta en el mapa. ¡Nosotros ordenamos las actividades por ti!"
   },
   {
     id: "municipio",
     label: "Municipios y detalle",
-    text:
-      "Al hacer clic en un municipio verás su ficha con descripción, sitios top y eventos. " +
-      "Puedes **marcar interés** (se guarda como destino automático), **agregar o quitar actividades** a tu itinerario y filtrar eventos por mes. " +
-      "Desde allí también puedes volver al mapa cuando quieras.",
+    text: "Descubre la magia de cada **Municipio**. Al hacer clic, verás su historia, eventos y lugares imperdibles. **Agrega actividades** a tu itinerario con un solo toque y encuentra eventos que coincidan con tu visita."
   },
   {
     id: "productos",
     label: "Productos artesanales",
-    text:
-      "En **Productos Artesanales** verás un catálogo por municipio con imágenes, artesanos y precios. " +
-      "Incluye botón para **volver** al municipio o mapa, **convertidor de divisas** y un mini **asistente de frases** (ES/EN/Yokot’an) para comerciar mejor con los artesanos.",
+    text: "Encuentra tesoros únicos en la sección de **Productos Artesanales**. Conoce a los artesanos, convierte precios a tu moneda y usa nuestro **asistente de frases** para comunicarte en español, inglés o ¡incluso Yokot’an!"
   },
   {
     id: "guest",
     label: "Explorar como invitado",
-    text:
-      "Pulsa **Invitado** para explorar sin cuenta y ajustar intereses antes de planear. " +
-      "Esto te ayuda a recibir mejores sugerencias en el mapa y el itinerario.",
+    text: "Explora como **Invitado** para descubrir todo lo que ofrecemos sin necesidad de una cuenta. Ajusta tus intereses y recibe sugerencias personalizadas para inspirar tu próximo viaje."
   },
   {
     id: "login",
     label: "Iniciar sesión",
-    text:
-      "Con **Iniciar sesión** accedes a tus datos guardados y continuidad entre sesiones.",
+    text: "Al **Iniciar sesión**, guardamos tu progreso y tus itinerarios para que puedas continuar tu aventura desde cualquier dispositivo, en cualquier momento."
   },
   {
     id: "idioma",
     label: "Cambiar idioma",
-    text:
-      "En el encabezado puedes alternar **ES/EN** con el switch de idioma. " +
-      "El contenido del Home y menús cambia inmediatamente.",
+    text: "Puedes cambiar el **Idioma** de la plataforma en cualquier momento. Busca el selector **ES/EN** en la parte superior de la página para traducir todo el contenido al instante."
   },
 ];
+
 const KEYWORDS = {
   mapa:      ["mapa", "mapa interactivo", "mapa méxico", "mapa mexico"],
   puntos:    ["puntos", "puntos cercanos", "cerca", "cercanos"],
@@ -89,46 +70,41 @@ const getSuggestions = (text) => {
   return NAV_TIPS.filter(t => { const lbl = norm(t.label); return lbl.startsWith(q) || lbl.includes(q); }).slice(0, 5).map(t => ({ id: t.id, label: t.label }));
 };
 const detectLocalTip = (low) => {
-  if (/\bayuda\b.*\b(home|inicio)\b/.test(low)) {
-    const resumen = NAV_TIPS.map(t => `• ${t.label}: ${t.text}`).join("\n\n");
-    return resumen;
+  const ayudaKeywords = ["ayuda", "guia", "inicio", "home", "resumen", "todo"];
+  if (ayudaKeywords.some(k => low.includes(k))) {
+    const resumen = NAV_TIPS.map(t => `• **${t.label}**: ${t.text.replace(/\*\*(.*?)\*\*/g, "$1")}`).join("\n\n");
+    return `¡Claro! Aquí tienes un resumen de lo que puedo hacer por ti:\n\n${resumen}`;
   }
   for (const [id, words] of Object.entries(KEYWORDS)) {
     if (words.some(w => low.includes(w))) {
       const tip = NAV_TIPS.find(t => t.id === id);
-      if (tip) return `${tip.label}: ${tip.text}`;
+      if (tip) return tip.text;
     }
   }
   return null;
 };
 const localRoute = (low) => {
-  if (/(ayuda|guía|guia).*(home|inicio)/i.test(low)) {
-    const resumen = NAV_TIPS.map(t => `• ${t.label}: ${t.text}`).join("\n\n");
-    return resumen;
-  }
-  for (const [id, words] of Object.entries(KEYWORDS)) {
-    if (words.some(w => low.includes(w))) {
-      const tip = NAV_TIPS.find(t => t.id === id);
-      if (tip) return `${tip.label}: ${tip.text}`;
-    }
-  }
-  return "Puedo ayudarte a navegar el Home. Escribe, por ejemplo: “Mapa Interactivo”, “Puntos cercanos”, “Itinerario”, “Municipios”, “Productos”, “Invitado”, “Login”, “Idioma” o “ayuda home”.";
+    return "No entendí muy bien. Recuerda que puedo darte información sobre: **Mapa Interactivo**, **Itinerario**, **Puntos cercanos** y más. También puedes escribir **\"ayuda\"** para ver un resumen.";
 };
 
 
 // --- Componente de Mensaje con soporte para negritas ---
 const ChatMessage = ({ sender, text, avatar }) => {
     const isBot = sender === 'bot';
-
-    // Función para convertir **texto** a <strong>texto</strong>
     const formatText = (inputText) => {
         const boldRegex = /\*\*(.*?)\*\*/g;
-        const parts = inputText.split(boldRegex);
+        // Reemplazar saltos de línea con <br />
+        const withLineBreaks = inputText.replace(/\n/g, '<br />');
+        const parts = withLineBreaks.split(boldRegex);
 
-        return parts.map((part, index) => {
-            // Las partes impares son las que estaban entre asteriscos
-            return index % 2 === 1 ? <strong key={index}>{part}</strong> : part;
+        const content = parts.map((part, index) => {
+            if (index % 2 === 1) {
+                return <strong key={index}>{part}</strong>;
+            }
+            // Usar dangerouslySetInnerHTML para renderizar <br />
+            return <span key={index} dangerouslySetInnerHTML={{ __html: part }} />;
         });
+        return <>{content}</>;
     };
 
     return (
@@ -173,7 +149,7 @@ export default function Chatbot({ open, onClose, actions }) {
   const [pitch, setPitch] = useState(1.0);
   const handleSendRef = useRef(() => {});
 
-  // Lógica de `useEffect`
+  // Lógica de `useEffect` (sin cambios)
   useEffect(() => {
       if (!("speechSynthesis" in window)) return;
       const pickVoice = () => {
@@ -199,8 +175,10 @@ export default function Chatbot({ open, onClose, actions }) {
   useEffect(() => {
       if (open && messages.length === 0) {
           const timer = setTimeout(() => {
-              // Saludo inicial restaurado
-              pushBot("¡Hola! Soy Tavo explorador. ¿Te ayudo a navegar el Home? Prueba con: “Mapa Interactivo”, “Puntos cercanos”, “Itinerario”, “Municipios”, “Productos” o escribe “ayuda home”.");
+              // --- SALUDO MEJORADO CON TODAS LAS OPCIONES ---
+              const welcomeOptions = NAV_TIPS.map(tip => `• **${tip.label}**`).join('\n');
+              const welcomeMessage = `¡Hola, soy Tavo! 👋 Tu guía en Pueblos de Ensueño. Puedes preguntarme sobre cualquiera de estos temas:\n\n${welcomeOptions}\n\nO simplemente escribe **"ayuda"** para un resumen completo.`;
+              pushBot(welcomeMessage);
           }, 600);
           return () => clearTimeout(timer);
       }
@@ -284,7 +262,6 @@ export default function Chatbot({ open, onClose, actions }) {
       {/* Header */}
       <div className="h-16 px-4 rounded-t-2xl flex items-center justify-between text-white bg-orange-500">
         <div className="flex items-center gap-3">
-          {/* CORREGIDO: Se cambia el fondo a blanco para mayor contraste */}
           <div className="w-10 h-10 rounded-full border-2 border-white/50 overflow-hidden flex-shrink-0 bg-white">
             <img src={IconoChat} alt="Avatar de Tavo" className="w-full h-full object-cover" />
           </div>
