@@ -32,10 +32,12 @@ import Register from './components/pages/Register';
 import Login from './components/pages/Login';
 import InterestsSelector from './components/pages/InterestsSelector';
 
+import HomeLogin from './components/private/HomeLogin';
+
 import PuntosCercanos from './components/PuntosCercanos';
 import ProductosTabasco from './components/ProductosTabasco';
 import PerfilUsuario from './components/PerfilUsuario';
-import HomeLogin from './components/HomeLogin';
+
 import Itinerario from './components/Itinerario';
 import MunicipioDetalle from './components/MunicipioDetalle';
 import MunicipioDetalleChiapas from './components/MunicipioDetalleChiapas';
