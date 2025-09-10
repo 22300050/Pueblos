@@ -1,12 +1,15 @@
 // Archivo: src/App.jsx
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // Componentes de Layout
 import Topbar from './components/layouts/Topbar';
 import Navbar from './components/layouts/Navbar';
-import Footer from './components/layouts/Footer'; 
+import Footer from './components/layouts/Footer';
+import SpeedDial from './components/layouts/SpeedDial';
+import Chatbot from './components/layouts/Chatbot';
 
 // Componentes de Animación
 import WelcomeAnimation from './components/animations/WelcomeAnimation';
@@ -44,14 +47,18 @@ function App() {
   const isDesktop = useIsDesktop();
   const [showWelcome, setShowWelcome] = useState(!sessionStorage.getItem('hasSeenWelcome'));
   const [isLoading, setIsLoading] = useState(true);
+  const [isChatbotOpen, setChatbotOpen] = useState(false);
 
-  // useEffects (sin cambios)
+  // Hooks para las acciones del Chatbot
+  const navigate = useNavigate();
+  const { i18n } = useTranslation();
+
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/" })
         .then(reg => console.log("SW registrado:", reg.scope))
-        .catch(err => alert("Error registrando SW: " + (err?.message || err)));
+        .catch(err => console.error("Error registrando SW: " + (err?.message || err)));
     }
   }, []);
 
@@ -67,7 +74,6 @@ function App() {
     setShowWelcome(false);
   };
 
-  // Lógica de Renderizado de Animaciones
   if (showWelcome && isDesktop) {
     return <WelcomeAnimation onAnimationComplete={handleWelcomeComplete} />;
   }
@@ -75,30 +81,35 @@ function App() {
     return <LoadingAnimation />;
   }
 
-  // La aplicación principal con el layout completo
-  return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        {/* Layout Persistente Superior */}
-        <Topbar />
-        <Navbar />
+  const handleChatbotToggle = () => setChatbotOpen(prev => !prev);
+  
+  const scrollToId = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  
+  const chatbotActions = {
+      navigate,
+      scrollTo: scrollToId,
+      changeLang: (lang) => i18n.changeLanguage(lang),
+  };
 
-        {/* Contenido Principal de la Página */}
-        <main className="flex-grow">
-          <Routes>
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Topbar />
+      <Navbar />
+      <main className="flex-grow">
+        <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/nosotros" element={<Nosotros />} />            
             <Route path="/Mantenimiento" element={<Mantenimiento />} />
             <Route path="/directorios" element={<Directorios />} />
-
             <Route path="/mapa" element={<MapaMexico />} />
             <Route path="/mapa-tabasco" element={<MapaTabasco />} />
             <Route path="/mapa-chiapas" element={<MapaChiapas />} />  
-                      
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/InterestsSelector" element={<InterestsSelector />} />
-
             <Route path="/puntos-cercanos" element={<PuntosCercanos />} />
             <Route path="/productos-tabasco" element={<ProductosTabasco />} />
             <Route path="/perfil" element={<PerfilUsuario />} />
@@ -106,17 +117,25 @@ function App() {
             <Route path="/itinerario" element={<Itinerario />} />
             <Route path="/municipio/:nombre" element={<MunicipioDetalle />} />
             <Route path="/chiapas/municipio/:nombre" element={<MunicipioDetalleChiapas />} />
-
-
             <Route path="/monumento/cabeza-olmeca" element={<MonumentoCabezaOlmeca />} />
-          </Routes>
-        </main>
-
-        {/* Layout Persistente Inferior */}
-        <Footer />
-      </div>
-    </Router>
-  )
+        </Routes>
+      </main>
+      <Footer />
+      <SpeedDial
+          onChatbotClick={handleChatbotToggle}
+          isChatbotOpen={isChatbotOpen}
+      />
+      {isChatbotOpen && <Chatbot open={isChatbotOpen} onClose={handleChatbotToggle} actions={chatbotActions} />}
+    </div>
+  );
 }
 
-export default App;
+// Se necesita este Wrapper para que `useNavigate` funcione dentro de App
+const AppWrapper = () => (
+  <Router>
+    <App />
+  </Router>
+);
+
+export default AppWrapper;
+

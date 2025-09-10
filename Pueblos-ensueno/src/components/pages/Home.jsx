@@ -1,14 +1,10 @@
 // Archivo: src/components/Home.jsx
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 import { View, Sparkles, Bot, Route, MapPin, Navigation, CheckCircle, Eye, Target, Gem, Check } from 'lucide-react';
-
-// Componentes flotantes
-import SpeedDial from "../SpeedDial";
-import Chatbot from "../Chatbot";
 
 // Imágenes
 import placeholder from '../../assets/img2D/PueblosMagicos.png';
@@ -17,8 +13,7 @@ import ArtesanosRA from '../../assets/img2D/ArtesanosRA.png';
 import ArtesanoGPS from '../../assets/img2D/ArtesanoGPS.png';
 
 export default function Home() {
-  const { t, i18n } = useTranslation();
-  const [showChatbot, setShowChatbot] = useState(false);
+  const { t } = useTranslation();
   const navigate = useNavigate();
   
   const scrollToId = (id) => {
@@ -27,7 +22,6 @@ export default function Home() {
   };
 
   return (
-    // El div principal ya no necesita <Navbar />, App.jsx se encarga de eso.
     <div className="bg-white">
 
       {/* Hero Section */}
@@ -255,23 +249,6 @@ export default function Home() {
           </Link>
         </div>
       </section>
-      
-      {/* El Footer no se incluye aquí, porque ya está en App.jsx */}
-      
-<Chatbot
-  open={showChatbot}
-  onClose={() => setShowChatbot(false)}
-  actions={{
-    navigate: (path) => navigate(path),
-    scrollTo: (id) => scrollToId(id),
-    changeLang: (lang) => i18n.changeLanguage(lang),
-  }}
-/>
-
-<SpeedDial
-  onChatbotClick={() => setShowChatbot((s) => !s)}  // toggle
-  isChatbotOpen={showChatbot}
-/>
     </div>
   );
 }

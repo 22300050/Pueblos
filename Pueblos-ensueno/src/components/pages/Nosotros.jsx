@@ -1,10 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-
-// Componentes flotantes
-import SpeedDial from "../SpeedDial";
-import Chatbot from "../Chatbot";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Imágenes del equipo
 import ArcelyImg from '../../assets/Integrantes/Arcely.jpg';
@@ -50,8 +45,6 @@ function TeamCard({ name, role, img }) {
 
 // Componente principal de la página "Nosotros"
 export default function Nosotros() {
-  const { i18n } = useTranslation();
-  const [showChatbot, setShowChatbot] = useState(false);
   const navigate = useNavigate();
 
   const asesores = TEAM.filter(m => m.role.includes("Asesor"));
@@ -110,17 +103,6 @@ export default function Nosotros() {
           </div>
         </div>
       </section>
-
-      <Chatbot
-        open={showChatbot}
-        onClose={() => setShowChatbot(false)}
-        actions={{
-          navigate: (path) => navigate(path),
-          scrollTo: (id) => scrollToId(id),
-          changeLang: (lang) => i18n.changeLanguage(lang),
-        }}
-      />
-      <SpeedDial onChatbotClick={() => setShowChatbot((s) => !s)} />
     </div>
   );
 }
