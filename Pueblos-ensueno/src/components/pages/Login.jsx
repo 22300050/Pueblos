@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next'; // Eliminado para la previsualización
 import googleIcon from '../../assets/Logos/google-icon.png';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
-  const { t } = useTranslation();
+  // const { t } = useTranslation(); // Eliminado para la previsualización
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -44,7 +44,6 @@ export default function Login() {
                 onChange={handleChange}
                 placeholder="Correo electrónico"
                 className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-                required
               />
             </div>
 
@@ -57,7 +56,6 @@ export default function Login() {
                 onChange={handleChange}
                 placeholder="Contraseña"
                 className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-                required
               />
             </div>
 
@@ -102,4 +100,3 @@ export default function Login() {
     </div>
   );
 }
-

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Cake, Phone } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next'; // Eliminado para la previsualización
+
 import googleIcon from '../../assets/Logos/google-icon.png';
 
 export default function Register() {
@@ -15,7 +16,7 @@ export default function Register() {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
-  const { t } = useTranslation();
+  // const { t } = useTranslation(); // Mock para previsualización
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -24,13 +25,14 @@ export default function Register() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (form.password !== form.confirmPassword) {
+    if (form.password && form.password !== form.confirmPassword) {
       setError('Las contraseñas no coinciden.');
       return;
     }
     setError('');
     console.log('Registrando usuario:', form);
-    navigate('/perfil');
+    // Redirige a /homelogin como se solicitó
+    navigate('/homelogin');
   };
 
   const handleGoogleRegister = () => {
@@ -59,7 +61,6 @@ export default function Register() {
                     onChange={handleChange}
                     placeholder="Nombre(s)"
                     className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-                    required
                     />
                 </div>
                 <div className="relative">
@@ -71,7 +72,6 @@ export default function Register() {
                     onChange={handleChange}
                     placeholder="Apellidos"
                     className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-                    required
                     />
                 </div>
             </div>
@@ -87,7 +87,6 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="Fecha de nacimiento"
                 className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-                required
               />
             </div>
             
@@ -100,7 +99,6 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="Número telefónico"
                 className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-                required
               />
             </div>
 
@@ -113,7 +111,6 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="Correo electrónico"
                 className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-                required
               />
             </div>
 
@@ -126,7 +123,6 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="Contraseña"
                 className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-                required
               />
             </div>
             
@@ -139,7 +135,6 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="Confirmar Contraseña"
                 className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-                required
               />
             </div>
             
@@ -186,3 +181,4 @@ export default function Register() {
     </div>
   );
 }
+

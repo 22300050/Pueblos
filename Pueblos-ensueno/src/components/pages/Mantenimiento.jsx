@@ -13,8 +13,8 @@ const MaintenanceIcon = () => (
 
 export default function Mantenimiento() {
   return (
-    // --- CAMBIO DE DISEÑO: Usamos min-h-screen para centrar verticalmente sin padding excesivo ---
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 text-center p-6 font-sans">
+    // --- FONDO DEGRADADO ACTUALIZADO ---
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-amber-100 text-center p-6 font-sans">
       
       <div className="bg-white p-10 md:p-12 rounded-2xl shadow-2xl border border-gray-200 max-w-lg w-full transform transition-all duration-300 hover:scale-[1.02]">
         
@@ -41,4 +41,3 @@ export default function Mantenimiento() {
     </div>
   );
 }
-
