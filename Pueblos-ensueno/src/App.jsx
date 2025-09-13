@@ -27,6 +27,7 @@ import Directorios from "./components/pages/Directorios";
 import MapaMexico from './components/maps/MapaMexico';
 import MapaTabasco from './components/maps/MapaTabasco';
 import MapaChiapas from './components/maps/MapaChiapas';
+import PuntosCercanos from './components/maps/PuntosCercanos';
 
 import Register from './components/pages/Register';
 import Login from './components/pages/Login';
@@ -35,7 +36,7 @@ import InterestsSelector from './components/pages/InterestsSelector';
 import HomeLogin from './components/private/HomeLogin';
 import PerfilUsuario from './components/private/PerfilUsuario';
 
-import PuntosCercanos from './components/PuntosCercanos';
+
 import ProductosTabasco from './components/ProductosTabasco';
 
 

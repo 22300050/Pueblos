@@ -1,5 +1,6 @@
 animacion de carga
 npm install framer-motion
+npm install mapbox-gl @supabase/supabase-js
 
 https://www.flaticon.es/icono-gratis/piramide_2166433?term=piramide+azteca&related_id=2166433
 https://www.flaticon.es/icono-gratis/artesanias_3697962?term=artesanias&related_id=3697962
