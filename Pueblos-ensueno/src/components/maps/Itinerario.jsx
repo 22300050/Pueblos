@@ -4,7 +4,7 @@ import html2pdf from "html2pdf.js";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { getSelecciones } from '../../utils/itinerarioStore';
-import { FileDown, Save, Trash2, Edit, Plus, GripVertical, Trash, ArrowLeft, Calendar, Wallet, Sparkles, MapPin } from 'lucide-react';
+import { FileDown, Save, Trash2, Edit, Plus, GripVertical, Trash, ArrowLeft, Calendar, Wallet, Sparkles, MapPin, BookOpen } from 'lucide-react';
 
 // --- CONFIGURACIÓN DE MAPBOX ---
 // Asegúrate de que tu variable de entorno esté configurada
@@ -77,6 +77,7 @@ function Itinerario() {
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
     const markerRefs = useRef([]);
+    const [mobileView, setMobileView] = useState('itinerario'); // 'itinerario' o 'mapa'
 
     // Carga inicial de datos
     useEffect(() => {
@@ -114,6 +115,7 @@ function Itinerario() {
         const map = mapRef.current;
         
         const updateMapContent = () => {
+            map.resize();
             markerRefs.current.forEach(marker => marker.remove());
             markerRefs.current = [];
             if (map.getSource('route')) {
@@ -163,6 +165,14 @@ function Itinerario() {
         
     }, [diasData, datos]);
 
+    // Redimensionar mapa cuando cambia la vista móvil
+    useEffect(() => {
+        if (mapRef.current) {
+            setTimeout(() => mapRef.current.resize(), 10);
+        }
+    }, [mobileView]);
+
+
     const exportarPDF = () => {
         if (!pdfRef.current) return;
         const opt = {
@@ -189,12 +199,36 @@ function Itinerario() {
     }
 
     return (
-        <div className="w-full min-h-screen bg-slate-50 lg:grid lg:grid-cols-2">
-            <aside className="lg:sticky lg:top-0 h-96 lg:h-screen">
+        <div className="w-full min-h-screen bg-slate-50 flex flex-col lg:grid lg:grid-cols-2">
+            {/* INTERRUPTOR DE VISTA MÓVIL */}
+            <div className="p-4 lg:hidden">
+                <div className="flex w-full max-w-sm mx-auto p-1 bg-slate-200 rounded-full">
+                    <button 
+                        onClick={() => setMobileView('mapa')}
+                        className={`w-1/2 flex items-center justify-center gap-2 py-2 rounded-full text-sm font-semibold transition-colors ${
+                            mobileView === 'mapa' ? 'bg-white text-zinc-800 shadow' : 'text-slate-500'
+                        }`}
+                    >
+                        <MapPin size={16} /> Mapa
+                    </button>
+                    <button 
+                        onClick={() => setMobileView('itinerario')}
+                        className={`w-1/2 flex items-center justify-center gap-2 py-2 rounded-full text-sm font-semibold transition-colors ${
+                            mobileView === 'itinerario' ? 'bg-orange-500 text-white shadow' : 'text-slate-500'
+                        }`}
+                    >
+                       <BookOpen size={16} /> Itinerario
+                    </button>
+                </div>
+            </div>
+
+            {/* --- MAPA A LA IZQUIERDA --- */}
+            <aside className={`lg:sticky lg:top-0 h-96 lg:h-screen ${mobileView === 'mapa' ? 'block' : 'hidden'} lg:block`}>
                 <div ref={mapContainerRef} className="w-full h-full" />
             </aside>
 
-            <main ref={pdfRef} className="p-6 md:p-10">
+            {/* --- PANEL DE ITINERARIO A LA DERECHA --- */}
+            <main ref={pdfRef} className={`p-6 md:p-10 ${mobileView === 'itinerario' ? 'block' : 'hidden'} lg:block`}>
                 <div className="max-w-2xl mx-auto">
                     <Link to="/mapa" className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-orange-600 mb-6">
                         <ArrowLeft size={16} />
@@ -207,14 +241,12 @@ function Itinerario() {
                         </h1>
                     </div>
 
-                    {/* BOTONES CON ESTILO CORREGIDO */}
                     <div className="flex flex-wrap gap-3 mb-8">
                         <ActionButton onClick={exportarPDF} icon={<FileDown size={16} />} text="Exportar a PDF" />
                         <ActionButton onClick={() => alert("Itinerario guardado (simulación)")} icon={<Save size={16} />} text="Guardar" />
                         <ActionButton onClick={handleReset} icon={<Trash2 size={16} />} text="Reiniciar Itinerario" isDestructive={true} />
                     </div>
 
-                    {/* SECCIÓN DE DATOS RESTAURADA */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8">
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                             <SummaryItem icon={<Calendar size={18} />} label="Fechas" value={datos.dias || "No definidas"} />
@@ -242,4 +274,3 @@ function Itinerario() {
 }
 
 export default Itinerario;
-
