@@ -24,23 +24,21 @@ import Nosotros from './components/pages/Nosotros';
 import Mantenimiento from './components/pages/Mantenimiento';
 import Directorios from "./components/pages/Directorios";
 
-import MapaMexico from './components/maps/MapaMexico';
-import MapaTabasco from './components/maps/MapaTabasco';
-import MapaChiapas from './components/maps/MapaChiapas';
-import PuntosCercanos from './components/maps/PuntosCercanos';
-
 import Register from './components/pages/Register';
 import Login from './components/pages/Login';
 import InterestsSelector from './components/pages/InterestsSelector';
 
+import PuntosCercanos from './components/maps/PuntosCercanos';
+import MapaMexico from './components/maps/MapaMexico';
+import MapaTabasco from './components/maps/MapaTabasco';
+import MapaChiapas from './components/maps/MapaChiapas';
+import Itinerario from './components/maps/Itinerario';
+
 import HomeLogin from './components/private/HomeLogin';
 import PerfilUsuario from './components/private/PerfilUsuario';
 
-
 import ProductosTabasco from './components/ProductosTabasco';
 
-
-import Itinerario from './components/Itinerario';
 import MunicipioDetalle from './components/MunicipioDetalle';
 import MunicipioDetalleChiapas from './components/MunicipioDetalleChiapas';
 import './locales/i18n';
