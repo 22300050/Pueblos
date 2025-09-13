@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Mail, Lock, User, Cake, Phone } from 'lucide-react';
+import axios from 'axios';
 // import { useTranslation } from 'react-i18next'; // Eliminado para la previsualización
 
 import googleIcon from '../../assets/Logos/google-icon.png';
@@ -16,24 +17,56 @@ export default function Register() {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
-  // const { t } = useTranslation(); // Mock para previsualización
-  const navigate = useNavigate();
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (form.password && form.password !== form.confirmPassword) {
-      setError('Las contraseñas no coinciden.');
-      return;
-    }
-    setError('');
-    console.log('Registrando usuario:', form);
-    // Redirige a /homelogin como se solicitó
-    navigate('/homelogin');
+const handleSubmit = async (e) => { // Cambia a una función asíncrona
+  e.preventDefault();
+  if (form.password && form.password !== form.confirmPassword) {
+    setError('Las contraseñas no coinciden.');
+    return;
+  }
+  setError('');
+
+  try {
+// 1) Registro
+await axios.post('http://localhost:3001/api/auth/register', form);
+
+// 2) Login inmediato usando el mismo email/password
+const loginRes = await axios.post('http://localhost:3001/api/auth/login', {
+  email: form.email,
+  password: form.password,
+});
+
+// 3) Guardar sesión normalizada
+const { user: rawUser, token } = loginRes.data || {};
+if (token) localStorage.setItem('token', token);
+
+if (rawUser) {
+  const normalizedUser = {
+    ...rawUser,
+    name:
+      rawUser.name ||
+      [rawUser.nombre, rawUser.apellidos].filter(Boolean).join(' ').trim() ||
+      'Explorador',
   };
+  localStorage.setItem('user', JSON.stringify(normalizedUser));
+  localStorage.setItem('isLoggedIn', 'true');
+}
+
+// 4) Redirección con recarga completa
+window.location.replace('/homelogin');
+
+
+} catch (err) {
+  const msg = err?.response?.data?.message || 'Error al registrar el usuario.';
+  console.error('Error al registrar:', err);
+  setError(msg);
+}
+};
 
   const handleGoogleRegister = () => {
     console.log('Registrarse con Google');
@@ -78,16 +111,15 @@ export default function Register() {
 
             <div className="relative">
               <Cake className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="text"
-                name="fechaNacimiento"
-                onFocus={(e) => (e.target.type = 'date')}
-                onBlur={(e) => (e.target.type = 'text')}
-                value={form.fechaNacimiento}
-                onChange={handleChange}
-                placeholder="Fecha de nacimiento"
-                className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-              />
+<input
+  type="date"
+  name="fechaNacimiento"
+  value={form.fechaNacimiento}
+  onChange={handleChange}
+  placeholder="Fecha de nacimiento"
+  className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+/>
+
             </div>
             
             <div className="relative">

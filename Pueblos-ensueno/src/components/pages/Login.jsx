@@ -1,22 +1,47 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
-// import { useTranslation } from 'react-i18next'; // Eliminado para la previsualización
+import axios from 'axios'; // Asegúrate de tener axios instalado
+import { useAuth } from '../../AuthContext.jsx';
+
 import googleIcon from '../../assets/Logos/google-icon.png';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
-  // const { t } = useTranslation(); // Eliminado para la previsualización
+  const [error, setError] = useState(''); // Añade estado para manejar errores
   const navigate = useNavigate();
+  const { login } = useAuth()
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login:', form);
-    navigate('/homelogin');
+    setError('');
+
+    try {
+      // Envía los datos al backend
+      const response = await axios.post('http://localhost:3001/api/auth/login', form);
+      
+      console.log('Login exitoso:', response.data);
+
+      login(response.data.user);
+      
+      // Guarda el token y la información del usuario en localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user)); // Guarda el objeto de usuario como una cadena de texto
+      
+      // Redirige a la página de inicio después del login
+      navigate('/homelogin'); 
+      
+      // Podrías recargar la página para que el Navbar se actualice automáticamente
+      window.location.reload(); 
+
+    } catch (err) {
+      console.error('Error al iniciar sesión:', err.response);
+      setError(err.response.data.message || 'Ocurrió un error. Inténtalo de nuevo.');
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -58,6 +83,8 @@ export default function Login() {
                 className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
               />
             </div>
+
+            {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
             <button
               type="submit"

@@ -45,6 +45,8 @@ import './locales/i18n';
 
 import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
 
+import { AuthProvider } from './AuthContext';
+
 function App() {
   const isDesktop = useIsDesktop();
   const [showWelcome, setShowWelcome] = useState(!sessionStorage.getItem('hasSeenWelcome'));
@@ -114,12 +116,13 @@ function App() {
             <Route path="/InterestsSelector" element={<InterestsSelector />} />
             <Route path="/puntos-cercanos" element={<PuntosCercanos />} />
             <Route path="/productos-tabasco" element={<ProductosTabasco />} />
-            <Route path="/perfil" element={<PerfilUsuario />} />
-            <Route path="/homelogin" element={<HomeLogin />} />
-            <Route path="/itinerario" element={<Itinerario />} />
             <Route path="/municipio/:nombre" element={<MunicipioDetalle />} />
             <Route path="/chiapas/municipio/:nombre" element={<MunicipioDetalleChiapas />} />
             <Route path="/monumento/cabeza-olmeca" element={<MonumentoCabezaOlmeca />} />
+                        {/* Rutas protegidas (mantenidas en una sola página para simplificar el ejemplo) */}
+            <Route path="/perfil" element={<PerfilUsuario />} />
+            <Route path="/homelogin" element={<HomeLogin />} />
+            <Route path="/itinerario" element={<Itinerario />} />
         </Routes>
       </main>
       <Footer />
@@ -135,7 +138,9 @@ function App() {
 // Se necesita este Wrapper para que `useNavigate` funcione dentro de App
 const AppWrapper = () => (
   <Router>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </Router>
 );
 

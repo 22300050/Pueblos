@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Map, MapPin, LogOut, Compass, Sparkles } from 'lucide-react';
+import { useAuth } from '../../AuthContext.jsx'; 
 
 // En tu proyecto real, asegúrate de que la ruta al logo sea correcta.
 // import logo from '../assets/Logo.png'; 
@@ -32,12 +33,8 @@ const ActionButton = ({ to, icon, title, description, isPrimary = false }) => (
 );
 
 export default function HomeLogin() {
+  const { user, logout } = useAuth(); // Obtén el usuario y la función logout del contexto
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    console.log('Cerrando sesión...');
-    navigate('/');
-  };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-amber-100">
@@ -69,9 +66,10 @@ export default function HomeLogin() {
                 </div>
             </div>
 
-            <h2 className="text-3xl font-bold mb-2 text-zinc-800">
-                ¡Hola de nuevo, {userData.name}!
-            </h2>
+    <h2 className="text-3xl font-bold mb-2 text-zinc-800">
+        {/* Aquí usas el estado del contexto */}
+        ¡Hola de nuevo, {user ? user.name : 'Explorador'}!
+    </h2>
             <p className="text-slate-500 mb-8">
                 Tu próxima aventura te está esperando. ¿Qué te gustaría hacer hoy?
             </p>
@@ -104,15 +102,15 @@ export default function HomeLogin() {
                 />
             </div>
 
-            <div className="pt-8 mt-auto">
-                <button
-                    onClick={handleLogout}
-                    className="text-sm text-slate-500 hover:text-orange-600 hover:underline font-medium flex items-center justify-center gap-2 mx-auto transition-colors"
-                >
-                    <LogOut size={16} />
-                    Cerrar sesión
-                </button>
-            </div>
+    <div className="pt-8 mt-auto">
+        <button
+            onClick={logout} // Llama a la función logout del contexto
+            className="text-sm text-slate-500 hover:text-orange-600 hover:underline font-medium flex items-center justify-center gap-2 mx-auto transition-colors"
+        >
+            <LogOut size={16} />
+            Cerrar sesión
+        </button>
+    </div>
         </div>
       </div>
     </div>

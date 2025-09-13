@@ -7,13 +7,9 @@ import guayaberaImg from '../../assets/img/tabasco/guayabera.jpg';
 import canastaImg from '../../assets/img/tabasco/canasta.mimbre.jpg';
 import cabezaOlmecaImg from '../../assets/img/tabasco/cabeza-olmeca.jpg';
 import userAvatar from '../../assets/Integrantes/Fernando.jpg';
+import { useAuth } from '../../AuthContext.jsx'; 
 
 
-const userData = {
-  name: 'Fernando Estrella',
-  email: 'fernando.estrella@example.com',
-  avatar: userAvatar,
-};
 
 const favoriteProducts = [
   { src: jicaraImg, nombre: "Jícara decorada", artesano: "Doña Lupita" },
@@ -34,12 +30,13 @@ const userItineraries = [
 
 // --- COMPONENTES INTERNOS PARA UN CÓDIGO MÁS LIMPIO ---
 
-const ProfileSidebar = ({ activeSection, setActiveSection, onLogout }) => (
+const ProfileSidebar = ({ activeSection, setActiveSection, onLogout, user }) => (
   <aside className="col-span-12 lg:col-span-3 bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white">
     <div className="flex flex-col items-center text-center">
-      <img src={userData.avatar} alt="Avatar" className="w-24 h-24 rounded-full mb-4 border-4 border-white shadow-md object-cover" />
-      <h2 className="text-xl font-bold text-zinc-800">{userData.name}</h2>
-      <p className="text-sm text-slate-500">{userData.email}</p>
+      {/* Usa los datos del prop `user` */}
+      <img src={user?.avatar || userAvatar} alt="Avatar" className="w-24 h-24 rounded-full mb-4 border-4 border-white shadow-md object-cover" />
+      <h2 className="text-xl font-bold text-zinc-800">{user?.name || 'Usuario'}</h2>
+      <p className="text-sm text-slate-500">{user?.email || ''}</p>
     </div>
     <nav className="mt-8 space-y-2">
       <SidebarButton text="Resumen" icon={<User size={20} />} active={activeSection === 'resumen'} onClick={() => setActiveSection('resumen')} />
@@ -146,23 +143,20 @@ const SettingsInput = ({ label, type, id, value, icon, placeholder }) => (
 // --- COMPONENTE PRINCIPAL ---
 
 export default function PerfilUsuario() {
-  const [activeSection, setActiveSection] = useState('resumen');
-  const [activeTab, setActiveTab] = useState('productos');
-  const navigate = useNavigate();
+    const [activeSection, setActiveSection] = useState('resumen');
+    const [activeTab, setActiveTab] = useState('productos');
+    const { user, logout } = useAuth(); // Correcto
 
-  const handleLogout = () => {
-      console.log('Cerrando sesión...');
-      navigate('/');
-  };
+  
 
-  const renderContent = () => {
+const renderContent = () => {
     switch (activeSection) {
         case 'resumen':
             return (
                 <div className="space-y-6">
                     <InfoCard 
                         icon={<User size={24} />} 
-                        title={`¡Bienvenido de nuevo, ${userData.name}!`}
+                        title={`¡Bienvenido de nuevo, ${user?.name || 'Explorador'}!`}
                         linkTo="/mapa" 
                         linkText="Explorar el mapa ahora"
                     >
@@ -220,11 +214,11 @@ export default function PerfilUsuario() {
                  <div className="space-y-8">
                     <SettingsSection title="Información Personal">
                         <div className="flex items-center gap-4">
-                            <img src={userData.avatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
+                             <img src={user?.avatar || userAvatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
                             <button className="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-300">Cambiar foto</button>
                         </div>
-                        <SettingsInput label="Nombre Completo" type="text" id="name" value={userData.name} icon={<User size={16} />} />
-                        <SettingsInput label="Correo Electrónico" type="email" id="email" value={userData.email} icon={<Mail size={16} />} />
+                        <SettingsInput label="Nombre Completo" type="text" id="name" value={user?.name || ''} icon={<User size={16} />} />
+                        <SettingsInput label="Correo Electrónico" type="email" id="email" value={user?.email || ''} icon={<Mail size={16} />} />
                     </SettingsSection>
 
                     <SettingsSection title="Seguridad">
@@ -254,16 +248,17 @@ export default function PerfilUsuario() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-amber-100 px-4 py-8">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <ProfileSidebar activeSection={activeSection} setActiveSection={setActiveSection} onLogout={handleLogout} />
-        <main className="col-span-12 lg:col-span-9 bg-white/70 backdrop-blur-sm p-8 rounded-2xl border border-white">
-            <h1 className="text-3xl font-bold text-zinc-800 mb-6 capitalize">{activeSection}</h1>
-            {renderContent()}
-        </main>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-amber-100 px-4 py-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Aquí pasas el prop correcto 'user' */}
+          <ProfileSidebar activeSection={activeSection} setActiveSection={setActiveSection} onLogout={logout} user={user} />
+          <main className="col-span-12 lg:col-span-9 bg-white/70 backdrop-blur-sm p-8 rounded-2xl border border-white">
+              <h1 className="text-3xl font-bold text-zinc-800 mb-6 capitalize">{activeSection}</h1>
+              {renderContent()}
+          </main>
+        </div>
       </div>
-    </div>
-  );
+    );
 }
 
