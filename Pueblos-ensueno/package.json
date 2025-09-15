@@ -14,7 +14,7 @@
     "@react-map/mexico": "^1.0.9",
     "@supabase/supabase-js": "^2.57.4",
     "@tailwindcss/vite": "^4.1.6",
-    "axios": "^1.12.1",
+    "axios": "^1.12.2",
     "cors": "^2.8.5",
     "dom-to-image": "^2.6.0",
     "dotenv": "^17.2.2",
