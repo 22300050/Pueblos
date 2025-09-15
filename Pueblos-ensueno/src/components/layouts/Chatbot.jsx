@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Mic, Send, Volume2, VolumeX } from "lucide-react";
 
-// IMPORTANTE: Reemplaza la siguiente línea con tu importación local en tu proyecto:
 import IconoChat from '../../assets/Logos/IconoChat.png';
 
 const IA_ENABLED = true;
@@ -149,7 +148,7 @@ export default function Chatbot({ open, onClose, actions }) {
   const [pitch, setPitch] = useState(1.0);
   const handleSendRef = useRef(() => {});
 
-  // Lógica de `useEffect` (sin cambios)
+  // Lógica de `useEffect`
   useEffect(() => {
       if (!("speechSynthesis" in window)) return;
       const pickVoice = () => {
@@ -175,7 +174,6 @@ export default function Chatbot({ open, onClose, actions }) {
   useEffect(() => {
       if (open && messages.length === 0) {
           const timer = setTimeout(() => {
-              // --- SALUDO MEJORADO CON TODAS LAS OPCIONES ---
               const welcomeOptions = NAV_TIPS.map(tip => `• **${tip.label}**`).join('\n');
               const welcomeMessage = `¡Hola, soy Tavo! 👋 Tu guía en Pueblos de Ensueño. Puedes preguntarme sobre cualquiera de estos temas:\n\n${welcomeOptions}\n\nO simplemente escribe **"ayuda"** para un resumen completo.`;
               pushBot(welcomeMessage);
@@ -248,6 +246,18 @@ export default function Chatbot({ open, onClose, actions }) {
   };
   useEffect(() => { handleSendRef.current = handleSend; }, [handleSend, history]);
 
+  // ✅ --- FUNCIÓN CORREGIDA PARA SILENCIAR ---
+  const handleMuteToggle = () => {
+    // Usamos la forma funcional de setState para asegurar que tenemos el valor más reciente
+    setMuted(currentMutedState => {
+        const newMutedState = !currentMutedState;
+        // Si el nuevo estado es "silenciado", cancelamos cualquier habla en curso.
+        if (newMutedState && "speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+        }
+        return newMutedState;
+    });
+  };
 
   if (!open) return null;
 
@@ -268,8 +278,9 @@ export default function Chatbot({ open, onClose, actions }) {
           <h3 className="font-semibold text-lg">Tavo Explorador</h3>
         </div>
         <div className="flex items-center gap-1">
+            {/* ✅ --- BOTÓN ACTUALIZADO --- */}
             <button
-                onClick={() => setMuted(prev => !prev)}
+                onClick={handleMuteToggle}
                 aria-label={muted ? "Activar voz" : "Silenciar voz"}
                 className="p-2 rounded-full hover:bg-white/20 transition"
                 title={muted ? "Activar voz" : "Silenciar voz"}
