@@ -42,70 +42,35 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 export default function MapaChiapas({ onRegresar, estado = 'Chiapas' }) {
   const containerRef = useRef(null);
+  const mapContainer = useRef(null);
+  const mapRef = useRef(null);
   const [tooltip, setTooltip] = useState({ visible: false, name: '', x: 0, y: 0 });
 
-  // --- LÓGICA PARA MÚSICA DE FONDO ---
-  const audioRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  const toggleAudio = () => {
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  useEffect(() => {
-    const playPromise = audioRef.current.play();
-    if (playPromise !== undefined) {
-      playPromise.then(_ => {
-        setIsPlaying(true);
-      }).catch(error => {
-        console.log("El autoplay de la música fue bloqueado.");
-        setIsPlaying(false);
-      });
-    }
-     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
+  const getInitialFormDataChiapas = () => {
+    try {
+      const draft = JSON.parse(localStorage.getItem("itinerario") || "{}");
+      if (draft.estado === "Chiapas") {
+        return {
+          dias: '',
+          tipo: '',
+          lugarInicio: draft.lugarInicio || '',
+          ultimoLugar: '',
+          intereses: '',
+          mes: draft.mes || '',
+          email: '',
+          modoDestino: (draft.modoDestino === 'automatico' ? 'auto' : (draft.modoDestino || ''))
+        };
       }
-    };
-  }, []);
-  // --- FIN LÓGICA PARA MÚSICA DE FONDO ---
-
-
-const getInitialFormDataChiapas = () => {
-  try {
-    const draft = JSON.parse(localStorage.getItem("itinerario") || "{}");
-    // Solo usar el borrador si pertenece a Chiapas.
-    if (draft.estado === "Chiapas") {
-      return {
-        dias: '',
-        tipo: '',
-        lugarInicio: draft.lugarInicio || '',
-        ultimoLugar: '',
-        intereses: '',
-        mes: draft.mes || '',
-        email: '',
-        modoDestino: (draft.modoDestino === 'automatico' ? 'auto' : (draft.modoDestino || ''))
-      };
+    } catch (e) {
+      console.error("Error al leer el borrador del itinerario:", e);
     }
-  } catch (e) {
-    console.error("Error al leer el borrador del itinerario:", e);
-  }
-
-  // Si el borrador es de otro estado o hay un error, empezar de cero.
-  return {
-    dias: '', tipo: '', lugarInicio: '', ultimoLugar: '',
-    intereses: '', mes: '', email: '', modoDestino: ''
+    return {
+      dias: '', tipo: '', lugarInicio: '', ultimoLugar: '',
+      intereses: '', mes: '', email: '', modoDestino: ''
+    };
   };
-};
 
-const [formData, setFormData] = useState(getInitialFormDataChiapas);
-
-
+  const [formData, setFormData] = useState(getInitialFormDataChiapas);
   const [errorEvento, setErrorEvento] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
@@ -141,8 +106,7 @@ const [formData, setFormData] = useState(getInitialFormDataChiapas);
   const [showODPicker, setShowODPicker] = useState(false);
   const [origenSel, setOrigenSel] = useState(formData.lugarInicio || "");
   const [destinoSel, setDestinoSel] = useState(formData.ultimoLugar || "");
-
-  const mapContainer = useRef(null);
+  
   const navigate = useNavigate();
 
   const municipiosChiapas = [
@@ -179,88 +143,111 @@ const [formData, setFormData] = useState(getInitialFormDataChiapas);
     const actividades = ["Cañón del Sumidero", "Andador Eclesiástico", "Museo del Ámbar"];
     return { inicio, fin, actividades, eventosMes: [] };
   };
-  // Construye diasData con lo que el usuario agregó en UN municipio
-const buildDiasDataDesdeSelecciones = ({ municipio, dias, mes }) => {
-  const todas = (getSelecciones() || []).filter(s => s.municipio === municipio);
-  const esDelMes = (s) =>
-    s.tipo === 'evento' &&
-    mes &&
-    String(s.meta?.mes || s.meta?.fecha || '').toLowerCase().includes(String(mes).toLowerCase());
-  const ordenadas = [...todas].sort((a,b) => (esDelMes(b) ? 1 : 0) - (esDelMes(a) ? 1 : 0));
-  const n = Math.max(1, parseInt(dias || '1', 10));
-  const diasData = Array.from({ length: n }, (_, i) => ({ dia: i + 1, actividades: [] }));
-  ordenadas.forEach((s, idx) => {
-    const d = idx % n;
-    diasData[d].actividades.push({
-      titulo: s.nombre,
-      icono: s.icono || '📍',
-      tipo: s.tipo,
-      meta: s.meta || {},
+
+  const buildDiasDataDesdeSelecciones = ({ municipio, dias, mes }) => {
+    const todas = (getSelecciones() || []).filter(s => s.municipio === municipio);
+    const esDelMes = (s) =>
+      s.tipo === 'evento' &&
+      mes &&
+      String(s.meta?.mes || s.meta?.fecha || '').toLowerCase().includes(String(mes).toLowerCase());
+    const ordenadas = [...todas].sort((a,b) => (esDelMes(b) ? 1 : 0) - (esDelMes(a) ? 1 : 0));
+    const n = Math.max(1, parseInt(dias || '1', 10));
+    const diasData = Array.from({ length: n }, (_, i) => ({ dia: i + 1, actividades: [] }));
+    ordenadas.forEach((s, idx) => {
+      const d = idx % n;
+      diasData[d].actividades.push({
+        titulo: s.nombre,
+        icono: s.icono || '📍',
+        tipo: s.tipo,
+        meta: s.meta || {},
+      });
     });
-  });
-  return diasData;
-};
+    return diasData;
+  };
 
-// Construye diasData mezclando lo que el usuario agregó en VARIOS municipios
-const buildDiasDataDesdeMultiplesSelecciones = ({ municipios = [], dias, mes }) => {
-  if (!Array.isArray(municipios) || municipios.length === 0) return [];
-  const todas = (getSelecciones() || []).filter(s => municipios.includes(s.municipio));
-  const esDelMes = (s) =>
-    s.tipo === 'evento' &&
-    mes &&
-    String(s.meta?.mes || s.meta?.fecha || '').toLowerCase().includes(String(mes).toLowerCase());
-  const ordenadas = [...todas].sort((a,b) => (esDelMes(b) ? 1 : 0) - (esDelMes(a) ? 1 : 0));
-  const n = Math.max(1, parseInt(dias || '1', 10));
-  const diasData = Array.from({ length: n }, (_, i) => ({ dia: i + 1, actividades: [] }));
-  ordenadas.forEach((s, idx) => {
-    const d = idx % n;
-    diasData[d].actividades.push({
-      titulo: s.nombre,
-      icono: s.icono || '📍',
-      tipo: s.tipo,
-      meta: s.meta || {},
+  const buildDiasDataDesdeMultiplesSelecciones = ({ municipios = [], dias, mes }) => {
+    if (!Array.isArray(municipios) || municipios.length === 0) return [];
+    const todas = (getSelecciones() || []).filter(s => municipios.includes(s.municipio));
+    const esDelMes = (s) =>
+      s.tipo === 'evento' &&
+      mes &&
+      String(s.meta?.mes || s.meta?.fecha || '').toLowerCase().includes(String(mes).toLowerCase());
+    const ordenadas = [...todas].sort((a,b) => (esDelMes(b) ? 1 : 0) - (esDelMes(a) ? 1 : 0));
+    const n = Math.max(1, parseInt(dias || '1', 10));
+    const diasData = Array.from({ length: n }, (_, i) => ({ dia: i + 1, actividades: [] }));
+    ordenadas.forEach((s, idx) => {
+      const d = idx % n;
+      diasData[d].actividades.push({
+        titulo: s.nombre,
+        icono: s.icono || '📍',
+        tipo: s.tipo,
+        meta: s.meta || {},
+      });
     });
-  });
-  return diasData;
-};
+    return diasData;
+  };
 
-
+  // ✅ SVG useEffect MEJORADO (con limpieza de eventos)
   useEffect(() => {
     if (vistaMovil !== 'mapa' || mostrarMapaMapbox || !containerRef.current) return;
+    
     containerRef.current.innerHTML = chiapasSvg;
     const svg = containerRef.current.querySelector('svg');
     if (svg) {
       svg.setAttribute('width', '100%');
       svg.setAttribute('height', '100%');
       svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-      svg.style.display = 'block';
     }
 
     const paths = containerRef.current.querySelectorAll('path, polygon');
+    const handlers = [];
     paths.forEach((path) => {
       const name = (path.getAttribute('id') || 'Municipio').replace(/_/g, ' ');
-      path.addEventListener('mouseenter', (e) => {
+
+      const onEnter = (e) => {
         const r = containerRef.current.getBoundingClientRect();
         setTooltip({ visible: true, name, x: e.clientX - r.left, y: e.clientY - r.top });
-      });
-      path.addEventListener('mouseleave', () => setTooltip({ visible: false, name: '', x: 0, y: 0 }));
-      path.addEventListener('mousemove', (e) => {
+      };
+      const onMove = (e) => {
         const r = containerRef.current.getBoundingClientRect();
-        setTooltip(prev => ({...prev, x: e.clientX - r.left, y: e.clientY - r.top }));
-      });
-path.addEventListener('click', () => navigate(`/chiapas/municipio/${encodeURIComponent(name)}`));
+        setTooltip((t) => (t.visible ? { ...t, x: e.clientX - r.left, y: e.clientY - r.top } : t));
+      };
+      const onLeave = () => setTooltip({ visible: false, name: '', x: 0, y: 0 });
+      const onClick = () => navigate(`/chiapas/municipio/${encodeURIComponent(name)}`);
 
+      path.addEventListener('mouseenter', onEnter);
+      path.addEventListener('mousemove', onMove);
+      path.addEventListener('mouseleave', onLeave);
+      path.addEventListener('click', onClick);
+      handlers.push({ path, onEnter, onMove, onLeave, onClick });
     });
-  }, [vistaMovil, mostrarMapaMapbox]);
 
+    return () => {
+      handlers.forEach(({ path, onEnter, onMove, onLeave, onClick }) => {
+        path.removeEventListener('mouseenter', onEnter);
+        path.removeEventListener('mousemove', onMove);
+        path.removeEventListener('mouseleave', onLeave);
+        path.removeEventListener('click', onClick);
+      });
+      if (containerRef.current) containerRef.current.innerHTML = '';
+    };
+  }, [vistaMovil, mostrarMapaMapbox, navigate]);
+  
+  // ✅ Mapbox useEffect MEJORADO (con limpieza de instancia)
   useEffect(() => {
     if (vistaMovil !== 'mapa' || !mostrarMapaMapbox || !mapContainer.current) return;
+    if (mapRef.current) {
+      mapRef.current.resize();
+      return;
+    }
+
     const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [-92.5, 16.7],
       zoom: 6.5,
     });
+    mapRef.current = map;
     
     map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
@@ -276,15 +263,24 @@ path.addEventListener('click', () => navigate(`/chiapas/municipio/${encodeURICom
     municipiosChiapas.forEach((municipio) => {
         const el = document.createElement('div');
         el.className = 'custom-marker-municipio';
-        const marker = new mapboxgl.Marker(el)
+        new mapboxgl.Marker(el)
             .setLngLat(municipio.coords)
             .setPopup(new mapboxgl.Popup({ offset: 25, className: 'custom-popup' }).setHTML(`<h3>${municipio.nombre}</h3><p>Municipio de Chiapas</p>`))
             .addTo(map);
-            el.addEventListener('click', () => navigate(`/chiapas/municipio/${municipio.nombre}`));
+        el.addEventListener('click', () => navigate(`/chiapas/municipio/${municipio.nombre}`));
     });
+    
+    const onResize = () => map.resize();
+    window.addEventListener('resize', onResize);
 
-    return () => map.remove();
-  }, [mostrarMapaMapbox, vistaMovil]);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [mostrarMapaMapbox, vistaMovil, navigate]);
 
   const ItinerarioForm = () => {
     const interesesDisponibles = ["Naturaleza", "Compras", "Arte", "Museos", "Gastronomía", "Aventura"];
@@ -309,70 +305,58 @@ path.addEventListener('click', () => navigate(`/chiapas/municipio/${encodeURICom
           
           let { lugarInicio, ultimoLugar } = formData;
 
+          const diasNum = Math.max(1, parseInt(formData.dias, 10) || 1);
+          let diasData = [];
+          let actividadesSugeridas = [];
+          let eventosMes = [];
 
+          let municipiosInteres = [];
+          try {
+            municipiosInteres = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas")) || [];
+          } catch { municipiosInteres = []; }
 
-const diasNum = Math.max(1, parseInt(formData.dias, 10) || 1);
-let diasData = [];
-let actividadesSugeridas = [];
-let eventosMes = [];
-
-let municipiosInteres = [];
-try {
-  municipiosInteres = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas")) || [];
-} catch { municipiosInteres = []; }
-
-// ✅ LÓGICA CORREGIDA Y PRIORIZADA
-if ((formData.modoDestino === "auto") && lugarInicio) {
-  // Prioridad 1: El usuario viene de "Me interesa", quiere un enfoque local.
-  diasData = buildDiasDataDesdeSelecciones({
-    municipio: lugarInicio,
-    dias: formData.dias,
-    mes: formData.mes
-  });
-  if (!ultimoLugar) ultimoLugar = lugarInicio;
-
-} else if (municipiosInteres.length >= 2) {
-  // Prioridad 2: Si no es modo auto, pero hay varios intereses, se crea una ruta multi-destino.
-  diasData = buildDiasDataDesdeMultiplesSelecciones({
-    municipios: municipiosInteres,
-    dias: formData.dias,
-    mes: formData.mes
-  });
-  if (!lugarInicio) lugarInicio = municipiosInteres[0];
-  if (!ultimoLugar) ultimoLugar = municipiosInteres[municipiosInteres.length - 1];
-
-} else if (!lugarInicio || !ultimoLugar) {
-  // Prioridad 3: Fallback a sugerencia si no hay nada definido.
-  const sugerencia = sugerirRuta({ mes: formData.mes, intereses: interesesArr, tipo: formData.tipo });
-  lugarInicio = lugarInicio || sugerencia.inicio;
-  ultimoLugar = ultimoLugar || sugerencia.fin;
-  actividadesSugeridas = sugerencia.actividades;
-  eventosMes = sugerencia.eventosMes;
-}
-const payload = {
-  estado, // 'Chiapas'
-  dias: `${fechaInicio} a ${fechaFin}`,
-  presupuesto: presupuestoMXN,
-  monedas: convertirMonedas(presupuestoMXN),
-  email: formData.email || "",
-  mes: formData.mes,
-  interesesSeleccionados: interesesArr,
-
-  origen: lugarInicio,
-  destino: ultimoLugar,
-
-  // NUEVO: estas claves son las que Itinerario.jsx espera
-  diasNum,
-  diasData,
-
-  eventosSeleccionados: [
-    {
-      nombre: formData.tipo,
-      actividades: sugerirRuta({}).actividades.join(", "),
-    },
-  ],
-};
-
+          if ((formData.modoDestino === "auto") && lugarInicio) {
+            diasData = buildDiasDataDesdeSelecciones({
+              municipio: lugarInicio,
+              dias: formData.dias,
+              mes: formData.mes
+            });
+            if (!ultimoLugar) ultimoLugar = lugarInicio;
+          } else if (municipiosInteres.length >= 2) {
+            diasData = buildDiasDataDesdeMultiplesSelecciones({
+              municipios: municipiosInteres,
+              dias: formData.dias,
+              mes: formData.mes
+            });
+            if (!lugarInicio) lugarInicio = municipiosInteres[0];
+            if (!ultimoLugar) ultimoLugar = municipiosInteres[municipiosInteres.length - 1];
+          } else if (!lugarInicio || !ultimoLugar) {
+            const sugerencia = sugerirRuta({ mes: formData.mes, intereses: interesesArr, tipo: formData.tipo });
+            lugarInicio = lugarInicio || sugerencia.inicio;
+            ultimoLugar = ultimoLugar || sugerencia.fin;
+            actividadesSugeridas = sugerencia.actividades;
+            eventosMes = sugerencia.eventosMes;
+          }
+          
+          const payload = {
+            estado,
+            dias: `${fechaInicio} a ${fechaFin}`,
+            presupuesto: presupuestoMXN,
+            monedas: convertirMonedas(presupuestoMXN),
+            email: formData.email || "",
+            mes: formData.mes,
+            interesesSeleccionados: interesesArr,
+            origen: lugarInicio,
+            destino: ultimoLugar,
+            diasNum,
+            diasData,
+            eventosSeleccionados: [
+              {
+                nombre: formData.tipo,
+                actividades: sugerirRuta({}).actividades.join(", "),
+              },
+            ],
+          };
 
           localStorage.setItem("itinerario", JSON.stringify(payload));
           navigate("/itinerario", { state: payload });
@@ -570,8 +554,6 @@ const payload = {
 
   return (
     <>
-      <audio ref={audioRef} src={musicaChiapas} loop />
-      
       <style>{`
         .custom-marker-municipio {
           width: 18px; height: 18px; background-color: #1E90FF; border: 2px solid white;
@@ -604,6 +586,30 @@ const payload = {
         .custom-popup .mapboxgl-popup-close-button:hover {
           background-color: #f3f4f6; color: #1f2937;
         }
+        /* --- ESTILOS PARA EL REPRODUCTOR DE AUDIO --- */
+        .custom-audio-player-chiapas {
+            background-color: white; border-radius: 50px; padding: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e2e8f0;
+            width: 300px; transition: all 0.3s ease;
+        }
+        .custom-audio-player-chiapas:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2); transform: translateY(-2px);
+        }
+        .custom-audio-player-chiapas::-webkit-media-controls-enclosure {
+            background-color: transparent;
+        }
+        .custom-audio-player-chiapas::-webkit-media-controls-panel {
+            padding: 0; margin: 0;
+        }
+        .custom-audio-player-chiapas::-webkit-media-controls-timeline {
+            border-radius: 4px; height: 6px; background-color: #f1f5f9;
+            border: none; margin: 0 10px;
+        }
+        .custom-audio-player-chiapas::-webkit-media-controls-play-button,
+        .custom-audio-player-chiapas::-webkit-media-controls-pause-button {
+            color: #006A4E; /* Verde de Chiapas */
+            border-radius: 50%; background-color: #D1FAE5; /* Verde claro */
+        }
       `}</style>
 
       <div className="md:hidden px-6 py-2">
@@ -629,7 +635,7 @@ const payload = {
           <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 xl:px-8">
             <div className="relative rounded-xl shadow-lg overflow-hidden h-[80vh] sm:h-[85vh] md:h-[90vh] lg:h-[100vh]">
               <div className="flex flex-col lg:flex-row h-full">
-                <div className="relative flex-1 p-6">
+                <div className="relative flex-1 p-2 sm:p-4 lg:p-6">
                   <div className="absolute inset-0 bg-[#006A4E] rounded-3xl"></div> {/* Color verde para Chiapas */}
                   <div className="relative z-10 w-full h-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
                     <div className="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
@@ -660,7 +666,6 @@ const payload = {
                           ref={containerRef}
                           className="absolute inset-0 w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
                         >
-                          {/* --- TOOLTIP PARA SVG AÑADIDO --- */}
                           {tooltip.visible && (
                             <div
                               className="absolute z-40 bg-white text-zinc-800 text-sm p-2.5 rounded-lg shadow-xl border border-gray-200 pointer-events-none flex items-center gap-2"
@@ -696,18 +701,16 @@ const payload = {
           </div>
         )}
 
-        <button
-          onClick={toggleAudio}
-          className="fixed bottom-6 left-6 z-50 w-14 h-14 bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-green-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600"
-          aria-label={isPlaying ? "Pausar música" : "Reproducir música"}
-        >
-          {isPlaying ? (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          )}
-        </button>
-
+        <div className="fixed bottom-6 left-6 z-50">
+            <audio 
+                src={musicaChiapas} 
+                controls 
+                loop
+                className="custom-audio-player-chiapas"
+            >
+                Tu navegador no soporta el elemento de audio.
+            </audio>
+        </div>
       </div>
       {showODPicker && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40">
@@ -739,17 +742,15 @@ const payload = {
               <button onClick={() => setShowODPicker(false)} className="px-3 py-2 rounded-lg border hover:bg-neutral-50">Cancelar</button>
               <button
                 onClick={() => {
-// ✅ Validar que ambos estén en "Me interesa" (Chiapas)
-const intereses = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas") || "[]");
-if (!origenSel || !destinoSel) {
-  alert("Elige origen y destino.");
-  return;
-}
-if (!intereses.includes(origenSel) || !intereses.includes(destinoSel)) {
-  alert('Debes marcar "Me interesa" en ambos municipios antes de elegirlos.');
-  return;
-}
-
+                  const intereses = JSON.parse(localStorage.getItem("interesesMunicipios_Chiapas") || "[]");
+                  if (!origenSel || !destinoSel) {
+                    alert("Elige origen y destino.");
+                    return;
+                  }
+                  if (!intereses.includes(origenSel) || !intereses.includes(destinoSel)) {
+                    alert('Debes marcar "Me interesa" en ambos municipios antes de elegirlos.');
+                    return;
+                  }
                   if (!origenSel || !destinoSel) return;
                   setFormData(prev => ({ ...prev, modoDestino: "manual", lugarInicio: origenSel, ultimoLugar: destinoSel }));
                   try {
