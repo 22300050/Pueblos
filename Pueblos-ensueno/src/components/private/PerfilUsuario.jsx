@@ -6,7 +6,7 @@ import jicaraImg from '../../assets/img/tabasco/jícara.gif';
 import guayaberaImg from '../../assets/img/tabasco/guayabera.jpg';
 import canastaImg from '../../assets/img/tabasco/canasta.mimbre.jpg';
 import cabezaOlmecaImg from '../../assets/img/tabasco/cabeza-olmeca.jpg';
-import userAvatar from '../../assets/Integrantes/Fernando.jpg';
+import userAvatar from '../../assets/Integrantes/Kevin.jpg';
 import { useAuth } from '../../AuthContext.jsx'; 
 
 
@@ -145,7 +145,10 @@ const SettingsInput = ({ label, type, id, value, icon, placeholder }) => (
 export default function PerfilUsuario() {
     const [activeSection, setActiveSection] = useState('resumen');
     const [activeTab, setActiveTab] = useState('productos');
-    const { user, logout } = useAuth(); // Correcto
+    const { user, logout, login } = useAuth(); // Correcto
+    const [localAvatar, setLocalAvatar] = useState(user?.avatar || null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
   
 
@@ -213,10 +216,68 @@ const renderContent = () => {
             return (
                  <div className="space-y-8">
                     <SettingsSection title="Información Personal">
-                        <div className="flex items-center gap-4">
-                             <img src={user?.avatar || userAvatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
-                            <button className="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-300">Cambiar foto</button>
-                        </div>
+                                <div className="flex items-center gap-4">
+                                     <img src={localAvatar || user?.avatar || userAvatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
+                                    <div>
+                                        <label className="inline-flex items-center gap-2 px-3 py-2 bg-slate-200 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-300 cursor-pointer">
+                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    setSelectedFile(file);
+                                                    const url = URL.createObjectURL(file);
+                                                    setLocalAvatar(url);
+                                                }
+                                            }} />
+                                            Cambiar foto
+                                        </label>
+                                        {selectedFile && (
+                                            <div className="mt-2">
+                                                <button onClick={async () => {
+                                                    if (!selectedFile) return;
+                                                    setUploading(true);
+                                                    try {
+                                                        const form = new FormData();
+                                                        form.append('avatar', selectedFile);
+
+                                                        // Obtener id de usuario desde localStorage o desde user
+                                                        const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+                                                        const userId = storedUser?.usu_id || storedUser?.id || user?.id;
+
+                                                        if (!userId) {
+                                                            alert('No se encontró id de usuario. Por favor inicia sesión de nuevo.');
+                                                            return;
+                                                        }
+
+                                                        const token = localStorage.getItem('token');
+
+                                                        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/usuarios/${userId}/avatar`, {
+                                                            method: 'POST',
+                                                            body: form,
+                                                            headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
+                                                        });
+
+                                                        const data = await res.json();
+                                                        if (!res.ok) throw new Error(data.message || 'Error al subir');
+
+                                                        // Actualizar localStorage user y contexto
+                                                        const updatedUser = { ...(storedUser || user), avatar: data.avatar };
+                                                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                                                        login(updatedUser);
+                                                        setLocalAvatar(data.avatar);
+                                                        setSelectedFile(null);
+                                                        alert('Avatar subido correctamente');
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                        alert('Error al subir la imagen: ' + err.message);
+                                                    } finally {
+                                                        setUploading(false);
+                                                    }
+                                                }} className="mt-2 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm">{uploading ? 'Subiendo...' : 'Subir foto'}</button>
+                                                <button onClick={() => { setSelectedFile(null); setLocalAvatar(user?.avatar || null); }} className="ml-2 mt-2 px-3 py-2 bg-slate-100 rounded-lg text-sm">Cancelar</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                         <SettingsInput label="Nombre Completo" type="text" id="name" value={user?.name || ''} icon={<User size={16} />} />
                         <SettingsInput label="Correo Electrónico" type="email" id="email" value={user?.email || ''} icon={<Mail size={16} />} />
                     </SettingsSection>
