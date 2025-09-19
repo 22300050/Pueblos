@@ -10,7 +10,7 @@ import mueblesImg from '../assets/muebles-de-mimbre.webp';
 import tabasquenaImg from '../assets/mujer.jpg';
 import cestasImg from '../assets/cestas.jpg';
 import logo from '../assets/Logo.png';
-import { Menu, Search, X } from 'lucide-react';
+import { Menu, Search, X, Heart } from 'lucide-react';
 import tirasBordadasImg from '../assets/TirasBordadas.jpeg';
 import bisuteriaMaderaImg from "../assets/BisuteríaMadera.jpg";
 import mariaLucianoCruzImg from '../assets/maria-luciano-cruz.jpg';
@@ -85,9 +85,34 @@ const [selectedTypes, setSelectedTypes] = useState([]);
 const [selectedArtisans, setSelectedArtisans] = useState([]);
 const [selectedPriceRange, setSelectedPriceRange] = useState('');
 const [activeCatalog, setActiveCatalog] = useState(null);
-
 const [tradeProduct, setTradeProduct] = useState(null);
 const [catalogProduct, setCatalogProduct] = useState(null);
+// --- Favoritos (localStorage) ---
+const FAV_KEY = 'pde_favoritos_artesanias';
+
+const [favorites, setFavorites] = useState(() => {
+  try {
+    const raw = localStorage.getItem(FAV_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+});
+
+useEffect(() => {
+  try {
+    localStorage.setItem(FAV_KEY, JSON.stringify(favorites));
+  } catch {}
+}, [favorites]);
+
+const isFavorite = (id) => favorites.includes(id);
+const toggleFavorite = (id) => {
+  setFavorites((prev) =>
+    prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
+  );
+};
+
+
 
 useEffect(() => {
   if (tradeProduct || catalogProduct) {
@@ -337,19 +362,28 @@ const artesanosParaMostrar = useMemo(() => {
     return Array.from(artesanosMap.values());
 }, [productosFiltrados]);
 
-// --- FUNCIÓN DE CATÁLOGO SIMPLIFICADA ---
-const handleShowCatalog = (artesano) => {
-    // Genera el catálogo dinámicamente desde la lista `productosAll`
-    const catalogItems = productosAll
-        .filter(p => p.artesano === artesano.nombre) // Encuentra todos los productos del artesano
-        .filter(p => ![12, 13, 14].includes(p.id)); // Excluye los perfiles
+// --- FUNCIÓN DE CATÁLOGO ---
+const handleShowCatalog = (item) => {
+  // Si viene de una tarjeta de "artesanías", item.artesano es el nombre del artesano
+  // Si viene de "artesanos", item.nombre es el nombre del artesano
+  const artisanName = item.artesano ? item.artesano : item.nombre;
 
-    setActiveCatalog(catalogItems.length > 0 ? catalogItems : null);
-    
-    // El producto para el modal puede ser el perfil o el producto en el que se hizo clic
-    setCatalogProduct(artesano.productoPerfil || artesano); 
+  // Busca todos los productos de ese artesano (excluye los perfiles 12,13,14)
+  const catalogItems = productosAll
+    .filter(p => p.artesano === artisanName)
+    .filter(p => ![12, 13, 14].includes(p.id));
+
+  setActiveCatalog(catalogItems.length ? catalogItems : []);
+
+  // Si existe un “perfil” para el artesano, úsalo como cabecera del modal
+  const perfil = productosAll.find(
+    p => [12, 13, 14].includes(p.id) && p.artesano === artisanName
+  );
+
+  // Si no hay perfil, usa el propio item que disparó el modal
+  setCatalogProduct(perfil || item);
 };
-// ... después de handleShowCatalog };
+
 
   // --- INICIO: HANDLERS Y COMPONENTE PARA EL SISTEMA DE FILTROS ---
   const handleTypeChange = (type) => {
@@ -369,6 +403,15 @@ const handleShowCatalog = (artesano) => {
     setSelectedArtisans([]);
     setSelectedPriceRange('');
   };
+  // Abre el modal de "Comerciar" con el producto seleccionado
+const openTrade = (producto) => {
+  setTradeProduct(producto);
+  // Estado inicial del traductor
+  setFromLang('español');
+  setToLang("yokot'an (chontal)");
+  setSourceText('');
+};
+
   
   // Componente para la barra de filtros
   const FilterSidebar = () => (
@@ -427,7 +470,7 @@ const handleShowCatalog = (artesano) => {
   {/* Header */}
   <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
 <Link to="/" className="flex items-center gap-4">
-  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
+  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto shrink-0" />
   <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
     Pueblos de Ensueño
   </h1>
@@ -485,13 +528,18 @@ const handleShowCatalog = (artesano) => {
             </div>
             
             {/* Sidebar para Móvil (Modal/Overlay) */}
-            {isFilterSidebarOpen && (
-                <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setIsFilterSidebarOpen(false)}>
-                    <div className="fixed inset-y-0 left-0 z-50 shadow-lg" onClick={e => e.stopPropagation()}>
-                        <FilterSidebar />
-                    </div>
-                </div>
-            )}
+  {isFilterSidebarOpen && (
+    <div
+         className="fixed inset-0 z-40 bg-black/50 md:hidden"
+      onClick={() => setIsFilterSidebarOpen(false)}>
+    <div
+      className="fixed inset-y-0 left-0 z-50 shadow-lg w-[85vw] max-w-sm bg-white"
+  onClick={(e) => e.stopPropagation()}
+    >
+      <FilterSidebar />
+    </div>
+  </div>
+)}
             
             {/* Contenido Principal */}
             <div className="flex-1">
@@ -519,21 +567,36 @@ const handleShowCatalog = (artesano) => {
                 </div>
 
                 {/* Cuadrícula de productos */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                     {/* Renderizado condicional de Artesanías */}
                     {viewMode === 'artesanias' && productosFiltrados.filter(p => ![12, 13, 14].includes(p.id)).map(producto => (
                         <div key={producto.id} className="bg-white rounded-2xl shadow-lg p-4 border border-pink-200 flex flex-col">
                             {/* ... El contenido de la tarjeta de producto ... */}
-                             <img src={producto.imagen} alt={producto.nombre} className="w-full h-72 object-cover rounded-lg mb-4" />
-                            <h3 className="text-lg sm:text-xl font-bold text-pink-700 mb-2">{producto.nombre}</h3>
-                            <p className="text-sm text-gray-700 mb-1">👤 <strong>{producto.artesano}</strong></p>
+                              <img src={producto.imagen} alt={producto.nombre} className="w-full rounded-lg mb-4 object-cover aspect-[4/3] sm:aspect-[3/2] md:h-72" />
+                            <h3 className="text-lg sm:text-xl font-bold text-pink-700 mb-2 break-words">{producto.nombre}</h3>
+                            <p className="text-sm text-gray-700 mb-1 break-words">👤 <strong>{producto.artesano}</strong></p>
                             <p className="text-sm text-gray-600 mb-1">🕐 {producto.horario}</p>
                             <p className="text-sm text-gray-600 mb-3">💰 {producto.precio}</p>
-                            <div className="mt-auto flex flex-col gap-2">
-                                <button className="w-full bg-pink-100 text-pink-700 font-medium px-4 py-2 rounded-lg hover:bg-pink-200 transition" onClick={() => handleShowCatalog(producto)}>
-                                    Ver catálogo
-                                </button>
-                            </div>
+                              <div className="mt-auto flex flex-col gap-2">
+                                <button type="button" onClick={() => toggleFavorite(producto.id)} aria-label={isFavorite(producto.id) ? "Quitar de favoritos" : "Agregar a favoritos"}
+                                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition ${isFavorite(producto.id)
+                              ? 'bg-pink-600 text-white border-pink-600 hover:bg-pink-700'
+                            : 'bg-white text-pink-700 border-pink-300 hover:bg-pink-50'}`}>
+      <Heart
+        size={18}
+        className={isFavorite(producto.id) ? 'fill-current' : ''}
+      />
+      {isFavorite(producto.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+    </button>
+
+   <button
+     className="w-full bg-pink-100 text-pink-700 font-medium px-4 py-2 rounded-lg hover:bg-pink-200 transition"
+     onClick={() => openTrade(producto)}
+     type="button"
+   >
+     Comerciar
+   </button>
+ </div>
                         </div>
                     ))}
 
@@ -565,6 +628,205 @@ const handleShowCatalog = (artesano) => {
         </div>
     </div>
 </main>
+{/* --- MODAL DE CATÁLOGO --- */}
+ {catalogProduct && (
+   <div
+     className="fixed inset-0 z-50 bg-black/50 flex items-end md:items-center justify-center p-0 md:p-4"
+     onClick={() => { setActiveCatalog([]); setCatalogProduct(null); }}
+   >
+     <div
+       className="bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full md:max-w-4xl max-h-[92vh] md:max-h-[90vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]"
+       onClick={(e) => e.stopPropagation()}
+     >
+      <div className="flex items-center justify-between p-4 border-b">
+        <h2 className="text-xl font-bold text-pink-700">
+          Catálogo de {catalogProduct.artesano || catalogProduct.nombre}
+        </h2>
+        <button
+          className="p-2 rounded-lg hover:bg-gray-100"
+          onClick={() => { setActiveCatalog([]); setCatalogProduct(null); }}
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+        {activeCatalog && activeCatalog.length > 0 ? (
+          activeCatalog.map((item) => (
+            <div key={item.id} className="border rounded-xl p-3">
+              <img
+                src={item.imagen}
+                alt={item.nombre}
+                className="w-full h-48 object-cover rounded-lg mb-3"
+              />
+              <h3 className="font-semibold text-pink-700">{item.nombre}</h3>
+              <p className="text-sm text-gray-600">💰 {item.precio}</p>
+
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(item.id)}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition ${
+                    isFavorite(item.id)
+                      ? 'bg-pink-600 text-white border-pink-600 hover:bg-pink-700'
+                      : 'bg-white text-pink-700 border-pink-300 hover:bg-pink-50'
+                  }`}
+                  aria-label={isFavorite(item.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                >
+                  <Heart size={18} className={isFavorite(item.id) ? 'fill-current' : ''} />
+                  {isFavorite(item.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-600">Este artesano aún no tiene productos en el catálogo.</p>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+{/* --- MODAL: COMERCIAR / TRADUCTOR --- */}
+ {tradeProduct && (
+   <div
+     className="fixed inset-0 z-50 bg-black/50 flex items-end md:items-center justify-center p-0 md:p-4"
+     onClick={() => setTradeProduct(null)}
+   >
+     <div
+       className="bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full md:max-w-4xl max-h-[92vh] md:max-h-[90vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]"
+       onClick={(e) => e.stopPropagation()}
+     >
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b">
+        <h2 className="text-xl font-bold text-pink-700">
+          Comerciar con {tradeProduct.artesano} — {tradeProduct.nombre}
+        </h2>
+        <button
+          className="p-2 rounded-lg hover:bg-gray-100"
+          onClick={() => setTradeProduct(null)}
+          aria-label="Cerrar"
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      {/* Selector de idiomas */}
+      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-700 mb-1">De</label>
+          <select className="border rounded-lg p-2 w-full"
+            value={fromLang}
+            onChange={(e) => setFromLang(e.target.value)}
+          >
+            <option>español</option>
+            <option>inglés</option>
+            <option>yokot'an (chontal)</option>
+          </select>
+        </div>
+
+        <div className="flex items-end justify-center">
+          <button
+            type="button"
+            onClick={swapLangs}
+            className="px-4 py-2 rounded-lg border bg-white hover:bg-gray-50"
+            aria-label="Intercambiar idiomas"
+            title="Intercambiar idiomas"
+          >
+            ⇄
+          </button>
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-700 mb-1">A</label>
+          <select
+            className="border rounded-lg p-2"
+            value={toLang}
+            onChange={(e) => setToLang(e.target.value)}
+          >
+            <option>español</option>
+            <option>inglés</option>
+            <option>yokot'an (chontal)</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Entrada y salida */}
+      <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1">Escribe tu mensaje</label>
+          <textarea
+            className="w-full h-40 border rounded-lg p-3"
+            placeholder="Escribe aquí… p. ej. ¿Cuánto cuesta? ¿Tiene en otra medida?"
+            value={sourceText}
+            onChange={(e) => setSourceText(e.target.value)}
+          />
+          {/* Sugerencias rápidas según idioma origen */}
+          {suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => addSuggestion(s)}
+                  className="text-sm px-3 py-1 rounded-full border bg-white hover:bg-pink-50"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1">Traducción</label>
+          <div className="w-full h-40 border rounded-lg p-3 bg-gray-50 overflow-y-auto">
+            {translate(sourceText, fromLang, toLang)}
+          </div>
+
+          {/* Frases contextuales útiles para comercio */}
+          <div className="flex flex-wrap gap-2 mt-3">
+            {[
+              '¿Cuánto cuesta?',
+              '¿Tiene descuento por mayoreo?',
+              '¿Puede personalizar este producto?',
+              '¿En qué horario puedo pasar?',
+              'Quiero comprar esta artesanía.',
+            ].map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setSourceText(p)}
+                className="text-sm px-3 py-1 rounded-full border bg-white hover:bg-pink-50"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Pie del modal */}
+      <div className="flex justify-end gap-2 p-4 border-t">
+        <button
+          className="px-4 py-2 rounded-lg border hover:bg-gray-50"
+          onClick={() => setSourceText('')}
+          type="button"
+        >
+          Limpiar
+        </button>
+        <button
+          className="px-4 py-2 rounded-lg bg-pink-600 text-white hover:bg-pink-700"
+          onClick={() => navigator.clipboard?.writeText(translate(sourceText, fromLang, toLang))}
+          type="button"
+          title="Copiar traducción"
+        >
+          Copiar traducción
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
   <footer className="py-10 text-center bg-[var(--color-primary)] text-black">
   <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 px-4">
     <div>

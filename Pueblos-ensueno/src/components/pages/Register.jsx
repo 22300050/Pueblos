@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, User, Cake, Phone } from 'lucide-react';
+import { Mail, Lock, User, Cake, Phone, Accessibility } from 'lucide-react';
 import axios from 'axios';
 // import { useTranslation } from 'react-i18next'; // Eliminado para la previsualización
 
@@ -14,7 +14,8 @@ export default function Register() {
     telefono: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    discapacidad: ''
   });
   const [error, setError] = useState('');
 
@@ -157,27 +158,50 @@ window.location.replace('/homelogin');
                 className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
               />
             </div>
-            
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="password"
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirmar Contraseña"
-                className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
-              />
-            </div>
-            
-            {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+{/* Confirmar contraseña */}
+<div className="relative">
+  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+  <input
+    type="password"
+    name="confirmPassword"
+    value={form.confirmPassword}
+    onChange={handleChange}
+    placeholder="Confirmar Contraseña"
+    className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+  />
+</div>
 
-            <button
-              type="submit"
-              className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              Crear Cuenta
-            </button>
+{/* Discapacidad */}
+<div className="relative">
+  <Accessibility className="absolute left-4 top-3 w-5 h-5 text-slate-400" />
+  <select
+    name="discapacidad"
+    value={form.discapacidad}
+    onChange={handleChange}
+    className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+  >
+    <option value="">¿Tienes alguna discapacidad?</option>
+    <option value="ninguna">Ninguna</option>
+    <option value="visual">Discapacidad visual</option>
+    <option value="auditiva">Discapacidad auditiva</option>
+    <option value="motriz">Discapacidad motriz o física</option>
+    <option value="intelectual">Discapacidad intelectual</option>
+    <option value="psicosocial">Discapacidad psicosocial o mental</option>
+    <option value="multiple">Discapacidad múltiple</option>
+    <option value="otra">Otra (especificar)</option>
+  </select>
+</div>
+
+
+{/* Mensaje de error (una sola vez) */}
+{error && <p className="text-sm text-red-600 text-center">{error}</p>}
+
+<button
+  type="submit"
+  className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+>
+  Crear Cuenta
+</button>
           </form>
 
           <div className="relative my-6">
