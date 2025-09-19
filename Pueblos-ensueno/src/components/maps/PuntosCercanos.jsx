@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from 'react-router-dom';
-import { Share2 } from 'lucide-react'; // 'Menu' se eliminó, 'Share2' se añadió
+import { Share2, Landmark, Users, CalendarDays } from 'lucide-react';
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import parqueImg from '../../assets/ParqueGps.jpg';
 import { createClient } from "@supabase/supabase-js";
 
-
+// --- El resto de tu configuración y lógica permanece igual ---
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const supabase = createClient(
@@ -72,7 +72,6 @@ const EVENTOS = [
   },
 
 ];
-
 
 // Intereses del usuario (conecta esto a tu selector si ya lo tienes)
 const INTERESES_USUARIO = new Set(["gastronomía", "taller"]);
@@ -581,14 +580,15 @@ return () => {
 };
 
 }, []);
+
   return (
-    <div className="text-[var(--color-text)]">
+    <div className="text-zinc-800">
       {/* Mapa + Panel lateral */}
-      <div className="flex flex-col md:flex-row w-full min-h-[100dvh] bg-white">
+      <div className="flex flex-col md:flex-row w-full h-screen bg-white overflow-hidden">
+        
         {/* Mapa */}
-        <div className="relative flex-1 md:h-auto">
-          <div ref={mapContainer} className="w-full h-[45vh] md:h-full" />
-          
+        <div className="relative flex-1 h-1/2 md:h-full">
+          <div ref={mapContainer} className="w-full h-full" />
           <div className="absolute bottom-6 right-6 z-10">
             <button 
                 onClick={startLiveShare10m} 
@@ -600,144 +600,106 @@ return () => {
           </div>
         </div>
         
-        {/* Panel lateral */}
-        <div className="w-full md:w-[420px] p-4 md:p-6 overflow-y-auto border-l border-gray-300 bg-gray-50 shadow-inner max-h-[55vh] md:max-h-none">
-          <h1 className="text-2xl font-bold mb-2 text-gray-800">{tituloCiudad}</h1>
+        {/* ▼▼▼ INICIA PANEL LATERAL MODIFICADO ▼▼▼ */}
+        <div className="w-full md:w-[420px] border-l border-gray-200 bg-slate-50 flex flex-col h-1/2 md:h-full">
+          
+          {/* --- Cabecera Fija (no se desplaza) --- */}
+          <div className="p-4 md:p-6 flex-shrink-0 border-b border-slate-200">
+            <h1 className="text-2xl font-bold mb-1 text-gray-800">{tituloCiudad}</h1>
+            <p className="text-sm text-gray-600">
+              {descCiudad.split('\n').map((linea, i) => (
+                  <span key={i}>{linea}<br /></span>
+              ))}
+            </p>
+          </div>
+          
+          {/* --- Contenedor con Scroll --- */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-6">
+            {imagenPanel && (
+              <div className="mb-6 rounded-lg overflow-hidden shadow-md">
+                  <img
+                  src={imagenPanel}
+                  alt="Imagen del marcador"
+                  className="w-full h-48 object-cover"
+                  />
+              </div>
+            )}
 
-          {/* Filtros 
-          <div className="flex flex-wrap gap-2 mb-4">
-            <button className="bg-gray-300 text-black px-4 py-1 rounded shadow text-sm hover:bg-gray-400">Mostrar todos</button>
-            <button className="bg-purple-600 text-white px-4 py-1 rounded shadow text-sm hover:bg-purple-700">Artesanos</button>
-            <button className="bg-indigo-600 text-white px-4 py-1 rounded shadow text-sm hover:bg-indigo-700">Monumentos</button>
-          </div> 
-*/}
-          {/* Descripción */}
-<p className="text-sm text-gray-600 mb-4">
-  {descCiudad.split('\n').map((linea, i) => (
-    <span key={i}>{linea}<br /></span>
-  ))}
-</p>
+            {/* --- Lista de Secciones --- */}
+            <div className="space-y-6">
+              
+              {/* --- Sección: Zonas Culturales --- */}
+              <div>
+                <h3 className="flex items-center gap-3 text-lg font-bold text-zinc-700 mb-3 border-b pb-2">
+                  <Landmark size={20} className="text-orange-500" />
+                  <span>{tituloPanel}</span>
+                </h3>
+                <ul className="space-y-2">
+                  <li>
+                    <button onClick={focusLaVenta} className="w-full text-left p-3 bg-white rounded-lg shadow-sm border border-transparent hover:border-orange-400 hover:bg-orange-50 transition-all group">
+                      <p className="font-semibold text-zinc-800 group-hover:text-orange-600">
+                        {linkActor ? <Link to={linkActor}>{nombreActor}</Link> : nombreActor}
+                      </p>
+                      <p className="text-xs text-zinc-500">{descripcionActor}</p>
+                    </button>
+                  </li>
+                  {/* Si hay artesanos asociados a la zona cultural, se muestran aquí */}
+                  {artesanos.map((a, idx) => (
+                      <li key={idx} className="ml-4">
+                          <Link to={a.link} state={a.municipio ? { municipio: a.municipio } : undefined} className="block w-full text-left p-3 bg-white rounded-lg shadow-sm border border-transparent hover:border-emerald-400 hover:bg-emerald-50 transition-all group">
+                              <p className="font-semibold text-sm text-emerald-800 group-hover:text-emerald-600">{a.nombre}</p>
+                              <p className="text-xs text-zinc-500">{a.descripcion}</p>
+                          </Link>
+                      </li>
+                  ))}
+                </ul>
+              </div>
 
+              {/* --- Sección: Artesanos --- */}
+              <div>
+                <h3 className="flex items-center gap-3 text-lg font-bold text-zinc-700 mb-3 border-b pb-2">
+                  <Users size={20} className="text-orange-500" />
+                  <span>Artesanos</span>
+                </h3>
+                <ul className="space-y-2">
+                  <li>
+                    <button onClick={focusMaria} className="w-full text-left p-3 bg-white rounded-lg shadow-sm border border-transparent hover:border-orange-400 hover:bg-orange-50 transition-all group">
+                      <p className="font-semibold text-zinc-800 group-hover:text-orange-600">María Luciano Cruz</p>
+                      <p className="text-xs text-zinc-500">Cestería de palma · Nacajuca · 09:00–17:00</p>
+                    </button>
+                  </li>
+                  <li>
+                    <button onClick={focusMatilde} className="w-full text-left p-3 bg-white rounded-lg shadow-sm border border-transparent hover:border-orange-400 hover:bg-orange-50 transition-all group">
+                      <p className="font-semibold text-zinc-800 group-hover:text-orange-600">Matilde de la Cruz Esteban</p>
+                      <p className="text-xs text-zinc-500">Sombreros y cestería · Nacajuca · 09:00–18:00</p>
+                    </button>
+                  </li>
+                </ul>
+              </div>
 
-          {imagenPanel && (
-  <div className="mb-4">
-    <img
-      src={imagenPanel}
-      alt="Imagen del marcador"
-      className="rounded shadow-md w-full"
-      style={{ maxHeight: 220, objectFit: "cover" }}
-    />
-  </div>
-)}
-
-
-          {/* Lista ejemplo */}
-          <div className="mt-6 text-sm bg-blue-50 text-blue-900 p-3 rounded space-y-4">
-            <h2 className="text-lg font-bold text-center">📍 {tituloPanel}</h2>
-            <ul className="space-y-2">
-<li className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-green-100">
-  {linkActor ? (
-    // Cuando haya linkActor (ej. al hacer click en el marcador del museo),
-    // el nombre mostrará un Link a esa ruta (monumento a la cabeza olmeca)
-    <Link to={linkActor} className="text-blue-800 font-bold underline">
-      {nombreActor}
-    </Link>
-  ) : (
-    // Cuando NO haya linkActor (estado inicial “Parque Museo La Venta”),
-    // el nombre funciona como botón para centrar / abrir el marcador
-    <button
-      onClick={focusLaVenta}
-      className="text-blue-800 font-bold underline"
-      aria-label="Centrar mapa en Parque Museo La Venta"
-    >
-      {nombreActor}
-    </button>
-  )}
-  <br />
-  <span className="text-gray-700">{descripcionActor}</span>
-</li>
-
-{artesanos.length > 0 && (
-  <>
-    <li className="border-t border-blue-300 pt-3 mt-3">
-      <h3 className="text-center text-blue-900 text-sm font-semibold">🧵 Artesanos</h3>
-    </li>
-    {artesanos.map((a, idx) => (
-      <li
-        key={idx}
-        className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-purple-100"
-      >
-        {a.link ? (
-           <Link
-   to={a.link}
-   state={a.municipio ? { municipio: a.municipio } : undefined}
-   className="text-blue-800 font-bold underline"
- >
-            {a.nombre}
-          </Link>
-        ) : (
-          <strong>{a.nombre}</strong>
-        )}
-        <br />
-        <span className="text-gray-700">{a.descripcion}</span>
-      </li>
-    ))}
-  </>
-)}
-
-
-<li className="border-t border-blue-300 pt-3 mt-3">
-  <h3 className="text-center text-blue-900 text-sm font-semibold">🧵 Artesanos</h3>
-</li>
-
-<li className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-purple-100">
-  <button
-    onClick={focusMaria}
-    className="text-blue-800 font-bold underline"
-    aria-label="Centrar mapa en María Luciano Cruz"
-  >
-    María Luciano Cruz
-  </button>
-  <br />
-  <span className="text-gray-700">
-    Cestería de palma · Nacajuca · 09:00–17:00
-  </span>
-</li>
-
-<li className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-purple-100">
-  <button
-    onClick={focusMatilde}
-    className="text-blue-800 font-bold underline"
-    aria-label="Centrar mapa en Matilde de la Cruz Esteban"
-  >
-    Matilde de la Cruz Esteban
-  </button>
-  <br />
-  <span className="text-gray-700">
-    Sombreros y cestería · Nacajuca · 09:00–18:00
-  </span>
-</li>
-
-
-              <li className="border-t border-blue-300 pt-3 mt-3">
-                <h3 className="text-center text-blue-900 text-sm font-semibold">🎉 Eventos culturales</h3>
-              </li>
-              <li className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-yellow-100">
-                <strong>Feria del Queso</strong><br />
-                <span className="text-gray-600">Ubicación: 17.9892, -92.9302</span>
-              </li>
-              <li className="cursor-pointer bg-white border rounded px-3 py-2 shadow-sm hover:bg-yellow-100">
-                <strong>Taller de Chocolate</strong><br />
-                <span className="text-gray-600">Ubicación: 17.9855, -92.9231</span>
-              </li>
-            </ul>
-  </div>
+              {/* --- Sección: Eventos Culturales --- */}
+              <div>
+                <h3 className="flex items-center gap-3 text-lg font-bold text-zinc-700 mb-3 border-b pb-2">
+                  <CalendarDays size={20} className="text-orange-500" />
+                  <span>Eventos Culturales</span>
+                </h3>
+                <ul className="space-y-2">
+                  <li className="p-3 bg-white rounded-lg shadow-sm">
+                    <p className="font-semibold text-zinc-800">Feria del Queso</p>
+                    <p className="text-xs text-zinc-500">Ubicación: 17.9892, -92.9302</p>
+                  </li>
+                  <li className="p-3 bg-white rounded-lg shadow-sm">
+                    <p className="font-semibold text-zinc-800">Taller de Chocolate</p>
+                    <p className="text-xs text-zinc-500">Ubicación: 17.9855, -92.9231</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
-{notifTestReady && (
-  <>
-  </>
-)}
+        {/* ▲▲▲ FIN PANEL LATERAL MODIFICADO ▲▲▲ */}
       </div>
+      {notifTestReady && <></>}
+    </div>
   );
 }
