@@ -34,6 +34,8 @@ import MapaTabasco from './components/maps/MapaTabasco';
 import MapaChiapas from './components/maps/MapaChiapas';
 import Itinerario from './components/maps/Itinerario';
 
+import MonumentoCabezaOlmeca from "./components/public/MonumentoCabezaOlmeca";
+
 import HomeLogin from './components/private/HomeLogin';
 import PerfilUsuario from './components/private/PerfilUsuario';
 
@@ -43,7 +45,7 @@ import MunicipioDetalle from './components/MunicipioDetalle';
 import MunicipioDetalleChiapas from './components/MunicipioDetalleChiapas';
 import './locales/i18n';
 
-import MonumentoCabezaOlmeca from "./components/MonumentoCabezaOlmeca";
+
 
 import { AuthProvider } from './AuthContext';
 
