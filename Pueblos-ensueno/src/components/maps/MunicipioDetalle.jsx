@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { addSeleccion, getSelecciones, removeSeleccion } from '../utils/itinerarioStore';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Menu } from 'lucide-react';
-import logo from '../assets/Logo.png';
+import { useParams, Link } from 'react-router-dom';
+import { MapPin, Construction, Plus, Check, X, HandHeart, Star, Gem, ChevronLeft, ChevronRight } from 'lucide-react';
 
-
+// --- DATOS ORIGINALES (COMPLETOS Y CON RUTAS RESTAURADAS) ---
+// Se ha restaurado toda la estructura de datos y las rutas con `new URL` de tu archivo original.
+// La imagen de Nacajuca se usa como genérica para todos los headers.
 
 const datosMunicipios = {
   "Balancán": {
@@ -62,21 +63,18 @@ const datosMunicipios = {
     nombre: "Combis / Transbus (Rutas Urbanas)",
     tarifa: "Aprox. $10.50 MXN (público general)",
     contacto: "N/A",
-    // Asegúrate que esta línea apunte a la imagen de tarifas de combi
     imagen: new URL('../assets/transporte/tarifas_combi.jpg', import.meta.url).href
   },
   {
     nombre: "Radio Taxis",
     tarifa: "Tarifa mínima aprox. $35 - $45 MXN",
     contacto: "Radio Taxi Gaviota: 993 354 0000",
-    // Esta debe apuntar a la imagen de tarifas de taxi
     imagen: new URL('../assets/transporte/tarifas_taxi_colectivo.jpg', import.meta.url).href
   },
   {
     nombre: "Taxis Colectivos (a otros municipios)",
     tarifa: "Desde $30 MXN (depende del destino)",
     contacto: "Salidas desde la terminal de autobuses",
-    // Y esta TAMBIÉN debe apuntar a la misma imagen de tarifas de taxi
     imagen: new URL('../assets/transporte/tarifas_taxi_colectivo.jpg', import.meta.url).href
   }
 ]
@@ -194,7 +192,7 @@ transportePublico: [
     ]
   },
   "Tacotalpa": {
-    descripcion: "Ubicado en la sierra, con atractivos naturales y cafetales.",
+    descripcion: "Ubicado en la sierra, con atractivos naturales y cafetalales.",
     lugares: ["Villa Tapijulapa", "Grutas de Coconá"],
     rutasComunitarias: [
       "Ruta Ecoturística Agua Selva: Un desarrollo comunitario que ofrece senderismo, cañonismo y rappel en un área con más de 50 cascadas.",
@@ -228,155 +226,34 @@ transportePublico: [
     ]
   },
 };
-// 🎨 Tema por municipio (colores, clases y medios)
 const THEME_BY_MUNICIPIO = {
-  "Balancán": {
-    header: new URL('../assets/balancan-header.jpg', import.meta.url).href,
-    bg: 'bg-teal-50', title: 'text-teal-800', card: 'bg-white/80',
-    btnPrimary: 'bg-teal-600 hover:bg-teal-700 text-white',
-    btnSecondary: 'bg-teal-100 hover:bg-teal-200 text-teal-800',
-    badge: 'bg-teal-100 text-teal-800'
-  },
-  "Cardenas": {
-    header: new URL('../assets/cardenas-header.jpg', import.meta.url).href,
-    bg: 'bg-amber-50', title: 'text-amber-800', card: 'bg-white/80',
-    btnPrimary: 'bg-amber-600 hover:bg-amber-700 text-white',
-    btnSecondary: 'bg-amber-100 hover:bg-amber-200 text-amber-800',
-    badge: 'bg-amber-100 text-amber-800'
-  },
-  "Centla": {
-    header: new URL('../assets/centla-header.jpg', import.meta.url).href,
-    bg: 'bg-sky-50', title: 'text-sky-800', card: 'bg-white/80',
-    btnPrimary: 'bg-sky-600 hover:bg-sky-700 text-white',
-    btnSecondary: 'bg-sky-100 hover:bg-sky-200 text-sky-800',
-    badge: 'bg-sky-100 text-sky-800'
-  },
-  "Centro": {
-    header: new URL('../assets/img/tabasco/Villahermosa.jpg', import.meta.url).href,
-    bg: 'bg-emerald-50', title: 'text-emerald-800', card: 'bg-white/80',
-    btnPrimary: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-    btnSecondary: 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800',
-    badge: 'bg-emerald-100 text-emerald-800'
-  },
-  "Comalcalco": {
-    header: new URL('../assets/comalcalco-header.jpg', import.meta.url).href,
-    bg: 'bg-orange-50', title: 'text-orange-800', card: 'bg-white/80',
-    btnPrimary: 'bg-orange-600 hover:bg-orange-700 text-white',
-    btnSecondary: 'bg-orange-100 hover:bg-orange-200 text-orange-800',
-    badge: 'bg-orange-100 text-orange-800'
-  },
-  "Cunduacán": {
-    header: new URL('../assets/cunduacan-header.jpg', import.meta.url).href,
-    bg: 'bg-yellow-50', title: 'text-yellow-800', card: 'bg-white/80',
-    btnPrimary: 'bg-yellow-600 hover:bg-yellow-700 text-white',
-    btnSecondary: 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800',
-    badge: 'bg-yellow-100 text-yellow-800'
-  },
-  "Emiliano Zapata": {
-    header: new URL('../assets/emiliano-zapata-header.jpg', import.meta.url).href,
-    bg: 'bg-lime-50', title: 'text-lime-800', card: 'bg-white/80',
-    btnPrimary: 'bg-lime-600 hover:bg-lime-700 text-white',
-    btnSecondary: 'bg-lime-100 hover:bg-lime-200 text-lime-800',
-    badge: 'bg-lime-100 text-lime-800'
-  },
-  "Huimanguillo": {
-    header: new URL('../assets/huimanguillo-header.jpg', import.meta.url).href,
-    bg: 'bg-blue-50', title: 'text-blue-800', card: 'bg-white/80',
-    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white',
-    btnSecondary: 'bg-blue-100 hover:bg-blue-200 text-blue-800',
-    badge: 'bg-blue-100 text-blue-800'
-  },
-  "Jalapa": {
-    header: new URL('../assets/jalapa-header.jpg', import.meta.url).href,
-    bg: 'bg-lime-50', title: 'text-lime-800', card: 'bg-white/80',
-    btnPrimary: 'bg-lime-600 hover:bg-lime-700 text-white',
-    btnSecondary: 'bg-lime-100 hover:bg-lime-200 text-lime-800',
-    badge: 'bg-lime-100 text-lime-800'
-  },
-  "Jalpa de Méndez": {
-    header: new URL('../assets/jalpa-header.jpg', import.meta.url).href,
-    bg: 'bg-fuchsia-50', title: 'text-fuchsia-800', card: 'bg-white/80',
-    btnPrimary: 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white',
-    btnSecondary: 'bg-fuchsia-100 hover:bg-fuchsia-200 text-fuchsia-800',
-    badge: 'bg-fuchsia-100 text-fuchsia-800'
-  },
-  "Jonuta": {
-    header: new URL('../assets/jonuta-header.jpg', import.meta.url).href,
-    bg: 'bg-rose-50', title: 'text-rose-800', card: 'bg-white/80',
-    btnPrimary: 'bg-rose-600 hover:bg-rose-700 text-white',
-    btnSecondary: 'bg-rose-100 hover:bg-rose-200 text-rose-800',
-    badge: 'bg-rose-100 text-rose-800'
-  },
-  "Macuspana": {
-    header: new URL('../assets/macuspana-header.jpg', import.meta.url).href,
-    bg: 'bg-stone-50', title: 'text-stone-800', card: 'bg-white/80',
-    btnPrimary: 'bg-stone-600 hover:bg-stone-700 text-white',
-    btnSecondary: 'bg-stone-100 hover:bg-stone-200 text-stone-800',
-    badge: 'bg-stone-100 text-stone-800'
-  },
-  "Nacajuca": {
-    header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href,
-    bg: 'bg-emerald-50', title: 'text-emerald-800', card: 'bg-white/80',
-    btnPrimary: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-    btnSecondary: 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800',
-    badge: 'bg-emerald-100 text-emerald-800'
-  },
-  "Paraíso": {
-    header: new URL('../assets/paraiso-header.jpg', import.meta.url).href,
-    bg: 'bg-cyan-50', title: 'text-cyan-800', card: 'bg-white/80',
-    btnPrimary: 'bg-cyan-600 hover:bg-cyan-700 text-white',
-    btnSecondary: 'bg-cyan-100 hover:bg-cyan-200 text-cyan-800',
-    badge: 'bg-cyan-100 text-cyan-800'
-  },
-  "Tacotalpa": {
-    header: new URL('../assets/tacotalpa-header.jpg', import.meta.url).href,
-    bg: 'bg-green-50', title: 'text-green-800', card: 'bg-white/80',
-    btnPrimary: 'bg-green-600 hover:bg-green-700 text-white',
-    btnSecondary: 'bg-green-100 hover:bg-green-200 text-green-800',
-    badge: 'bg-green-100 text-green-800'
-  },
-  "Teapa": {
-    header: new URL('../assets/teapa-header.jpg', import.meta.url).href,
-    bg: 'bg-emerald-50', title: 'text-emerald-800', card: 'bg-white/80',
-    btnPrimary: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-    btnSecondary: 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800',
-    badge: 'bg-emerald-100 text-emerald-800'
-  },
-  "Tenosique": {
-    header: new URL('../assets/tenosique-header.jpg', import.meta.url).href,
-    bg: 'bg-indigo-50', title: 'text-indigo-800', card: 'bg-white/80',
-    btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white',
-    btnSecondary: 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800',
-    badge: 'bg-indigo-100 text-indigo-800'
-  },
-
-  // Fallback
-  _default: {
-    header: null,
-    bg: 'bg-amber-50', title: 'text-amber-800', card: 'bg-white/80',
-    btnPrimary: 'bg-amber-600 hover:bg-amber-700 text-white',
-    btnSecondary: 'bg-amber-100 hover:bg-amber-200 text-amber-800',
-    badge: 'bg-amber-100 text-amber-800'
-  }
+    "Balancán": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Cardenas": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Centla": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Centro": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Comalcalco": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Cunduacán": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Emiliano Zapata": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Huimanguillo": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Jalapa": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Jalpa de Méndez": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Jonuta": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Macuspana": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Nacajuca": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Paraíso": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Tacotalpa": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Teapa": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    "Tenosique": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+    _default: { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href }
 };
-// 📷 Imágenes para cada municipio/categoría/nombre
 const MEDIA_BY_MUNICIPIO = {
   Centro: {
     lugares: {
-      "Parque-Museo La Venta – museo al aire libre con una de las colecciones olmecas más importantes del país (cabezas colosales, altares, estelas).":
-        new URL('../assets/museo.jpg', import.meta.url).href,
-
-      "Malecón “Carlos A. Madrazo” (río Grijalva) – corredor peatonal y ciclovía con nueva infraestructura urbana e iluminación; obra inaugurada en 2024.":
-        new URL('../assets/malecon.jpeg', import.meta.url).href,
-
-      "Laguna de las Ilusiones – símbolo natural de la ciudad; miradores y parques a su alrededor.":
-        new URL('../assets/Laguna-de-las-ilusiones.jpg', import.meta.url).href,
-
-      "Museo Regional de Antropología “Carlos Pellicer Cámara” – arqueología y etnografía regional (Olmeca y Maya).":
-        new URL('../assets/museo-regional.jpg', import.meta.url).href,
-
-      "Yumká (Centro de Interpretación y Convivencia con la Naturaleza) – recorrido guiado por selva, sabana y humedales.":
-        new URL('../assets/yumka.jpg', import.meta.url).href,
+      "Parque-Museo La Venta – museo al aire libre con una de las colecciones olmecas más importantes del país (cabezas colosales, altares, estelas).": new URL('../assets/museo.jpg', import.meta.url).href,
+      "Malecón “Carlos A. Madrazo” (río Grijalva) – corredor peatonal y ciclovía con nueva infraestructura urbana e iluminación; obra inaugurada en 2024.": new URL('../assets/malecon.jpeg', import.meta.url).href,
+      "Laguna de las Ilusiones – símbolo natural de la ciudad; miradores y parques a su alrededor.": new URL('../assets/Laguna-de-las-ilusiones.jpg', import.meta.url).href,
+      "Museo Regional de Antropología “Carlos Pellicer Cámara” – arqueología y etnografía regional (Olmeca y Maya).": new URL('../assets/museo-regional.jpg', import.meta.url).href,
+      "Yumká (Centro de Interpretación y Convivencia con la Naturaleza) – recorrido guiado por selva, sabana y humedales.": new URL('../assets/yumka.jpg', import.meta.url).href,
     },
     gastronomia: {
       "Puchero tabasqueño": new URL('../assets/gastro-puchero.jpg', import.meta.url).href,
@@ -389,1007 +266,341 @@ const MEDIA_BY_MUNICIPIO = {
       "Máscaras chontales": new URL('../assets/artesano.gif', import.meta.url).href,
       "Cacao artesanal": new URL('../assets/artesano.gif', import.meta.url).href,
     },
-    
   },
 };
 const MEDIA_EVENTOS = {
   "Feria Tabasco": new URL('../assets/evento-feria-tabasco.jpg', import.meta.url).href,
   "Festival del Chocolate": new URL('../assets/evento-chocolate.jpg', import.meta.url).href,
   "Celebrando la Eternidad":  new URL('../assets/evento-dia-muertos.jpg', import.meta.url).href,
-  // agrega aquí las que vayas teniendo
 };
-
 const eventosCentroPorMes = {
-  Enero: [
-    "Pellicer Visual (artes visuales en homenaje a Carlos Pellicer; arranca el año)",
-    "Programación cultural de enero vía Agenda DECUR"
-  ],
-  Febrero: [
-    "Tardes de Carnaval (pre-carnaval, 28 feb–2 mar; música y comparsas en espacios públicos)",
-    "Programa cultural febrero (cartelera oficial)"
-  ],
-  Marzo: [
-    "Festival Guayacán & Macuilí (floraciones urbanas; conciertos, teatro, exposiciones)"
-  ],
-  Abril: [
-    "Ciclo 'De la ciudad a la comunidad' – Tardes musicales en el quiosco (Parque Mestre)",
-    "Agenda abril (talleres/expos en CCV y sedes barriales)"
-  ],
-  Mayo: [
-    "Feria Tabasco (Parque Tabasco 'Dora María'; palenque, exposición ganadera, desfile) – 1 al 11 de mayo"
-  ],
-  Junio: [
-    "Festival Villahermosa (arte, música, literatura; sedes CCV y Zona Luz)"
-  ],
-  Julio: [
-    "Mis Vacaciones en la Biblioteca (talleres infantiles/juveniles en bibliotecas municipales)"
-  ],
-  Agosto: [
-    "Agenda Cultural agosto: 7 Villas & Música Centro + talleres de verano en colonias y bibliotecas (Parques Parrilla, Tamulté, Los Pajaritos, CCV)"
-  ],
-  Septiembre: [
-    "Fiestas Patrias – verbenas y conciertos en Parque Manuel Mestre (sábados del mes)"
-  ],
-  Octubre: [
-    "Celebrando la Eternidad (Día de Muertos en Centro Histórico/Zona Luz: altares, catrinas, desfile)"
-  ],
-  Noviembre: [
-    "Festival del Chocolate (exposiciones y catas; sede en Villahermosa) – 13 al 16 de noviembre"
-  ],
-  Diciembre: [
-    "Nochebuena en Centro (programa navideño en foros, plazas y parques; música, pastorelas)"
-  ]
+  Enero: [ "Pellicer Visual (artes visuales en homenaje a Carlos Pellicer; arranca el año)", "Programación cultural de enero vía Agenda DECUR" ],
+  Febrero: [ "Tardes de Carnaval (pre-carnaval, 28 feb–2 mar; música y comparsas en espacios públicos)", "Programa cultural febrero (cartelera oficial)" ],
+  Marzo: [ "Festival Guayacán & Macuilí (floraciones urbanas; conciertos, teatro, exposiciones)" ],
+  Abril: [ "Ciclo 'De la ciudad a la comunidad' – Tardes musicales en el quiosco (Parque Mestre)", "Agenda abril (talleres/expos en CCV y sedes barriales)" ],
+  Mayo: [ "Feria Tabasco (Parque Tabasco 'Dora María'; palenque, exposición ganadera, desfile) – 1 al 11 de mayo" ],
+  Junio: [ "Festival Villahermosa (arte, música, literatura; sedes CCV y Zona Luz)" ],
+  Julio: [ "Mis Vacaciones en la Biblioteca (talleres infantiles/juveniles en bibliotecas municipales)" ],
+  Agosto: [ "Agenda Cultural agosto: 7 Villas & Música Centro + talleres de verano en colonias y bibliotecas (Parques Parrilla, Tamulté, Los Pajaritos, CCV)" ],
+  Septiembre: [ "Fiestas Patrias – verbenas y conciertos en Parque Manuel Mestre (sábados del mes)" ],
+  Octubre: [ "Celebrando la Eternidad (Día de Muertos en Centro Histórico/Zona Luz: altares, catrinas, desfile)" ],
+  Noviembre: [ "Festival del Chocolate (exposiciones y catas; sede en Villahermosa) – 13 al 16 de noviembre" ],
+  Diciembre: [ "Nochebuena en Centro (programa navideño en foros, plazas y parques; música, pastorelas)" ]
 };
 
+// --- COMPONENTES DE UI ---
 
-function MunicipioDetalle() {
+const Section = ({ children, className = '' }) => (
+    <section className={`py-12 sm:py-16 ${className}`}>
+        <div className="container mx-auto px-4 sm:px-8">
+            {children}
+        </div>
+    </section>
+);
+
+const SectionHeader = ({ title, subtitle, children }) => (
+  <div className="text-center md:flex md:items-center md:justify-between mb-10">
+    <div className="md:text-left">
+      <h2 className="text-3xl font-bold text-zinc-800 mb-2">{title}</h2>
+      {subtitle && <p className="text-slate-600 max-w-3xl">{subtitle}</p>}
+    </div>
+    {children && <div className="mt-4 md:mt-0">{children}</div>}
+  </div>
+);
+
+const InfoCard = ({ icon: Icon, title, onClick, count }) => (
+  <div
+    onClick={onClick}
+    className="bg-white rounded-2xl p-6 shadow-lg border-t-4 border-orange-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 cursor-pointer text-center h-full flex flex-col items-center justify-center"
+  >
+    <Icon className="w-10 h-10 mb-4 text-orange-500" strokeWidth={1.5} />
+    <h3 className="font-bold text-lg text-zinc-800">{title}</h3>
+    {count > 0 && 
+      <p className="text-sm text-slate-500 mt-1">{count} {count === 1 ? 'opción' : 'opciones'}</p>
+    }
+  </div>
+);
+
+const CarouselCard = ({ title, img, onAdd, isAdded, date }) => (
+  <div className="flex-shrink-0 w-72 snap-center bg-white rounded-2xl shadow-lg overflow-hidden group">
+    <div className="relative">
+      <img src={img} alt={title} className="w-full h-40 object-cover" />
+      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
+       <button
+        onClick={onAdd}
+        className={`absolute top-3 right-3 w-9 h-9 rounded-full grid place-content-center shadow-md transition-all duration-200 transform group-hover:scale-110 ${
+          isAdded 
+            ? 'bg-green-500 text-white' 
+            : 'bg-white/80 text-zinc-700 hover:bg-white'
+        }`}
+        aria-label={isAdded ? "Quitar" : "Agregar"}
+      >
+        {isAdded ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+      </button>
+    </div>
+    <div className="p-4">
+      <h4 className="font-bold text-zinc-800 truncate">{title}</h4>
+      {date && <p className="text-sm text-slate-500">{date}</p>}
+    </div>
+  </div>
+);
+
+// --- COMPONENTE PRINCIPAL ---
+
+export default function MunicipioDetalle() {
   const { nombre } = useParams();
-  // Agregar selección al itinerario del usuario (dentro del componente)
-const agregar = (payload) => {
-  const id = `${nombre}-${payload.tipo}-${payload.nombre}`;
-  const enriched = { ...payload, meta: { ...(payload.meta || {}), source: 'MunicipioDetalle' } };
-  const ok = addSeleccion({ id, municipio: nombre, estado: "Tabasco", ...enriched });
-  alert(`✅ ${payload.nombre} (${payload.tipo}) se registró en tu itinerario${ok ? '' : ' (ya estaba antes)'}`);
-  setUltimoIdAgregado(id);
-};
-const getMedia = (categoria, itemNombre) => {
-  const m = MEDIA_BY_MUNICIPIO[nombre] || {};
-  return (m[categoria] && m[categoria][itemNombre]) || theme.header || null;
-};
-
-
-
-  const [interesado, setInteresado] = useState(false);
-  useEffect(() => {
-  const interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
-  if (interesesActuales.includes(nombre)) {
-    setInteresado(true);
-  }
-}, [nombre]);
-
-  const [ultimoIdAgregado, setUltimoIdAgregado] = useState(null);
-  const [seleccionesIds, setSeleccionesIds] = useState(new Set());
   const datos = datosMunicipios[nombre];
-  // 🎨 Tema activo
-const theme = THEME_BY_MUNICIPIO[nombre] || THEME_BY_MUNICIPIO._default;
-// Imagen del evento aunque el título venga con detalles entre paréntesis o guiones
-const getEventoImg = (evento) => {
-  if (!evento) return theme.header;
-  const base = evento.split(' (')[0].split(' –')[0].trim(); // corta "(...)" o "– ..."
-  return MEDIA_EVENTOS[evento] || MEDIA_EVENTOS[base] || theme.header;
-};
+  const theme = THEME_BY_MUNICIPIO[nombre] || THEME_BY_MUNICIPIO._default;
+  const carouselRefs = { eventos: useRef(null), gastronomia: useRef(null) };
 
-// Leer mes guardado en localStorage al iniciar
-const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
-const [mesSeleccionado, setMesSeleccionado] = useState(itinerarioPersistido?.mes || '');
-const mesSelectRef = useRef(null);
+  const [seleccionesIds, setSeleccionesIds] = useState(new Set());
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', items: [], type: '' });
+  const [interesado, setInteresado] = useState(false);
+  const [mesSeleccionado, setMesSeleccionado] = useState('');
 
-// Detectar cambios en localStorage mientras la app está abierta
-useEffect(() => {
-  const handleStorageChange = () => {
-    const it = JSON.parse(localStorage.getItem("itinerario") || "null");
-    if (it?.mes) setMesSeleccionado(it.mes);
-    try {
-      const actuales = (getSelecciones() || []).map(s => s.id);
-      setSeleccionesIds(new Set(actuales));
-    } catch {}
-   };
-
-  window.addEventListener("storage", handleStorageChange);
-  return () => window.removeEventListener("storage", handleStorageChange);
-}, []);
-
-
-
-// También actualizar al volver a este componente o cambiar de municipio
-useEffect(() => {
-  const it = JSON.parse(localStorage.getItem("itinerario") || "null");
-  setMesSeleccionado(it?.mes || "");
-  try {
+  useEffect(() => {
+    const interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
+    setInteresado(interesesActuales.includes(nombre));
     const actuales = (getSelecciones() || []).map(s => s.id);
     setSeleccionesIds(new Set(actuales));
-  } catch {}
- }, [nombre]);
+  }, [nombre]);
 
+  const getMedia = (categoria, itemNombre) => (MEDIA_BY_MUNICIPIO[nombre]?.[categoria]?.[itemNombre] || theme.header);
+  const getEventoImg = (evento) => (MEDIA_EVENTOS[evento.split(' (')[0].trim()] || theme.header);
 
-const navigate = useNavigate();
-const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-// ==== Modal estilo Meta ====
-const [modalOpen, setModalOpen] = useState(false);
-// Cerca de la definición de useState
-const [modalSection, setModalSection] = useState(null); // 'lugares' | 'imperdibles' | 'joyitas' | 'talleres' | 'rutasComunitarias'
-
-const openSection = (section) => {
-  setModalSection(section);
-  setModalOpen(true);
-};
-
-const closeModal = () => {
-  setModalOpen(false);
-  setModalSection(null);
-};
-
-// Componente de modal
-// Componente de modal (look Meta)
-const ModalShell = ({ title, children }) => (
-  <div className="fixed inset-0 z-[60]">
-    {/* Backdrop oscurecido */}
-    <div
-      className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
-      onClick={closeModal}
-      aria-hidden="true"
-    />
-    <div className="absolute inset-0 overflow-y-auto">
-      <div className="min-h-full flex items-start md:items-center justify-center p-3 sm:p-4 md:p-8">
-        {/* Panel */}
-        <div
-          className="
-            w-[calc(100%-1.5rem)]
-            sm:w-[min(720px,calc(100%-2rem))]
-            md:w-[min(860px,calc(100%-4rem))]
-            bg-white rounded-[22px] shadow-2xl overflow-hidden
-            ring-1 ring-black/5
-            animate-[modalIn_.18s_ease-out] origin-center
-          "
-          style={{
-            // pequeña animación de entrada
-            transformOrigin: 'center'
-          }}
-        >
-          {/* Header sticky como Meta */}
-          <div className="
-              sticky top-0 z-10
-              bg-white/95 backdrop-blur
-              px-5 sm:px-6 md:px-8 py-4 md:py-5
-              border-b border-black/5
-              flex items-start justify-between
-            ">
-            <div className="pr-3">
-              <h3 className="text-[22px] sm:text-[24px] md:text-[26px] leading-tight font-bold">
-                {title}
-              </h3>
-              <p className="text-[13px] text-gray-600 mt-1">
-                Explora y agrega a tu itinerario sin salir de la página.
-              </p>
-            </div>
-            <button
-              onClick={closeModal}
-              className="
-                shrink-0 w-10 h-10 grid place-content-center
-                rounded-2xl border border-black/10
-                hover:bg-black/5 active:bg-black/10
-                transition
-              "
-              aria-label="Cerrar"
-            >
-              <span className="text-[18px] leading-none">✕</span>
-            </button>
-          </div>
-
-          {/* Cuerpo scrollable */}
-          <div className="px-5 sm:px-6 md:px-8 py-6 bg-[#F7F8FA] max-h-[78vh] overflow-y-auto space-y-5">
-            {children}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* keyframes inline para la animación */}
-    <style>{`
-      @keyframes modalIn {
-        from { opacity: .6; transform: scale(.98) translateY(6px); }
-        to   { opacity: 1;  transform: scale(1)   translateY(0); }
-      }
-    `}</style>
-  </div>
-);
-
-
-// Filtra eventos del municipio por el mes seleccionado (si hay mes)
-const eventosFiltrados = (datos.eventos || []).filter(ev => {
-  if (!mesSeleccionado) return true; // si aún no eligió mes, muestra todos
-  return (ev.fecha || "").toLowerCase().includes(mesSeleccionado.toLowerCase());
-});
-// --- Normaliza eventos del mes para cualquier municipio ---
-const getEventosDelMes = (mes) => {
-  if (!mes) return [];
-  if (nombre === "Centro") {
-    return eventosCentroPorMes[mes] || [];
-  }
-  // Otros municipios: usan datos.eventos = [{nombre, fecha}]
-  const lista = (datos.eventos || []).filter(ev =>
-    (ev.fecha || "").toLowerCase().includes(mes.toLowerCase())
-  );
-  // devolvemos solo los nombres (mismo formato que Centro)
-  return lista.map(ev => (typeof ev === 'string' ? ev : ev.nombre));
-};
-
-
-  if (!datos) return <h2 className="p-10">Municipio no encontrado</h2>;
-
-const manejarInteres = () => {
-  setInteresado(true);
-  alert(`¡Gracias! Has marcado interés en visitar ${nombre}`);
-
-  // --- NUEVA LÓGICA DE REORDENAMIENTO ---
-
-  // 1. Leemos la lista completa de intereses.
-  let interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
-
-  // 2. Quitamos el municipio actual si ya estaba en la lista para evitar duplicados y poder moverlo al frente.
-  interesesActuales = interesesActuales.filter(m => m !== nombre);
-
-  // 3. Añadimos el municipio actual AL PRINCIPIO de la lista.
-  interesesActuales.unshift(nombre);
-
-  // 4. Guardamos la lista reordenada en localStorage.
-  localStorage.setItem("interesesMunicipios_Tabasco", JSON.stringify(interesesActuales));
-
-  // 5. Actualizamos el borrador del itinerario para activar el modo de "Enfoque Local".
-  const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
-  localStorage.setItem("itinerario", JSON.stringify({
-    ...itinerarioPersistido,
-    lugarInicio: nombre, // Se asegura de que el punto de partida sea este municipio.
-    modoDestino: "auto"
-  }));
-};
-const idDe = (payload) => `${nombre}-${payload.tipo}-${payload.nombre}`;
-
-const estaAgregado = (payload) => seleccionesIds.has(idDe(payload));
-
-const toggleSeleccion = (payload) => {
-  const id = idDe(payload);
-  if (seleccionesIds.has(id)) {
-    removeSeleccion(id);
-    const next = new Set(seleccionesIds);
-    next.delete(id);
-    setSeleccionesIds(next);
-    setUltimoIdAgregado(null);
-    alert(`❌ ${payload.nombre} (${payload.tipo}) se quitó de tu itinerario`);
-  } else {
-    const enriched = { ...payload, meta: { ...(payload.meta || {}), source: 'MunicipioDetalle' } };
-    const ok = addSeleccion({ id, municipio: nombre, estado: "Tabasco", ...enriched });
-    const next = new Set(seleccionesIds);
-    next.add(id);
-    setSeleccionesIds(next);
-    setUltimoIdAgregado(id);
-    alert(`✅ ${payload.nombre} (${payload.tipo}) se agregó a tu itinerario${ok ? '' : ' (ya estaba antes)'}`);
-  }
-};
-
-// ---- UI helpers estilo Meta ----
-const scrollToId = (id) => {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
-
-const CategoryCard = ({ title, subtitle, onClick, bgImg }) => (
-  <div
-    className="relative rounded-2xl overflow-hidden group cursor-pointer min-h-[260px] flex items-end"
-    onClick={onClick}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => (e.key === 'Enter' ? onClick() : null)}
-  >
-    <div
-      className="absolute inset-0 bg-center bg-cover"
-      style={{
-        backgroundImage: bgImg ? `url(${bgImg})` : 'linear-gradient(135deg, #f5f5f5, #eaeaea)'
-      }}
-    />
-    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition" />
-    <div className="relative w-full p-6">
-      <h3 className="text-white text-2xl md:text-3xl font-extrabold drop-shadow">
-        {title}
-      </h3>
-      <p className="text-white/90">{subtitle}</p>
-      <div className="mt-4 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/90 group-hover:bg-white transition">
-        <span className="text-gray-800 text-xl leading-none">＋</span>
-      </div>
-    </div>
-  </div>
-);
-// Tarjeta hero para carrusel (estilo Meta)
-const HeroCard = ({ title, img, onAdd, className = "" }) => (
-  <div
-    data-hero-card
-    className={`relative rounded-[22px] overflow-hidden snap-center w-full sm:w-[640px] aspect-[16/9] ${className}`}
-  >
-    <div
-      className="absolute inset-0 bg-center bg-cover"
-      style={{ backgroundImage: img ? `url(${img})` : 'linear-gradient(135deg,#e8eef6,#e9f7ef)' }}
-    />
-    <div className="absolute inset-0 bg-black/25" />
-    <div className="absolute top-4 left-4 right-4">
-      <h4 className="text-white text-xl font-bold leading-tight drop-shadow">{title}</h4>
-    </div>
-    <button
-      onClick={onAdd}
-      className="absolute right-4 bottom-4 w-10 h-10 rounded-full bg-white/90 hover:bg-white grid place-content-center shadow-md text-xl leading-none"
-      aria-label="Agregar"
-    >
-      +
-    </button>
-  </div>
-);
-// ==== Drag + Momentum + Snap para carrusel de gastronomía ====
-const gastroScrollRef = useRef(null);
-const isDraggingRef = useRef(false);
-const startXRef = useRef(0);
-const scrollLeftRef = useRef(0);
-
-// para calcular velocidad
-const lastXRef = useRef(0);
-const lastTRef = useRef(0);
-let rafIdRef = null;
-
-const getCardWidthWithGap = (el) => {
-  const firstCard = el.querySelector('[data-hero-card]');
-  if (!firstCard) return 300;
-  const cardRect = firstCard.getBoundingClientRect();
-  const styles = getComputedStyle(firstCard.parentElement);
-  const gap = parseFloat(styles.columnGap || styles.gap || '0');
-  return cardRect.width + gap; // ancho de tarjeta + gap
-};
-
-const snapToNearest = (el) => {
-  const step = getCardWidthWithGap(el);
-  const targetIndex = Math.round(el.scrollLeft / step);
-  const targetLeft = targetIndex * step;
-  el.scrollTo({ left: targetLeft, behavior: 'smooth' });
-};
-
-const onGastroMouseDown = (e) => {
-  const el = gastroScrollRef.current;
-  if (!el) return;
-  cancelAnimationFrame(rafIdRef);
-  isDraggingRef.current = true;
-  el.classList.add('dragging');    // estilito opcional (cursor)
-  startXRef.current = e.pageX - el.getBoundingClientRect().left;
-  scrollLeftRef.current = el.scrollLeft;
-  lastXRef.current = e.pageX;
-  lastTRef.current = performance.now();
-};
-// ==== Drag + Momentum + Snap para carrusel de EVENTOS ====
-const eventosScrollRef = useRef(null);
-const isDraggingEventosRef = useRef(false);
-const startXEventosRef = useRef(0);
-const scrollLeftEventosRef = useRef(0);
-const lastXEventosRef = useRef(0);
-const lastTEventosRef = useRef(0);
-let rafIdEventosRef = null;
-
-const getEventosCardWidthWithGap = (el) => {
-  const firstCard = el.querySelector('[data-hero-card]');
-  if (!firstCard) return 300;
-  const cardRect = firstCard.getBoundingClientRect();
-  const styles = getComputedStyle(firstCard.parentElement);
-  const gap = parseFloat(styles.columnGap || styles.gap || '0');
-  return cardRect.width + gap;
-};
-
-const snapEventosToNearest = (el) => {
-  const step = getEventosCardWidthWithGap(el);
-  const targetIndex = Math.round(el.scrollLeft / step);
-  const targetLeft = targetIndex * step;
-  el.scrollTo({ left: targetLeft, behavior: 'smooth' });
-};
-
-const onEventosMouseDown = (e) => {
-  const el = eventosScrollRef.current;
-  if (!el) return;
-  cancelAnimationFrame(rafIdEventosRef);
-  isDraggingEventosRef.current = true;
-  el.classList.add('dragging');
-  startXEventosRef.current = e.pageX - el.getBoundingClientRect().left;
-  scrollLeftEventosRef.current = el.scrollLeft;
-  lastXEventosRef.current = e.pageX;
-  lastTEventosRef.current = performance.now();
-};
-
-const onEventosMouseLeaveOrUp = () => {
-  const el = eventosScrollRef.current;
-  if (!el) return;
-  if (!isDraggingEventosRef.current) return;
-  isDraggingEventosRef.current = false;
-  el.classList.remove('dragging');
-
-  let v = (lastXEventosRef.current - startXEventosRef.current) / (performance.now() - lastTEventosRef.current || 1);
-  v = Math.max(Math.min(v, 1.2), -1.2);
-  const decay = 0.95;
-  const minV = 0.08;
-
-  const step = () => {
-    el.scrollLeft -= v * 40;
-    v *= decay;
-    if (Math.abs(v) > minV) requestAnimationFrame(step);
-    else snapEventosToNearest(el);
-  };
-  rafIdEventosRef = requestAnimationFrame(step);
-};
-
-const onEventosMouseMove = (e) => {
-  const el = eventosScrollRef.current;
-  if (!el || !isDraggingEventosRef.current) return;
-  e.preventDefault();
-  const x = e.pageX - el.getBoundingClientRect().left;
-  const walk = (x - startXEventosRef.current);
-  el.scrollLeft = scrollLeftEventosRef.current - walk;
-  lastXEventosRef.current = e.pageX;
-  lastTEventosRef.current = performance.now();
-};
-
-const onGastroMouseLeaveOrUp = () => {
-  const el = gastroScrollRef.current;
-  if (!el) return;
-  if (!isDraggingRef.current) return;
-
-  isDraggingRef.current = false;
-  el.classList.remove('dragging');
-
-  // inercia: velocidad a partir de la última delta
-  const now = performance.now();
-  let v = (lastXRef.current - startXRef.current) / (now - lastTRef.current || 1); // px/ms aprox.
-  v = Math.max(Math.min(v, 1.2), -1.2); // cap de velocidad
-
-  const decay = 0.95;          // fricción
-  const minV = 0.08;           // umbral de parada
-
-  const step = () => {
-    el.scrollLeft -= v * 40;   // factor de desplazamiento
-    v *= decay;
-    if (Math.abs(v) > minV) {
-      rafIdRef = requestAnimationFrame(step);
-    } else {
-      snapToNearest(el);       // al final, ajusta al card más cercano
-    }
-  };
-  rafIdRef = requestAnimationFrame(step);
-};
-
-const onGastroMouseMove = (e) => {
-  const el = gastroScrollRef.current;
-  if (!el || !isDraggingRef.current) return;
-  e.preventDefault();
-  const x = e.pageX - el.getBoundingClientRect().left;
-  const walk = (x - startXRef.current);
-  el.scrollLeft = scrollLeftRef.current - walk;
-
-  // registra último delta para la velocidad
-  lastXRef.current = e.pageX;
-  lastTRef.current = performance.now();
-};
-
-  return (
-      <div className="text-[var(--color-text)]">
-        {/* ===== Modal dinámico de secciones ===== */}
-{modalOpen && (
-  <ModalShell
-    title={
-      modalSection === 'lugares' ? 'Lugares destacados' :
-      modalSection === 'imperdibles' ? 'Sitios imperdibles' :
-      modalSection === 'joyitas' ? 'Joyitas poco conocidas' :
-      // ---- INICIO DE LA MODIFICACIÓN ----
-      modalSection === 'rutasComunitarias' ? 'Rutas de Turismo Comunitario' :
-      // ---- FIN DE LA MODIFICACIÓN ----
-      modalSection === 'talleres' ? 'Talleres y espacios' : ''
-    }
-  >
-{modalSection === 'lugares' && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-    {datos.lugares.map((lugar, idx) => (
-      <div
-        key={`mlugar-${idx}`}
-        className="
-          rounded-2xl bg-white ring-1 ring-black/5 shadow-sm overflow-hidden
-        "
-      >
-        {/* área media tipo cover */}
-        <div
-  className="w-full aspect-[16/9] bg-center bg-cover"
-  style={{ backgroundImage: `url(${getMedia('lugares', lugar)})` }}
-/>
-        <div className="p-4 sm:p-5">
-          <h4 className="text-[15px] sm:text-[16px] font-extrabold leading-snug">
-            {lugar}
-          </h4>
-          <p className="text-[12px] text-gray-600 mt-1">Principal del municipio</p>
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              onClick={() => toggleSeleccion({ tipo: 'lugarDestacado', nombre: lugar })}
-              className="
-                px-3 py-1.5 rounded-full
-                bg-emerald-600 hover:bg-emerald-700
-                text-white text-[13px] font-medium
-              "
-            >
-              {estaAgregado({ tipo:'lugarDestacado', nombre:lugar }) ? 'Quitar' : 'Agregar'}
-            </button>
-
-            <button
-              onClick={() => alert('Abrir ficha “Ver más” (demo)')}
-              className="
-                px-3 py-1.5 rounded-full border border-black/10
-                text-[13px] font-medium hover:bg-black/5
-              "
-            >
-              Ver más
-            </button>
-          </div>
-        </div>
-      </div>
-    ))}
-  </div>
-)}
-
-
-{modalSection === 'imperdibles' && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-    {(datos.sitiosTop || []).map((n, i) => (
-      <div key={`mtop-${i}`} className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm p-4 sm:p-5">
-        <p className="font-semibold text-[15px]">{n}</p>
-        <p className="text-[12px] text-gray-600 mt-1">No te lo puedes perder</p>
-        <button
-          onClick={() => toggleSeleccion({ tipo: 'sitioImperdible', nombre: n, categoria: 'top' })}
-          className="mt-3 px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium"
-        >
-          {estaAgregado({ tipo:'sitioImperdible', nombre:n }) ? 'Quitar' : 'Agregar'}
-        </button>
-      </div>
-    ))}
-  </div>
-)}
-
-
-{modalSection === 'joyitas' && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-    {(datos.sitiosOcultos || []).map((n, i) => (
-      <div key={`mhide-${i}`} className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm p-4 sm:p-5">
-        <p className="text-[12px] font-semibold text-emerald-700">Secreto local</p>
-        <p className="text-[14px] text-gray-800 mt-1">{n}</p>
-        <div className="mt-3">
-          <button
-            onClick={() => toggleSeleccion({ tipo: 'joyaPocoConocida', nombre: n, categoria: 'oculto' })}
-            className="px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium"
-          >
-            {estaAgregado({ tipo:'joyaPocoConocida', nombre:n }) ? 'Quitar' : 'Agregar'}
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-)}
-
-
-{modalSection === 'talleres' && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-    {(datos.talleres || []).map((t, i) => (
-      <div key={`mtaller-${i}`} className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm p-4 sm:p-5 flex items-center justify-between">
-        <p className="text-[14px]">{t}</p>
-        <button
-          onClick={() => toggleSeleccion({ tipo: 'Talleres y espacios temáticos', nombre: t })}
-          className="px-3 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium"
-        >
-          {estaAgregado({ tipo:'Talleres y espacios temáticos', nombre:t }) ? 'Quitar' : 'Inscribirme'}
-        </button>
-      </div>
-    ))}
-  </div>
-)}
-   {modalSection === 'rutasComunitarias' && (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {(datos.rutasComunitarias || []).map((ruta, i) => (
-          <div key={`m-ruta-${i}`} className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm p-4 sm:p-5">
-            <p className="text-[12px] font-semibold text-teal-700">Experiencia Local</p>
-            <p className="text-[14px] text-gray-800 mt-1">{ruta}</p>
-            <div className="mt-3">
-              <button
-                onClick={() => toggleSeleccion({ tipo: 'rutaComunitaria', nombre: ruta })}
-                className="px-3 py-1.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-[13px] font-medium"
-              >
-                {estaAgregado({ tipo:'rutaComunitaria', nombre:ruta }) ? 'Quitar' : 'Agregar a mi ruta'}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </ModalShell>
-)}
-
-    {/* ===== Header de Home ===== */}
-    <header className="sticky top-0 z-50 w-full py-4 px-6 flex justify-between items-center bg-[var(--color-primary)] shadow-md">
-<Link to="/" className="flex items-center gap-4">
-  <img src={logo} alt="Pueblos de Ensueño - Logotipo" className="h-10 sm:h-12 w-auto" />
-  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wide drop-shadow-md text-black">
-    Pueblos de Ensueño
-  </h1>
-</Link>
-
-<nav className="hidden md:flex gap-3 lg:gap-5 items-center">
-  <Link to="/mapa-tabasco">
-    <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] rounded-full font-semibold shadow-sm transition">
-      ← Regresar al mapa
-    </button>
-  </Link>
-  <Link to="/productos-tabasco" state={{ municipio: nombre }}>
-    <button className="px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] rounded-full font-semibold shadow-sm transition">
-      {`Productos Artesanales de ${nombre || 'Centro'}`}
-    </button>
-  </Link>
-  <button
-    onClick={manejarInteres}
-    className={`px-4 py-2 bg-[var(--orange-250)] hover:bg-[var(--color-secondary)] rounded-full font-semibold shadow-sm transition`}
-  >
-    {interesado ? '¡Te interesa!' : 'Me interesa'}
-  </button>
-</nav>
-
-
-      <button className="block md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-        <Menu size={24} />
-      </button>
-    </header>
-{/* NAV MOBILE */}
-{mobileMenuOpen && (
-  <nav id="menu-movil" className="md:hidden bg-white shadow-md px-6 py-4 space-y-2 border-t border-black/10">
-    <Link to="/mapa-tabasco">
-      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary)] hover:brightness-110 transition">
-        ← Regresar al mapa
-      </button>
-    </Link>
-    <Link to="/productos-tabasco" state={{ municipio: nombre }}>
-      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-[var(--color-secondary)] hover:brightness-110 transition">
-        {`Productos Artesanales de ${nombre || 'Centro'}`}
-      </button>
-    </Link>
-    <button
-      onClick={manejarInteres}
-      className={`w-full px-4 py-2 rounded-lg font-semibold text-white transition ${
-        interesado ? 'bg-green-600' : 'bg-emerald-600 hover:bg-emerald-700'
-      }`}
-    >
-      {interesado ? '¡Te interesa!' : 'Me interesa'}
-    </button>
-  </nav>
-)}
-
-
-{/* Contenido del municipio */}
-<div className={`px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto ${theme.bg}`}>
-{theme.header && (
-  <img
-    src={theme.header}
-    alt={`Header ${nombre}`}
-    className="w-full h-40 sm:h-56 lg:h-72 object-cover rounded-2xl mb-4"
-  />
-)}
-  <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-3 ${theme.title}`}>{nombre}</h1>
-  <p className="mb-4 text-base sm:text-lg lg:text-xl">{datos.descripcion}</p>
-{/* ---- Grid estilo Meta Quest 3 ---- */}
-{/* ---- Grid estilo Meta Quest 3 (CORREGIDO) ---- */}
-<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
-  <CategoryCard
-    title="Lugares destacados"
-    onClick={() => openSection('lugares')}
-    bgImg={theme.header}
-  />
-  <CategoryCard
-    title="Sitios Imperdibles"
-    onClick={() => openSection('imperdibles')}
-    bgImg={theme.header}
-  />
-  <CategoryCard
-    title="Joyitas poco conocidas"
-    onClick={() => openSection('joyitas')}
-    bgImg={theme.header}
-  />
-
-  {/* Tarjeta de Rutas Comunitarias (aparece solo si hay datos) */}
-  {datos.rutasComunitarias && datos.rutasComunitarias.length > 0 && (
-    <CategoryCard
-      title="Rutas de Turismo Comunitario"
-      onClick={() => openSection('rutasComunitarias')}
-      bgImg={theme.header}
-    />
-  )}
-
-  {/* Tarjeta de Talleres (aparece solo si hay datos, independientemente de las rutas) */}
-  {datos.talleres && datos.talleres.length > 0 && (
-    <CategoryCard
-      title="Talleres y espacios"
-      onClick={() => openSection('talleres')}
-      bgImg={theme.header}
-    />
-  )}
-</div>
-<div id="eventos-culturales" className="mt-2"></div>
-<div className="flex items-center justify-between">
-  <h2 className="text-2xl font-semibold">Eventos culturales</h2>
-
-  <div className="flex items-center">
-    <button
-      onClick={() => alert("Vista de mapa en desarrollo")}
-      className="mr-3 px-3 py-1.5 bg-emerald-500 text-white text-sm rounded-full"
-    >
-      Ver en mapa
-    </button>
-
-    <select
-      aria-label="Selecciona el mes de eventos"
-      ref={mesSelectRef}
-      value={mesSeleccionado}
-      onChange={(e) => {
-        const nuevoMes = e.target.value;
-        setMesSeleccionado(nuevoMes);
-
-        const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
-        localStorage.setItem("itinerario", JSON.stringify({ ...itinerarioPersistido, mes: nuevoMes }));
-        window.dispatchEvent(new Event("storage"));
-      }}
-      className="ml-0 border border-gray-300 rounded px-3 py-1 text-sm"
-    >
-      <option value="">Selecciona un mes</option>
-      {Object.keys(eventosCentroPorMes).map((mes) => (
-        <option key={mes} value={mes}>{mes}</option>
-      ))}
-    </select>
-  </div>
-</div>
-
-{!mesSeleccionado ? (
-  <div className="p-4 bg-yellow-100 text-yellow-800 rounded-md">
-    <p>Para ver los eventos culturales de cada mes, selecciona un mes.</p>
-    <button
-      onClick={() => {
-        mesSelectRef.current?.focus();
-        mesSelectRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        mesSelectRef.current?.classList.add('ring-2','ring-blue-400');
-        setTimeout(() => mesSelectRef.current?.classList.remove('ring-2','ring-blue-400'), 1000);
-      }}
-      className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-    >
-      Seleccionar mes
-    </button>
-  </div>
-) : (
-  // Carrusel con TODOS los eventos del mes (cualquier municipio)
-  <div className="relative -mx-4 px-4 mb-8">
-    <div
-      ref={eventosScrollRef}
-      className="overflow-x-auto no-scrollbar snap-x snap-mandatory select-none cursor-grab active:cursor-grabbing scroll-smooth"
-      onMouseDown={onEventosMouseDown}
-      onMouseLeave={onEventosMouseLeaveOrUp}
-      onMouseUp={onEventosMouseLeaveOrUp}
-      onMouseMove={onEventosMouseMove}
-    >
-      <div className="flex gap-4 sm:gap-5 pb-2">
-{(() => {
-  const eventos = getEventosDelMes(mesSeleccionado);
-  if (!eventos.length) {
+  if (!datos) {
     return (
-      <div className="p-4 bg-gray-100 text-gray-700 rounded-md">
-        No hay eventos para {mesSeleccionado} en {nombre}.
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <h2 className="text-2xl font-bold text-zinc-800">Municipio no encontrado</h2>
       </div>
     );
   }
-  return eventos.map((nombreEvento, i) => (
-    <HeroCard
-      key={`ev-${nombre}-${i}`}
-      title={nombreEvento}
-      img={getEventoImg(nombreEvento)}
-      onAdd={() =>
-        toggleSeleccion({
-          tipo: 'evento',
-          nombre: nombreEvento,
-          meta: { mes: mesSeleccionado }
-        })
-      }
-    />
-  ));
-})()}
 
-      </div>
-    </div>
-  </div>
-)}
+  const idDe = (payload) => `${nombre}-${payload.tipo}-${payload.nombre}`;
+  const estaAgregado = (payload) => seleccionesIds.has(idDe(payload));
 
-
-
-<div className="relative rounded-[22px] overflow-hidden mb-8">
-  <img
-    src={getMedia('artesanias', 'Máscaras chontales')}
-    alt="Artesanías en acción"
-    className="w-full h-64 sm:h-80 object-cover"
-  />
-  <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white text-center p-4">
-    <h3 className="text-2xl sm:text-3xl font-bold drop-shadow">🧺 Artesanías</h3>
-    <p className="mt-2 text-sm sm:text-base">Conoce el trabajo de nuestros artesanos {nombre}</p>
-    <Link to="/productos-tabasco" state={{ municipio: nombre }}>
-      <button className="mt-4 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-lg shadow transition">
-        Ver artesanías
-      </button>
-    </Link>
-  </div>
-</div>
-
-
-<h2 className="text-2xl font-semibold mb-4">🍽️ Gastronomía Típica</h2>
-
-{/* Carrusel horizontal estilo Meta */}
-<div className="relative -mx-4 px-4 mb-10">
-  <div
-  ref={gastroScrollRef}
-  className="overflow-x-auto no-scrollbar snap-x snap-mandatory select-none cursor-grab active:cursor-grabbing scroll-smooth"
-
-  onMouseDown={onGastroMouseDown}
-  onMouseLeave={onGastroMouseLeaveOrUp}
-  onMouseUp={onGastroMouseLeaveOrUp}
-  onMouseMove={onGastroMouseMove}
->
-    <div className="flex gap-4 sm:gap-5 pb-2">
-      {(datos.gastronomia || []).map((g, i) => {
-        const img = getMedia('gastronomia', g); // usa tu helper
-        return (
-          <HeroCard
-            key={`gas-${i}`}
-            title={g}
-            img={img}
-            onAdd={() => toggleSeleccion({ tipo: 'Gastronomía típica', nombre: g })}
-          />
-        );
-      })}
-    </div>
-  </div>
-{/* ===== SECCIÓN DE TRANSPORTE PÚBLICO (SIEMPRE VISIBLE) ===== */}
-<div className="mt-10">
-  <h2 className="text-2xl font-semibold mb-4">🚐 Transporte Público</h2>
-
-  {/* Condición interna para mostrar tarjetas o un mensaje */}
-  {datos.transportePublico && datos.transportePublico.length > 0 ? (
+  const toggleSeleccion = (payload) => {
+    const id = idDe(payload);
+    const yaAgregado = seleccionesIds.has(id);
     
-    // Si SÍ hay datos, muestra las tarjetas que ya tenías
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-      {datos.transportePublico.map((transporte) => (
-        <div key={transporte.nombre} className="bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden flex flex-col">
-          <img
-            src={transporte.imagen}
-            alt={transporte.nombre}
-            className="w-full h-40 object-cover"
-          />
-          <div className="p-5 flex flex-col flex-grow">
-            <h3 className="text-base font-bold text-gray-800">{transporte.nombre}</h3>
-            <div className="mt-3 flex-grow space-y-2 text-sm">
-              <p>
-                <span className="font-semibold">Tarifa: </span>
-                <span className="text-gray-700">{transporte.tarifa}</span>
-              </p>
-              {transporte.contacto && transporte.contacto !== "N/A" && (
-                <p>
-                  <span className="font-semibold">Contacto: </span>
-                  <a href={`tel:${transporte.contacto.replace(/\s/g, '')}`} className="text-emerald-600 hover:underline">
-                    {transporte.contacto}
-                  </a>
-                </p>
-              )}
+    if (yaAgregado) {
+      removeSeleccion(id);
+    } else {
+      const enriched = { ...payload, meta: { ...(payload.meta || {}), source: 'MunicipioDetalle' } };
+      addSeleccion({ id, municipio: nombre, estado: "Tabasco", ...enriched });
+    }
+    
+    const next = new Set(seleccionesIds);
+    yaAgregado ? next.delete(id) : next.add(id);
+    setSeleccionesIds(next);
+  };
+  
+  const manejarInteres = () => {
+    setInteresado(true);
+    let interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
+    interesesActuales = interesesActuales.filter(m => m !== nombre);
+    interesesActuales.unshift(nombre);
+    localStorage.setItem("interesesMunicipios_Tabasco", JSON.stringify(interesesActuales));
+  };
+
+  const openModal = (title, items, type) => {
+    if(!items || items.length === 0) return;
+    setModalContent({ title, items, type });
+    setModalOpen(true);
+  };
+
+  const scrollCarousel = (key, dir) => {
+    const container = carouselRefs[key].current;
+    if (container) {
+      const scrollAmount = container.offsetWidth * 0.75;
+      container.scrollBy({ left: dir === 'next' ? scrollAmount : -scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const getEventosDelMes = (mes) => {
+    if (!mes) {
+        if (nombre === "Centro") {
+             return Object.values(eventosCentroPorMes).flat().map(name => {
+                const parts = name.split(' – ');
+                return { nombre: parts[0], fecha: parts[1] || 'Varios' };
+            });
+        }
+        return datos.eventos || [];
+    }
+    
+    if (nombre === "Centro") {
+        return (eventosCentroPorMes[mes] || []).map(name => {
+            const parts = name.split(' – ');
+            return { nombre: parts[0], fecha: parts[1] || mes };
+        });
+    }
+    return (datos.eventos || []).filter(ev => (ev.fecha || "").toLowerCase().includes(mes.toLowerCase()));
+  };
+  
+  const eventosParaMostrar = getEventosDelMes(mesSeleccionado);
+  const countItems = (arr) => arr?.length || 0;
+
+  return (
+    <div className="bg-slate-50">
+      <div className="relative h-80">
+        <img src={theme.header} alt={`Paisaje de ${nombre}`} className="w-full h-full object-cover"/>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 p-8 text-white">
+            <h1 className="text-4xl sm:text-5xl font-black drop-shadow-lg">{nombre}</h1>
+            <p className="mt-2 max-w-2xl text-lg opacity-90">{datos.descripcion}</p>
+        </div>
+      </div>
+
+      <main className="space-y-12">
+        <Section>
+          <SectionHeader title="¿Qué hacer en este destino?" subtitle="Explora las principales atracciones y experiencias que te esperan."/>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <InfoCard icon={MapPin} title="Lugares" onClick={() => openModal('Lugares Destacados', datos.lugares, 'lugarDestacado')} count={countItems(datos.lugares)} />
+            <InfoCard icon={Star} title="Imperdibles" onClick={() => openModal('Sitios Imperdibles', datos.sitiosTop, 'sitioImperdible')} count={countItems(datos.sitiosTop)} />
+            <InfoCard icon={Gem} title="Joyitas Ocultas" onClick={() => openModal('Joyitas Ocultas', datos.sitiosOcultos, 'joyaPocoConocida')} count={countItems(datos.sitiosOcultos)} />
+            <InfoCard icon={HandHeart} title="Rutas Comunitarias" onClick={() => openModal('Rutas Comunitarias', datos.rutasComunitarias, 'rutaComunitaria')} count={countItems(datos.rutasComunitarias)} />
+            <InfoCard icon={Construction} title="Talleres" onClick={() => openModal('Talleres y Espacios', datos.talleres, 'taller')} count={countItems(datos.talleres)} />
+          </div>
+        </Section>
+        
+        {countItems(datos.eventos) > 0 && (
+          <Section>
+             <SectionHeader title="Eventos Culturales" subtitle="Vive las tradiciones y festividades locales.">
+                <select
+                  value={mesSeleccionado}
+                  onChange={(e) => setMesSeleccionado(e.target.value)}
+                  className="border border-slate-300 rounded-lg px-4 py-2"
+                >
+                  <option value="">Todos los meses</option>
+                  {Object.keys(eventosCentroPorMes).map((mes) => (
+                    <option key={mes} value={mes}>{mes}</option>
+                  ))}
+                </select>
+             </SectionHeader>
+            {eventosParaMostrar.length > 0 ? (
+              <div className="flex items-center">
+                 <button onClick={() => scrollCarousel('eventos', 'prev')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center mr-4"><ChevronLeft/></button>
+                <div ref={carouselRefs.eventos} className="flex-1 flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
+                  {eventosParaMostrar.map((evento, idx) => (
+                    <CarouselCard
+                      key={`evento-${idx}`}
+                      title={evento.nombre}
+                      img={getEventoImg(evento.nombre)}
+                      isAdded={estaAgregado({ tipo: 'evento', nombre: evento.nombre })}
+                      onAdd={() => toggleSeleccion({ tipo: 'evento', nombre: evento.nombre, meta: { mes: evento.fecha } })}
+                      date={evento.fecha}
+                    />
+                  ))}
+                </div>
+                 <button onClick={() => scrollCarousel('eventos', 'next')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center ml-4"><ChevronRight/></button>
+              </div>
+            ) : (
+              <p className="text-center text-slate-500 bg-white p-6 rounded-2xl shadow-inner">No hay eventos para el mes seleccionado.</p>
+            )}
+          </Section>
+        )}
+
+        {countItems(datos.gastronomia) > 0 && (
+          <Section className="bg-white">
+            <SectionHeader title="Gastronomía Típica" subtitle={`Sabores que definen a ${nombre}.`} />
+            <div className="flex items-center">
+              <button onClick={() => scrollCarousel('gastronomia', 'prev')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center mr-4"><ChevronLeft/></button>
+              <div ref={carouselRefs.gastronomia} className="flex-1 flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
+                {datos.gastronomia.map((plato, idx) => (
+                   <CarouselCard
+                    key={`gastro-${idx}`}
+                    title={plato}
+                    img={getMedia('gastronomia', plato)}
+                    isAdded={estaAgregado({ tipo: 'gastronomia', nombre: plato })}
+                    onAdd={() => toggleSeleccion({ tipo: 'gastronomia', nombre: plato })}
+                  />
+                ))}
+              </div>
+              <button onClick={() => scrollCarousel('gastronomia', 'next')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center ml-4"><ChevronRight/></button>
             </div>
-            <div className="mt-4">
-              <button
-                onClick={() => toggleSeleccion({ tipo: 'transporte', nombre: transporte.nombre, icono: 'ℹ️', imagen: transporte.imagen })}
-                className={`w-full px-3 py-1.5 rounded-full text-[13px] font-medium transition ${
-                  estaAgregado({ tipo: 'transporte', nombre: transporte.nombre })
-                    ? 'bg-red-100 text-red-800 hover:bg-red-200'
-                    : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                }`}
-              >
-                {estaAgregado({ tipo: 'transporte', nombre: transporte.nombre }) ? 'Quitar Info' : 'Guardar Info'}
-              </button>
+          </Section>
+        )}
+
+        {countItems(datos.transportePublico) > 0 && (
+            <Section className="bg-white">
+                <SectionHeader title="Transporte Público" subtitle="Opciones para moverte dentro y fuera del municipio."/>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {datos.transportePublico.map((transporte, idx) => (
+                        <div key={idx} className="bg-white rounded-2xl shadow-lg overflow-hidden border-t-4 border-amber-500 flex flex-col">
+                            <img src={transporte.imagen} alt={transporte.nombre} className="w-full h-40 object-cover" />
+                            <div className="p-6 flex-grow flex flex-col">
+                                <h3 className="font-bold text-xl text-zinc-800">{transporte.nombre}</h3>
+                                <p className="text-sm mt-2 text-slate-600 flex-grow"><span className="font-semibold">Tarifa:</span> {transporte.tarifa}</p>
+                                {transporte.contacto !== "N/A" && 
+                                  <p className="text-sm text-slate-600"><span className="font-semibold">Contacto:</span> {transporte.contacto}</p>
+                                }
+                                <button
+                                  onClick={() => toggleSeleccion({ tipo: 'transporte', nombre: transporte.nombre })}
+                                  className={`mt-4 w-full px-4 py-2 text-sm font-bold rounded-full transition ${estaAgregado({ tipo: 'transporte', nombre: transporte.nombre }) ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}
+                                >
+                                  {estaAgregado({ tipo: 'transporte', nombre: transporte.nombre }) ? 'Quitar Info' : 'Guardar Info'}
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Section>
+        )}
+
+        <Section>
+            <div className="bg-white rounded-2xl p-8 grid md:grid-cols-2 gap-8 items-center border-t-4 border-green-500">
+                 <div>
+                    <h3 className="font-bold text-2xl text-zinc-800 mb-3">¿Listo para explorar {nombre}?</h3>
+                    <p className="text-slate-600">Marca este municipio como de tu interés o explora los productos artesanales que tiene para ofrecer.</p>
+                </div>
+                <div className="flex flex-col gap-4">
+                    <button
+                        onClick={manejarInteres}
+                        className={`w-full text-center px-5 py-3 rounded-full font-semibold text-white transition-colors ${interesado ? 'bg-green-500 hover:bg-green-600' : 'bg-orange-500 hover:bg-orange-600'}`}
+                    >
+                      {interesado ? '¡Agregado a mis intereses!' : 'Me interesa visitar'}
+                    </button>
+                    <Link
+                        to="/productos-tabasco" 
+                        state={{ municipio: nombre }}
+                        className="w-full text-center px-5 py-3 rounded-full font-semibold text-zinc-700 bg-slate-200 hover:bg-slate-300 transition-colors"
+                    >
+                        Ver Artesanías de {nombre}
+                    </Link>
+                </div>
+            </div>
+        </Section>
+      </main>
+
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4" onClick={() => setModalOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-5 border-b">
+              <h3 className="text-xl font-bold text-zinc-800">{modalContent.title}</h3>
+              <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-700"><X className="w-5 h-5"/></button>
+            </div>
+            <div className="p-5 overflow-y-auto space-y-3">
+              {modalContent.items?.map((item, idx) => {
+                const nombreItem = typeof item === 'object' ? item.nombre : item;
+                const payload = { tipo: modalContent.type, nombre: nombreItem };
+                const isAdded = estaAgregado(payload);
+                return (
+                  <div key={idx} className="flex items-center justify-between bg-slate-100 p-3 rounded-lg">
+                    <p className="font-semibold text-zinc-700 pr-4">{nombreItem}</p>
+                    <button 
+                      onClick={() => toggleSeleccion(payload)}
+                      className={`flex-shrink-0 px-3 py-1 text-xs font-bold rounded-full transition ${isAdded ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
+                    >
+                      {isAdded ? 'QUITAR' : 'AGREGAR'}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
-      ))}
+      )}
     </div>
-
-  ) : (
-
-    // Si NO hay datos, muestra este mensaje
-    <div className="p-4 bg-gray-100 text-gray-700 rounded-md">
-      <p>No hay información de transporte público disponible para este municipio por el momento.</p>
-    </div>
-    
-  )}
-</div>
-</div>
-      <div className="flex flex-wrap gap-3 sm:gap-4 mt-8">
-        
-<Link to="/mapa-tabasco">
-<button className={`${theme.btnPrimary} px-4 py-2 rounded transition w-full sm:w-auto`}>
-  ← Regresar al mapa
-</button>
-</Link>
-<Link
-  to="/productos-tabasco"
-  state={{ municipio: nombre }} //  pasa el municipio
->
- <button className={`${theme.btnSecondary} px-4 py-2 rounded-lg shadow transition`}>
-    {`Productos Artesanales de ${nombre || 'Tabasco'}`}
-  </button>
-</Link>
-
-
-
-
-        <button
-          onClick={manejarInteres}
-          className={`px-4 py-2 rounded text-white transition ${
-  interesado ? 'bg-green-600' : theme.btnPrimary
-}`}
-        >
-          {interesado ? '¡Te interesa!' : 'Me interesa'}
-        </button>
-      </div>
-    </div>
-
-    {/* ===== Footer de Home ===== */}
-    <footer className="py-10 text-center bg-[var(--color-primary)] text-black">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 px-4">
-        <div>
-          <img src={logo} alt="Logo Pueblos de Ensueño" className="h-10 mb-3" />
-          <p>Conectando viajeros con el patrimonio cultural de México.</p>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-2 text-black">Enlaces</h4>
-          <ul className="space-y-1">
-            <li><Link to="/puntos-cercanos">Puntos cercanos</Link></li>
-            <li><Link to="/mapa">Mapa interactivo</Link></li>
-            <li><Link to="/InterestsSelector">Invitado</Link></li>
-            <li><Link to="/login">Iniciar sesión</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-2 text-black">Tecnologías</h4>
-          <ul className="space-y-1">
-            <li>React.js</li>
-            <li>Node.js</li>
-            <li>AWS</li>
-            <li>MariaDB</li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-2 text-black">Contacto</h4>
-          <p>9934535365</p>
-          <p>✉️ info@pueblosdeensueno.mx</p>
-          <p>📍 Villahermosa Tabasco</p>
-        </div>
-      </div>
-      <div className="mt-8 pt-4 text-sm text-black">
-        © 2025 Pueblos de Ensueño. Todos los derechos reservados.
-      </div>
-    </footer>
-
-  </div>
   );
 }
-
-export default MunicipioDetalle;

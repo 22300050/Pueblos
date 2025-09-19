@@ -464,27 +464,6 @@ export default function MunicipioDetalle() {
           </div>
         </Section>
         
-        {countItems(datos.gastronomia) > 0 && (
-          <Section className="bg-white">
-            <SectionHeader title="Gastronomía Típica" subtitle={`Sabores que definen a ${nombre}.`} />
-            <div className="flex items-center">
-              <button onClick={() => scrollCarousel('gastronomia', 'prev')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center mr-4"><ChevronLeft/></button>
-              <div ref={carouselRefs.gastronomia} className="flex-1 flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
-                {datos.gastronomia.map((plato, idx) => (
-                   <CarouselCard
-                    key={`gastro-${idx}`}
-                    title={plato}
-                    img={getMedia('gastronomia', plato)}
-                    isAdded={estaAgregado({ tipo: 'gastronomia', nombre: plato })}
-                    onAdd={() => toggleSeleccion({ tipo: 'gastronomia', nombre: plato })}
-                  />
-                ))}
-              </div>
-              <button onClick={() => scrollCarousel('gastronomia', 'next')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center ml-4"><ChevronRight/></button>
-            </div>
-          </Section>
-        )}
-
         {countItems(datos.eventos) > 0 && (
           <Section>
              <SectionHeader title="Eventos Culturales" subtitle="Vive las tradiciones y festividades locales.">
@@ -519,6 +498,27 @@ export default function MunicipioDetalle() {
             ) : (
               <p className="text-center text-slate-500 bg-white p-6 rounded-2xl shadow-inner">No hay eventos para el mes seleccionado.</p>
             )}
+          </Section>
+        )}
+
+        {countItems(datos.gastronomia) > 0 && (
+          <Section className="bg-white">
+            <SectionHeader title="Gastronomía Típica" subtitle={`Sabores que definen a ${nombre}.`} />
+            <div className="flex items-center">
+              <button onClick={() => scrollCarousel('gastronomia', 'prev')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center mr-4"><ChevronLeft/></button>
+              <div ref={carouselRefs.gastronomia} className="flex-1 flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
+                {datos.gastronomia.map((plato, idx) => (
+                   <CarouselCard
+                    key={`gastro-${idx}`}
+                    title={plato}
+                    img={getMedia('gastronomia', plato)}
+                    isAdded={estaAgregado({ tipo: 'gastronomia', nombre: plato })}
+                    onAdd={() => toggleSeleccion({ tipo: 'gastronomia', nombre: plato })}
+                  />
+                ))}
+              </div>
+              <button onClick={() => scrollCarousel('gastronomia', 'next')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center ml-4"><ChevronRight/></button>
+            </div>
           </Section>
         )}
 
