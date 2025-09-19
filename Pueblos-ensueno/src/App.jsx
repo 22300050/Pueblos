@@ -39,7 +39,7 @@ import MonumentoCabezaOlmeca from "./components/public/MonumentoCabezaOlmeca";
 import HomeLogin from './components/private/HomeLogin';
 import PerfilUsuario from './components/private/PerfilUsuario';
 
-import ProductosTabasco from './components/ProductosTabasco';
+import ProductosTabasco from './components/public/ProductosTabasco';
 
 import MunicipioDetalle from './components/MunicipioDetalle';
 import MunicipioDetalleChiapas from './components/MunicipioDetalleChiapas';
