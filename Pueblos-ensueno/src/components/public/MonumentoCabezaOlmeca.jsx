@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import cabezaOlmecaImg from "../../assets/img/Tabasco/cabeza-olmeca.jpg";
+import cabezaOlmecaImg from "../../assets/img/Tabasco/monumento/cabeza-olmeca.jpg";
 // Íconos cambiados por alternativas más seguras y comunes
 import { ArrowLeft, Box, MapPin, Clock, Ruler, Anchor, Gem } from 'lucide-react'; 
 

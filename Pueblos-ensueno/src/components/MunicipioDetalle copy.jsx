@@ -1,11 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { addSeleccion, getSelecciones, removeSeleccion } from '../utils/itinerarioStore';
-import { useParams, Link } from 'react-router-dom';
-import { MapPin, Construction, Plus, Check, X, HandHeart, Star, Gem, ChevronLeft, ChevronRight } from 'lucide-react';
-
-// --- DATOS ORIGINALES (COMPLETOS Y CON RUTAS RESTAURADAS) ---
-// Se ha restaurado toda la estructura de datos y las rutas con `new URL` de tu archivo original.
-// La imagen de Nacajuca se usa como genérica para todos los headers.
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { MapPin, Palette, Construction, Plus, Check, X, HandHeart, Star, Gem } from 'lucide-react';
 
 const datosMunicipios = {
   "Balancán": {
@@ -192,7 +188,7 @@ transportePublico: [
     ]
   },
   "Tacotalpa": {
-    descripcion: "Ubicado en la sierra, con atractivos naturales y cafetalales.",
+    descripcion: "Ubicado en la sierra, con atractivos naturales y cafetales.",
     lugares: ["Villa Tapijulapa", "Grutas de Coconá"],
     rutasComunitarias: [
       "Ruta Ecoturística Agua Selva: Un desarrollo comunitario que ofrece senderismo, cañonismo y rappel en un área con más de 50 cascadas.",
@@ -227,24 +223,24 @@ transportePublico: [
   },
 };
 const THEME_BY_MUNICIPIO = {
-    "Balancán": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Cardenas": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Centla": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Centro": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Comalcalco": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Cunduacán": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Emiliano Zapata": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Huimanguillo": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Jalapa": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Jalpa de Méndez": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Jonuta": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Macuspana": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Nacajuca": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Paraíso": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Tacotalpa": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Teapa": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    "Tenosique": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
-    _default: { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href }
+  "Balancán": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Cardenas": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Centla": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Centro": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Comalcalco": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Cunduacán": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Emiliano Zapata": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Huimanguillo": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Jalapa": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Jalpa de Méndez": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Jonuta": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Macuspana": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Nacajuca": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Paraíso": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Tacotalpa": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Teapa": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  "Tenosique": { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href },
+  _default: { header: new URL('../assets/nacajuca-header.jpg', import.meta.url).href }
 };
 const MEDIA_BY_MUNICIPIO = {
   Centro: {
@@ -288,7 +284,7 @@ const eventosCentroPorMes = {
   Diciembre: [ "Nochebuena en Centro (programa navideño en foros, plazas y parques; música, pastorelas)" ]
 };
 
-// --- COMPONENTES DE UI ---
+// --- COMPONENTES DE UI MODERNIZADOS (Estilo `Directorios.jsx`) ---
 
 const Section = ({ children, className = '' }) => (
     <section className={`py-12 sm:py-16 ${className}`}>
@@ -298,13 +294,10 @@ const Section = ({ children, className = '' }) => (
     </section>
 );
 
-const SectionHeader = ({ title, subtitle, children }) => (
-  <div className="text-center md:flex md:items-center md:justify-between mb-10">
-    <div className="md:text-left">
-      <h2 className="text-3xl font-bold text-zinc-800 mb-2">{title}</h2>
-      {subtitle && <p className="text-slate-600 max-w-3xl">{subtitle}</p>}
-    </div>
-    {children && <div className="mt-4 md:mt-0">{children}</div>}
+const SectionHeader = ({ title, subtitle }) => (
+  <div className="text-center mb-10">
+    <h2 className="text-3xl font-bold text-zinc-800 mb-2">{title}</h2>
+    {subtitle && <p className="text-slate-600 max-w-3xl mx-auto">{subtitle}</p>}
   </div>
 );
 
@@ -321,54 +314,25 @@ const InfoCard = ({ icon: Icon, title, onClick, count }) => (
   </div>
 );
 
-const CarouselCard = ({ title, img, onAdd, isAdded, date }) => (
-  <div className="flex-shrink-0 w-72 snap-center bg-white rounded-2xl shadow-lg overflow-hidden group">
-    <div className="relative">
-      <img src={img} alt={title} className="w-full h-40 object-cover" />
-      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
-       <button
-        onClick={onAdd}
-        className={`absolute top-3 right-3 w-9 h-9 rounded-full grid place-content-center shadow-md transition-all duration-200 transform group-hover:scale-110 ${
-          isAdded 
-            ? 'bg-green-500 text-white' 
-            : 'bg-white/80 text-zinc-700 hover:bg-white'
-        }`}
-        aria-label={isAdded ? "Quitar" : "Agregar"}
-      >
-        {isAdded ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-      </button>
-    </div>
-    <div className="p-4">
-      <h4 className="font-bold text-zinc-800 truncate">{title}</h4>
-      {date && <p className="text-sm text-slate-500">{date}</p>}
-    </div>
-  </div>
-);
-
 // --- COMPONENTE PRINCIPAL ---
 
 export default function MunicipioDetalle() {
   const { nombre } = useParams();
   const datos = datosMunicipios[nombre];
   const theme = THEME_BY_MUNICIPIO[nombre] || THEME_BY_MUNICIPIO._default;
-  const carouselRefs = { eventos: useRef(null), gastronomia: useRef(null) };
 
   const [seleccionesIds, setSeleccionesIds] = useState(new Set());
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', items: [], type: '' });
   const [interesado, setInteresado] = useState(false);
-  const [mesSeleccionado, setMesSeleccionado] = useState('');
-
+  
   useEffect(() => {
     const interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
     setInteresado(interesesActuales.includes(nombre));
     const actuales = (getSelecciones() || []).map(s => s.id);
     setSeleccionesIds(new Set(actuales));
   }, [nombre]);
-
-  const getMedia = (categoria, itemNombre) => (MEDIA_BY_MUNICIPIO[nombre]?.[categoria]?.[itemNombre] || theme.header);
-  const getEventoImg = (evento) => (MEDIA_EVENTOS[evento.split(' (')[0].trim()] || theme.header);
-
+  
   if (!datos) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -402,6 +366,12 @@ export default function MunicipioDetalle() {
     interesesActuales = interesesActuales.filter(m => m !== nombre);
     interesesActuales.unshift(nombre);
     localStorage.setItem("interesesMunicipios_Tabasco", JSON.stringify(interesesActuales));
+    const itinerarioPersistido = JSON.parse(localStorage.getItem("itinerario") || "{}");
+    localStorage.setItem("itinerario", JSON.stringify({
+      ...itinerarioPersistido,
+      lugarInicio: nombre,
+      modoDestino: "auto"
+    }));
   };
 
   const openModal = (title, items, type) => {
@@ -409,40 +379,22 @@ export default function MunicipioDetalle() {
     setModalContent({ title, items, type });
     setModalOpen(true);
   };
-
-  const scrollCarousel = (key, dir) => {
-    const container = carouselRefs[key].current;
-    if (container) {
-      const scrollAmount = container.offsetWidth * 0.75;
-      container.scrollBy({ left: dir === 'next' ? scrollAmount : -scrollAmount, behavior: 'smooth' });
-    }
-  };
-
+  
   const getEventosDelMes = (mes) => {
-    if (!mes) {
-        if (nombre === "Centro") {
-             return Object.values(eventosCentroPorMes).flat().map(name => {
-                const parts = name.split(' – ');
-                return { nombre: parts[0], fecha: parts[1] || 'Varios' };
-            });
-        }
-        return datos.eventos || [];
-    }
-    
+    if (!mes) return datos.eventos || [];
     if (nombre === "Centro") {
-        return (eventosCentroPorMes[mes] || []).map(name => {
-            const parts = name.split(' – ');
-            return { nombre: parts[0], fecha: parts[1] || mes };
-        });
+        return (eventosCentroPorMes[mes] || []).map(nombre => ({ nombre, fecha: mes }));
     }
     return (datos.eventos || []).filter(ev => (ev.fecha || "").toLowerCase().includes(mes.toLowerCase()));
   };
   
-  const eventosParaMostrar = getEventosDelMes(mesSeleccionado);
+  const eventosParaMostrar = getEventosDelMes(null); // Mostrar todos por defecto
+  
   const countItems = (arr) => arr?.length || 0;
 
   return (
     <div className="bg-slate-50">
+      {/* --- SECCIÓN HERO --- */}
       <div className="relative h-80">
         <img src={theme.header} alt={`Paisaje de ${nombre}`} className="w-full h-full object-cover"/>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
@@ -453,6 +405,7 @@ export default function MunicipioDetalle() {
       </div>
 
       <main className="space-y-12">
+        {/* --- SECCIÓN QUÉ HACER --- */}
         <Section>
           <SectionHeader title="¿Qué hacer en este destino?" subtitle="Explora las principales atracciones y experiencias que te esperan."/>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -463,84 +416,68 @@ export default function MunicipioDetalle() {
             <InfoCard icon={Construction} title="Talleres" onClick={() => openModal('Talleres y Espacios', datos.talleres, 'taller')} count={countItems(datos.talleres)} />
           </div>
         </Section>
-        
-        {countItems(datos.gastronomia) > 0 && (
-          <Section className="bg-white">
-            <SectionHeader title="Gastronomía Típica" subtitle={`Sabores que definen a ${nombre}.`} />
-            <div className="flex items-center">
-              <button onClick={() => scrollCarousel('gastronomia', 'prev')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center mr-4"><ChevronLeft/></button>
-              <div ref={carouselRefs.gastronomia} className="flex-1 flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
-                {datos.gastronomia.map((plato, idx) => (
-                   <CarouselCard
-                    key={`gastro-${idx}`}
-                    title={plato}
-                    img={getMedia('gastronomia', plato)}
-                    isAdded={estaAgregado({ tipo: 'gastronomia', nombre: plato })}
-                    onAdd={() => toggleSeleccion({ tipo: 'gastronomia', nombre: plato })}
-                  />
-                ))}
-              </div>
-              <button onClick={() => scrollCarousel('gastronomia', 'next')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center ml-4"><ChevronRight/></button>
-            </div>
-          </Section>
-        )}
 
-        {countItems(datos.eventos) > 0 && (
-          <Section>
-             <SectionHeader title="Eventos Culturales" subtitle="Vive las tradiciones y festividades locales.">
-                <select
-                  value={mesSeleccionado}
-                  onChange={(e) => setMesSeleccionado(e.target.value)}
-                  className="border border-slate-300 rounded-lg px-4 py-2"
-                >
-                  <option value="">Todos los meses</option>
-                  {Object.keys(eventosCentroPorMes).map((mes) => (
-                    <option key={mes} value={mes}>{mes}</option>
-                  ))}
-                </select>
-             </SectionHeader>
-            {eventosParaMostrar.length > 0 ? (
-              <div className="flex items-center">
-                 <button onClick={() => scrollCarousel('eventos', 'prev')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center mr-4"><ChevronLeft/></button>
-                <div ref={carouselRefs.eventos} className="flex-1 flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
-                  {eventosParaMostrar.map((evento, idx) => (
-                    <CarouselCard
-                      key={`evento-${idx}`}
-                      title={evento.nombre}
-                      img={getEventoImg(evento.nombre)}
-                      isAdded={estaAgregado({ tipo: 'evento', nombre: evento.nombre })}
-                      onAdd={() => toggleSeleccion({ tipo: 'evento', nombre: evento.nombre, meta: { mes: evento.fecha } })}
-                      date={evento.fecha}
-                    />
-                  ))}
+        {/* --- SECCIÓN EVENTOS Y GASTRONOMÍA --- */}
+        <Section className="bg-white">
+          <div className="grid lg:grid-cols-2 gap-12">
+            {countItems(datos.gastronomia) > 0 && (
+                <div>
+                    <h3 className="text-2xl font-bold text-zinc-800 mb-6">Gastronomía Típica</h3>
+                    <div className="space-y-4">
+                        {datos.gastronomia.map((plato, idx) => (
+                             <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
+                                <p className="font-semibold text-zinc-700">{plato}</p>
+                                <button 
+                                  onClick={() => toggleSeleccion({ tipo: 'gastronomia', nombre: plato })}
+                                  className="text-orange-500 hover:text-orange-600 transition"
+                                  title={estaAgregado({ tipo: 'gastronomia', nombre: plato }) ? "Quitar de mi itinerario" : "Agregar a mi itinerario"}
+                                >
+                                    {estaAgregado({ tipo: 'gastronomia', nombre: plato }) ? <Check className="w-6 h-6 text-green-500"/> : <Plus className="w-6 h-6"/>}
+                                </button>
+                             </div>
+                        ))}
+                    </div>
                 </div>
-                 <button onClick={() => scrollCarousel('eventos', 'next')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center ml-4"><ChevronRight/></button>
-              </div>
-            ) : (
-              <p className="text-center text-slate-500 bg-white p-6 rounded-2xl shadow-inner">No hay eventos para el mes seleccionado.</p>
             )}
-          </Section>
-        )}
+            {countItems(datos.eventos) > 0 && (
+                <div>
+                    <h3 className="text-2xl font-bold text-zinc-800 mb-6">Eventos Culturales</h3>
+                    <div className="space-y-4">
+                        {eventosParaMostrar.map((evento, idx) => (
+                             <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
+                                <div>
+                                    <p className="font-semibold text-zinc-700">{evento.nombre}</p>
+                                    <p className="text-sm text-slate-500">{evento.fecha}</p>
+                                </div>
+                                <button 
+                                  onClick={() => toggleSeleccion({ tipo: 'evento', nombre: evento.nombre, meta: { mes: evento.fecha } })}
+                                  className="text-orange-500 hover:text-orange-600 transition"
+                                  title={estaAgregado({ tipo: 'evento', nombre: evento.nombre }) ? "Quitar de mi itinerario" : "Agregar a mi itinerario"}
+                                >
+                                    {estaAgregado({ tipo: 'evento', nombre: evento.nombre }) ? <Check className="w-6 h-6 text-green-500"/> : <Plus className="w-6 h-6"/>}
+                                </button>
+                             </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+          </div>
+        </Section>
 
+        {/* --- SECCIÓN TRANSPORTE PÚBLICO --- */}
         {countItems(datos.transportePublico) > 0 && (
-            <Section className="bg-white">
+            <Section>
                 <SectionHeader title="Transporte Público" subtitle="Opciones para moverte dentro y fuera del municipio."/>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {datos.transportePublico.map((transporte, idx) => (
-                        <div key={idx} className="bg-white rounded-2xl shadow-lg overflow-hidden border-t-4 border-amber-500 flex flex-col">
+                        <div key={idx} className="bg-white rounded-2xl shadow-lg overflow-hidden border-t-4 border-amber-500">
                             <img src={transporte.imagen} alt={transporte.nombre} className="w-full h-40 object-cover" />
-                            <div className="p-6 flex-grow flex flex-col">
+                            <div className="p-6">
                                 <h3 className="font-bold text-xl text-zinc-800">{transporte.nombre}</h3>
-                                <p className="text-sm mt-2 text-slate-600 flex-grow"><span className="font-semibold">Tarifa:</span> {transporte.tarifa}</p>
+                                <p className="text-sm mt-2 text-slate-600"><span className="font-semibold">Tarifa:</span> {transporte.tarifa}</p>
                                 {transporte.contacto !== "N/A" && 
                                   <p className="text-sm text-slate-600"><span className="font-semibold">Contacto:</span> {transporte.contacto}</p>
                                 }
-                                <button
-                                  onClick={() => toggleSeleccion({ tipo: 'transporte', nombre: transporte.nombre })}
-                                  className={`mt-4 w-full px-4 py-2 text-sm font-bold rounded-full transition ${estaAgregado({ tipo: 'transporte', nombre: transporte.nombre }) ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}
-                                >
-                                  {estaAgregado({ tipo: 'transporte', nombre: transporte.nombre }) ? 'Quitar Info' : 'Guardar Info'}
-                                </button>
                             </div>
                         </div>
                     ))}
@@ -548,8 +485,9 @@ export default function MunicipioDetalle() {
             </Section>
         )}
 
-        <Section>
-            <div className="bg-white rounded-2xl p-8 grid md:grid-cols-2 gap-8 items-center border-t-4 border-green-500">
+        {/* --- SECCIÓN ACCIONES FINALES --- */}
+        <Section className="bg-white">
+            <div className="bg-slate-100 rounded-2xl p-8 grid md:grid-cols-2 gap-8 items-center">
                  <div>
                     <h3 className="font-bold text-2xl text-zinc-800 mb-3">¿Listo para explorar {nombre}?</h3>
                     <p className="text-slate-600">Marca este municipio como de tu interés o explora los productos artesanales que tiene para ofrecer.</p>
@@ -573,8 +511,9 @@ export default function MunicipioDetalle() {
         </Section>
       </main>
 
+      {/* --- MODAL --- */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4" onClick={() => setModalOpen(false)}>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setModalOpen(false)}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center p-5 border-b">
               <h3 className="text-xl font-bold text-zinc-800">{modalContent.title}</h3>

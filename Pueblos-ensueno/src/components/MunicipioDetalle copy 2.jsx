@@ -419,21 +419,9 @@ export default function MunicipioDetalle() {
   };
 
   const getEventosDelMes = (mes) => {
-    if (!mes) {
-        if (nombre === "Centro") {
-             return Object.values(eventosCentroPorMes).flat().map(name => {
-                const parts = name.split(' – ');
-                return { nombre: parts[0], fecha: parts[1] || 'Varios' };
-            });
-        }
-        return datos.eventos || [];
-    }
-    
+    if (!mes) return datos.eventos || [];
     if (nombre === "Centro") {
-        return (eventosCentroPorMes[mes] || []).map(name => {
-            const parts = name.split(' – ');
-            return { nombre: parts[0], fecha: parts[1] || mes };
-        });
+        return (eventosCentroPorMes[mes] || []).map(nombre => ({ nombre, fecha: mes }));
     }
     return (datos.eventos || []).filter(ev => (ev.fecha || "").toLowerCase().includes(mes.toLowerCase()));
   };
@@ -467,9 +455,8 @@ export default function MunicipioDetalle() {
         {countItems(datos.gastronomia) > 0 && (
           <Section className="bg-white">
             <SectionHeader title="Gastronomía Típica" subtitle={`Sabores que definen a ${nombre}.`} />
-            <div className="flex items-center">
-              <button onClick={() => scrollCarousel('gastronomia', 'prev')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center mr-4"><ChevronLeft/></button>
-              <div ref={carouselRefs.gastronomia} className="flex-1 flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
+            <div className="relative">
+              <div ref={carouselRefs.gastronomia} className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
                 {datos.gastronomia.map((plato, idx) => (
                    <CarouselCard
                     key={`gastro-${idx}`}
@@ -480,7 +467,8 @@ export default function MunicipioDetalle() {
                   />
                 ))}
               </div>
-              <button onClick={() => scrollCarousel('gastronomia', 'next')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center ml-4"><ChevronRight/></button>
+              <button onClick={() => scrollCarousel('gastronomia', 'prev')} className="absolute -left-4 top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-md grid place-content-center hover:scale-110 transition hidden lg:grid"><ChevronLeft/></button>
+              <button onClick={() => scrollCarousel('gastronomia', 'next')} className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-md grid place-content-center hover:scale-110 transition hidden lg:grid"><ChevronRight/></button>
             </div>
           </Section>
         )}
@@ -500,9 +488,8 @@ export default function MunicipioDetalle() {
                 </select>
              </SectionHeader>
             {eventosParaMostrar.length > 0 ? (
-              <div className="flex items-center">
-                 <button onClick={() => scrollCarousel('eventos', 'prev')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center mr-4"><ChevronLeft/></button>
-                <div ref={carouselRefs.eventos} className="flex-1 flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
+              <div className="relative">
+                <div ref={carouselRefs.eventos} className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-smooth no-scrollbar">
                   {eventosParaMostrar.map((evento, idx) => (
                     <CarouselCard
                       key={`evento-${idx}`}
@@ -514,7 +501,8 @@ export default function MunicipioDetalle() {
                     />
                   ))}
                 </div>
-                 <button onClick={() => scrollCarousel('eventos', 'next')} className="p-2 rounded-full bg-white shadow-md transition hover:scale-110 hidden lg:grid place-content-center ml-4"><ChevronRight/></button>
+                 <button onClick={() => scrollCarousel('eventos', 'prev')} className="absolute -left-4 top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-md grid place-content-center hover:scale-110 transition hidden lg:grid"><ChevronLeft/></button>
+                 <button onClick={() => scrollCarousel('eventos', 'next')} className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-md grid place-content-center hover:scale-110 transition hidden lg:grid"><ChevronRight/></button>
               </div>
             ) : (
               <p className="text-center text-slate-500 bg-white p-6 rounded-2xl shadow-inner">No hay eventos para el mes seleccionado.</p>
@@ -537,7 +525,7 @@ export default function MunicipioDetalle() {
                                 }
                                 <button
                                   onClick={() => toggleSeleccion({ tipo: 'transporte', nombre: transporte.nombre })}
-                                  className={`mt-4 w-full px-4 py-2 text-sm font-bold rounded-full transition ${estaAgregado({ tipo: 'transporte', nombre: transporte.nombre }) ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}
+                                  className={`mt-4 w-full px-4 py-2 text-sm font-bold rounded-full transition ${estaAgregado({ tipo: 'transporte', nombre: transporte.nombre }) ? 'bg-slate-200 text-slate-700 hover:bg-slate-300' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}
                                 >
                                   {estaAgregado({ tipo: 'transporte', nombre: transporte.nombre }) ? 'Quitar Info' : 'Guardar Info'}
                                 </button>
@@ -574,7 +562,7 @@ export default function MunicipioDetalle() {
       </main>
 
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4" onClick={() => setModalOpen(false)}>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setModalOpen(false)}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center p-5 border-b">
               <h3 className="text-xl font-bold text-zinc-800">{modalContent.title}</h3>
