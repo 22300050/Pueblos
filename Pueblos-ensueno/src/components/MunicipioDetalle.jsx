@@ -1,24 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { addSeleccion, getSelecciones, removeSeleccion } from '../utils/itinerarioStore';
-import { useParams, Link } from 'react-router-dom';
-import { MapPin, Construction, Plus, Check, X, HandHeart, Star, Gem, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { MapPin, Construction, Plus, Check, X, HandHeart, Star, Gem, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 
 // --- DATOS ORIGINALES (COMPLETOS Y CON RUTAS RESTAURADAS) ---
-// Se ha restaurado toda la estructura de datos y las rutas con `new URL` de tu archivo original.
 // La imagen de Nacajuca se usa como genérica para todos los headers.
 
 const datosMunicipios = {
   "Balancán": {
     descripcion: "Balancán se encuentra al oriente del estado y es famoso por su biodiversidad y zonas ribereñas.",
-    lugares: ["Reserva de la Biosfera Usumacinta", "Río San Pedro"]
+    lugares: [{ nombre: "Reserva de la Biosfera Usumacinta", descripcion: "Una vasta área protegida con una increíble diversidad de flora y fauna." }, { nombre: "Río San Pedro", descripcion: "Ideal para paseos en lancha y observación de aves." }]
   },
   "Cardenas": {
     descripcion: "Cárdenas es un municipio importante por su agricultura y la cercanía a la costa del Golfo.",
-    lugares: ["Playa Pico de Oro", "Centro de la ciudad"]
+    lugares: [{ nombre: "Playa Pico de Oro", descripcion: "Disfruta de la brisa del mar y la arena dorada." }, { nombre: "Centro de la ciudad", descripcion: "Recorre sus calles y descubre la vida local." }]
   },
   "Centla": {
     descripcion: "Centla alberga la Reserva de la Biosfera Pantanos de Centla, un importante humedal del sur de México.",
-    lugares: ["Reserva de Pantanos de Centla", "Frontera"],
+    lugares: [{ nombre: "Reserva de Pantanos de Centla", descripcion: "El humedal más grande de Norteamérica, un paraíso para el ecoturismo." }, { nombre: "Frontera", descripcion: "Ciudad portuaria con una rica historia y gastronomía." }],
     rutasComunitarias: [
       "Corredor Turístico de los Pantanos: Recorridos en lancha guiados por cooperativas locales a través de los manglares de la Reserva de la Biosfera Pantanos de Centla.",
       "Ruta de Observación de Aves en Comunidades Ribereñas: Experiencias guiadas por pescadores locales para avistar fauna nativa y migratoria."
@@ -26,7 +25,13 @@ const datosMunicipios = {
   },
   "Centro": {
     descripcion: "Centro es el municipio donde se ubica Villahermosa, capital de Tabasco, y concentra la mayor actividad económica y cultural.",
-    lugares: ["Parque-Museo La Venta – museo al aire libre con una de las colecciones olmecas más importantes del país (cabezas colosales, altares, estelas).", "Malecón “Carlos A. Madrazo” (río Grijalva) – corredor peatonal y ciclovía con nueva infraestructura urbana e iluminación; obra inaugurada en 2024.", "Laguna de las Ilusiones – símbolo natural de la ciudad; miradores y parques a su alrededor.", "Museo Regional de Antropología “Carlos Pellicer Cámara” – arqueología y etnografía regional (Olmeca y Maya).","Yumká (Centro de Interpretación y Convivencia con la Naturaleza) – recorrido guiado por selva, sabana y humedales."],
+    lugares: [
+        { nombre: "Parque-Museo La Venta", descripcion: "Museo al aire libre con una de las colecciones olmecas más importantes del país." },
+        { nombre: "Malecón “Carlos A. Madrazo”", descripcion: "Corredor peatonal y ciclovía con nueva infraestructura urbana junto al río Grijalva." },
+        { nombre: "Laguna de las Ilusiones", descripcion: "Símbolo natural de la ciudad; con miradores y parques a su alrededor." },
+        { nombre: "Museo Regional de Antropología", descripcion: "Exhibe el patrimonio arqueológico y etnográfico de la región, destacando las culturas Olmeca y Maya." },
+        { nombre: "Yumká", descripcion: "Centro de Interpretación y Convivencia con la Naturaleza con recorridos por selva y sabana." }
+    ],
     sitiosTop: [
   "Parque-Museo La Venta (olmecas + zoológico ligero a cielo abierto, junto a la Laguna de las Ilusiones).",
   "Malecón Carlos A. Madrazo / corredor del Grijalva (nuevo paseo ribereño con actividades dominicales ‘Tertulias del Grijalva’).",
@@ -81,7 +86,7 @@ const datosMunicipios = {
   },
   "Comalcalco": {
     descripcion: "Comalcalco destaca por su zona arqueológica de origen maya construida con ladrillos de barro.",
-    lugares: ["Zona Arqueológica de Comalcalco", "Fábricas de chocolate"],
+    lugares: [{nombre: "Zona Arqueológica de Comalcalco", descripcion: "Impresionante sitio maya construido con ladrillos de barro cocido."}, {nombre: "Fábricas de chocolate", descripcion: "Descubre el proceso artesanal del cacao en las haciendas locales."}],
 transportePublico: [
       {
         nombre: "Pochimóvil (Moto-taxis)",
@@ -99,38 +104,38 @@ transportePublico: [
   },
   "Cunduacán": {
     descripcion: "Municipio conocido por su agricultura y cercanía a Villahermosa.",
-    lugares: ["Centro cultural", "Río Mezcalapa"]
+    lugares: [{nombre: "Centro cultural", descripcion: "Espacio dedicado a la difusión de la cultura local."}, {nombre: "Río Mezcalapa", descripcion: "Disfruta de la naturaleza y paisajes ribereños."}]
   },
   "Emiliano Zapata": {
     descripcion: "Ubicado en la frontera con Chiapas, tiene paisajes naturales y ríos atractivos.",
-    lugares: ["Malecón del Usumacinta", "Zona ecoturística"]
+    lugares: [{nombre: "Malecón del Usumacinta", descripcion: "Un hermoso paseo junto al río más caudaloso de México."}, {nombre: "Zona ecoturística", descripcion: "Ideal para el contacto con la naturaleza y actividades al aire libre."}]
   },
   "Huimanguillo": {
     descripcion: "Municipio extenso con riqueza ganadera y petrolera.",
-    lugares: ["Grutas de Villa Luz", "Balnearios naturales"]
+    lugares: [{nombre: "Grutas de Villa Luz", descripcion: "Explora cuevas y disfruta de sus aguas sulfurosas."}, {nombre: "Balnearios naturales", descripcion: "Refréscate en las aguas de sus ríos y cascadas."}]
   },
   "Jalapa": {
     descripcion: "Conocido por su vegetación, cafetales y artesanías.",
-    lugares: ["Parque central", "Fincas cafetaleras"]
+    lugares: [{nombre: "Parque central", descripcion: "El corazón del pueblo, rodeado de vegetación."}, {nombre: "Fincas cafetaleras", descripcion: "Conoce el proceso del café de la región."}]
   },
   "Jalpa de Méndez": {
     descripcion: "Famoso por su producción de horchata de coco y eventos culturales.",
-    lugares: ["Mercado municipal", "Iglesia principal"]
+    lugares: [{nombre: "Mercado municipal", descripcion: "Prueba la gastronomía y compra productos locales."}, {nombre: "Iglesia principal", descripcion: "Un bello ejemplo de la arquitectura religiosa de la zona."}]
   },
   "Jonuta": {
     descripcion: "Municipio tranquilo con actividad pesquera.",
-    lugares: ["Río Usumacinta", "Zona de pesca"],
+    lugares: [{nombre: "Río Usumacinta", descripcion: "Navega y disfruta de los paisajes del imponente río."}, {nombre: "Zona de pesca", descripcion: "Ideal para los aficionados a la pesca deportiva."}],
     rutasComunitarias: [
       "Encuentro con Manatíes en Jonuteek: Un proyecto de turismo comunitario dedicado a la conservación y avistamiento respetuoso del manatí en su hábitat natural."
     ]
   },
   "Macuspana": {
     descripcion: "Municipio natal de importantes figuras políticas, con selvas y ríos.",
-    lugares: ["Grutas de Macuspana", "Balnearios naturales"]
+    lugares: [{nombre: "Grutas de Macuspana", descripcion: "Un sistema de cuevas con impresionantes formaciones rocosas."}, {nombre: "Balnearios naturales", descripcion: "Disfruta de un día en familia en sus refrescantes aguas."}]
   },
 "Nacajuca": {
   descripcion: "Zona chontal con rica cultura, tradiciones y artesanías.",
-  lugares: ["Poblados chontales", "Artesanías típicas"],
+  lugares: [{nombre: "Poblados chontales", descripcion: "Sumérgete en la cultura viva de las comunidades indígenas."}, {nombre: "Artesanías típicas", descripcion: "Admira y adquiere piezas únicas de cestería y bordado."}],
   rutasComunitarias: [
       "Ruta Biji Yokot'an (Corredor del Pejelagarto): Un recorrido por comunidades chontales para descubrir la gastronomía ancestral, talleres de artesanías y la vida local.",
       "Recorrido por los Camellones Chontales: Explora el sistema agrícola prehispánico y aprende sobre la cultura viva de la mano de guías comunitarios."
@@ -175,7 +180,7 @@ transportePublico: [
 
   "Paraíso": {
     descripcion: "Puerto y municipio costero, con playas y desarrollo petrolero.",
-    lugares: ["Puerto Dos Bocas", "Playa Paraíso"],
+    lugares: [{nombre: "Puerto Dos Bocas", descripcion: "Importante puerto industrial y comercial."}, {nombre: "Playa Paraíso", descripcion: "Relájate en sus tranquilas playas y disfruta del sol."}],
     transportePublico: [
       {
         nombre: "Taxis Locales",
@@ -193,7 +198,7 @@ transportePublico: [
   },
   "Tacotalpa": {
     descripcion: "Ubicado en la sierra, con atractivos naturales y cafetalales.",
-    lugares: ["Villa Tapijulapa", "Grutas de Coconá"],
+    lugares: [{nombre: "Villa Tapijulapa", descripcion: "Pueblo Mágico con calles empedradas y casas coloridas."}, {nombre: "Grutas de Coconá", descripcion: "Un mundo subterráneo de estalactitas y estalagmitas."}],
     rutasComunitarias: [
       "Ruta Ecoturística Agua Selva: Un desarrollo comunitario que ofrece senderismo, cañonismo y rappel en un área con más de 50 cascadas.",
       "Experiencia Eco Aventura en Tapijulapa: Visita guiada por locales a la Cueva de la Sardina Ciega y al santuario de murciélagos al atardecer."
@@ -215,11 +220,11 @@ transportePublico: [
   },
   "Teapa": {
     descripcion: "Conocido por su café, montañas y paisajes.",
-    lugares: ["Cerro El Madrigal", "Balnearios"]
+    lugares: [{nombre: "Cerro El Madrigal", descripcion: "Ideal para senderismo y disfrutar de vistas panorámicas."}, {nombre: "Balnearios", descripcion: "Refréscate en las pozas naturales de sus ríos."}]
   },
   "Tenosique": {
     descripcion: "Municipio fronterizo con Chiapas y Guatemala, con historia y zonas naturales.",
-    lugares: ["Cueva del Tigre", "Zona arqueológica de Pomoná"],
+    lugares: [{nombre: "Cueva del Tigre", descripcion: "Una cueva con vestigios mayas y un arroyo subterráneo."}, {nombre: "Zona arqueológica de Pomoná", descripcion: "Antigua ciudad maya con impresionantes templos y plazas."}],
     rutasComunitarias: [
       "Aventura en el Cañón del Usumacinta con Wayak Xuul: Cooperativa local que ofrece tours de aventura y naturaleza en el río Usumacinta.",
       "Ruta a los Manantiales de Santa Margarita: Paseo en lancha para flotar en las aguas cristalinas de este manantial, una experiencia ofrecida por guías locales."
@@ -249,11 +254,11 @@ const THEME_BY_MUNICIPIO = {
 const MEDIA_BY_MUNICIPIO = {
   Centro: {
     lugares: {
-      "Parque-Museo La Venta – museo al aire libre con una de las colecciones olmecas más importantes del país (cabezas colosales, altares, estelas).": new URL('../assets/museo.jpg', import.meta.url).href,
-      "Malecón “Carlos A. Madrazo” (río Grijalva) – corredor peatonal y ciclovía con nueva infraestructura urbana e iluminación; obra inaugurada en 2024.": new URL('../assets/malecon.jpeg', import.meta.url).href,
-      "Laguna de las Ilusiones – símbolo natural de la ciudad; miradores y parques a su alrededor.": new URL('../assets/Laguna-de-las-ilusiones.jpg', import.meta.url).href,
-      "Museo Regional de Antropología “Carlos Pellicer Cámara” – arqueología y etnografía regional (Olmeca y Maya).": new URL('../assets/museo-regional.jpg', import.meta.url).href,
-      "Yumká (Centro de Interpretación y Convivencia con la Naturaleza) – recorrido guiado por selva, sabana y humedales.": new URL('../assets/yumka.jpg', import.meta.url).href,
+        "Parque-Museo La Venta": new URL('../assets/museo.jpg', import.meta.url).href,
+        "Malecón “Carlos A. Madrazo”": new URL('../assets/malecon.jpeg', import.meta.url).href,
+        "Laguna de las Ilusiones": new URL('../assets/Laguna-de-las-ilusiones.jpg', import.meta.url).href,
+        "Museo Regional de Antropología": new URL('../assets/museo-regional.jpg', import.meta.url).href,
+        "Yumká": new URL('../assets/yumka.jpg', import.meta.url).href
     },
     gastronomia: {
       "Puchero tabasqueño": new URL('../assets/gastro-puchero.jpg', import.meta.url).href,
@@ -358,6 +363,7 @@ export default function MunicipioDetalle() {
   const [modalContent, setModalContent] = useState({ title: '', items: [], type: '' });
   const [interesado, setInteresado] = useState(false);
   const [mesSeleccionado, setMesSeleccionado] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interesesActuales = JSON.parse(localStorage.getItem("interesesMunicipios_Tabasco")) || [];
@@ -587,13 +593,34 @@ export default function MunicipioDetalle() {
                 const isAdded = estaAgregado(payload);
                 return (
                   <div key={idx} className="flex items-center justify-between bg-slate-100 p-3 rounded-lg">
-                    <p className="font-semibold text-zinc-700 pr-4">{nombreItem}</p>
-                    <button 
-                      onClick={() => toggleSeleccion(payload)}
-                      className={`flex-shrink-0 px-3 py-1 text-xs font-bold rounded-full transition ${isAdded ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
-                    >
-                      {isAdded ? 'QUITAR' : 'AGREGAR'}
-                    </button>
+                    {modalContent.type === 'lugarDestacado' ? (
+                        <div className="w-full">
+                            <img src={getMedia('lugares', nombreItem)} alt={nombreItem} className="w-full h-40 object-cover rounded-lg mb-3"/>
+                            <h4 className="font-bold text-zinc-800 mb-1">{nombreItem}</h4>
+                            <p className="text-sm text-slate-600 mb-4">{item.descripcion}</p>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); toggleSeleccion(payload); }}
+                                  className={`flex-1 text-center py-2 text-sm font-bold rounded-full transition ${isAdded ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
+                                >
+                                  {isAdded ? 'Quitar' : 'Agregar'}
+                                </button>
+                                <button className="flex-1 text-center py-2 text-sm font-bold rounded-full transition bg-slate-200 text-slate-700 hover:bg-slate-300">
+                                   Ver más
+                               </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <p className="font-semibold text-zinc-700 pr-4">{nombreItem}</p>
+                            <button 
+                              onClick={() => toggleSeleccion(payload)}
+                              className={`flex-shrink-0 px-3 py-1 text-xs font-bold rounded-full transition ${isAdded ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
+                            >
+                              {isAdded ? 'QUITAR' : 'AGREGAR'}
+                            </button>
+                        </>
+                    )}
                   </div>
                 );
               })}
