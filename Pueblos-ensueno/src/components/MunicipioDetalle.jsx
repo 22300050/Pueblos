@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { addSeleccion, getSelecciones, removeSeleccion } from '../utils/itinerarioStore';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Construction, Plus, Check, X, HandHeart, Star, Gem, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { MapPin, Construction, Plus, Check, X, HandHeart, Star, Gem, ChevronLeft, ChevronRight, Eye, ArrowLeft } from 'lucide-react';
 
 // --- DATOS ORIGINALES (COMPLETOS Y CON RUTAS RESTAURADAS) ---
 // La imagen de Nacajuca se usa como genérica para todos los headers.
@@ -452,6 +452,12 @@ export default function MunicipioDetalle() {
       <div className="relative h-80">
         <img src={theme.header} alt={`Paisaje de ${nombre}`} className="w-full h-full object-cover"/>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        <div className="absolute top-0 right-0 p-4">
+          <Link to="/mapa-tabasco" className="flex items-center gap-2 text-white bg-slate-800 px-4 py-2 rounded-full hover:bg-slate-700 transition-colors duration-300">
+            <ArrowLeft className="w-5 h-5" />
+            <span>Volver al mapa</span>
+          </Link>
+        </div>
         <div className="absolute bottom-0 left-0 p-8 text-white">
             <h1 className="text-4xl sm:text-5xl font-black drop-shadow-lg">{nombre}</h1>
             <p className="mt-2 max-w-2xl text-lg opacity-90">{datos.descripcion}</p>
@@ -591,35 +597,38 @@ export default function MunicipioDetalle() {
                 const nombreItem = typeof item === 'object' ? item.nombre : item;
                 const payload = { tipo: modalContent.type, nombre: nombreItem };
                 const isAdded = estaAgregado(payload);
+                
                 return (
-                  <div key={idx} className="flex items-center justify-between bg-slate-100 p-3 rounded-lg">
+                  <div key={idx} className="bg-white rounded-xl shadow-md overflow-hidden">
                     {modalContent.type === 'lugarDestacado' ? (
                         <div className="w-full">
-                            <img src={getMedia('lugares', nombreItem)} alt={nombreItem} className="w-full h-40 object-cover rounded-lg mb-3"/>
-                            <h4 className="font-bold text-zinc-800 mb-1">{nombreItem}</h4>
-                            <p className="text-sm text-slate-600 mb-4">{item.descripcion}</p>
-                            <div className="flex items-center gap-2">
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); toggleSeleccion(payload); }}
-                                  className={`flex-1 text-center py-2 text-sm font-bold rounded-full transition ${isAdded ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
-                                >
-                                  {isAdded ? 'Quitar' : 'Agregar'}
-                                </button>
-                                <button className="flex-1 text-center py-2 text-sm font-bold rounded-full transition bg-slate-200 text-slate-700 hover:bg-slate-300">
-                                   Ver más
-                               </button>
+                            <img src={getMedia('lugares', nombreItem)} alt={nombreItem} className="w-full h-48 object-cover"/>
+                            <div className="p-4">
+                                <h4 className="font-bold text-lg text-zinc-800 mb-1">{nombreItem}</h4>
+                                <p className="text-sm text-slate-600 mb-4">{item.descripcion}</p>
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                      onClick={(e) => { e.stopPropagation(); toggleSeleccion(payload); }}
+                                      className={`flex-1 text-center py-2 text-sm font-bold rounded-full transition ${isAdded ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
+                                    >
+                                      {isAdded ? 'Quitar' : 'Agregar'}
+                                    </button>
+                                    <button className="flex-1 text-center py-2 text-sm font-bold rounded-full transition bg-slate-200 text-slate-700 hover:bg-slate-300">
+                                       Ver más
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ) : (
-                        <>
+                       <div className="flex items-center justify-between p-3">
                             <p className="font-semibold text-zinc-700 pr-4">{nombreItem}</p>
                             <button 
                               onClick={() => toggleSeleccion(payload)}
                               className={`flex-shrink-0 px-3 py-1 text-xs font-bold rounded-full transition ${isAdded ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
                             >
-                              {isAdded ? 'QUITAR' : 'AGREGAR'}
+                              {isAdded ? (modalContent.type === 'taller' ? 'INSCRITO' : 'QUITAR') : (modalContent.type === 'taller' ? 'INSCRIBIRSE' : 'AGREGAR')}
                             </button>
-                        </>
+                       </div>
                     )}
                   </div>
                 );
@@ -631,3 +640,4 @@ export default function MunicipioDetalle() {
     </div>
   );
 }
+
